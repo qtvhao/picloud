@@ -17,6 +17,9 @@ while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/serv
     sleep 1
 done
 K3S_TOKEN=$(docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token")
+echo write json $K3S_URL and $K3S_TOKEN to k3s.json
+jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >k3s.json
+
 NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
 echo "Joining worker node to this cluster"
 sh -c "$NODE_COMMAND"
