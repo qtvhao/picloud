@@ -5,6 +5,11 @@
 - [x] GitLab CI/CD integration
 - [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
 
+# Installation
+```bash
+curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +x pic
+```
+
 # Usage
 ```text
 Usage: ./pic [command]
