@@ -19,7 +19,7 @@ if [ "$arg1" == "install" ]; then
     echo "Installed Docker"
     rm install-docker.sh
     ./pic expose
-    ./pic install-k3s
+    ./pic reinstall-k3s
     exit 0
 fi
 if [ "$arg1" == "expose" ]; then
