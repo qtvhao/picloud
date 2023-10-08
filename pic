@@ -57,6 +57,21 @@ if [ "$arg1" == "reinstall-k3s" ]; then
     rm ./reinstall-k3s
     exit 0
 fi
+if [ "$arg1" == "cilium" ]; then
+    echo "Installing Cilium"
+    export KUBECONFIG=~/.kube/config
+    CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+    CLI_ARCH=amd64
+    if [ "$(uname -m)" = "aarch64" ]; then CLI_ARCH=arm64; fi
+    curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+    sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+    sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
+    rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+    cilium install --version 1.14.2
+    cilium status --wait
+    cilium connectivity test
+    exit 0
+fi
 if [ "$arg1" == "join-k3s" ]; then
     set -e
     K3S_URL=$(jq -r '.k3s_url' k3s.json)
