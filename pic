@@ -1,0 +1,42 @@
+#! /bin/bash
+isRoot=$(whoami)
+if [ "$isRoot" != "root" ]; then
+    echo "Please run as root"
+    exit 1
+fi
+args=("$@")
+arg1=${args[0]}
+if [ "$arg1" == "update" ]; then
+    echo "Updating PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "install" ]; then
+    echo "Installing PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "remove" ]; then
+    echo "Removing PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "start" ]; then
+    echo "Starting PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "stop" ]; then
+    echo "Stopping PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "restart" ]; then
+    echo "Restarting PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "status" ]; then
+    echo "Status of PiCloud"
+    exit 0
+fi
+if [ "$arg1" == "help" ]; then
+    echo "Help for PiCloud"
+    echo "Usage: picloud [command]"
+    exit 0
+fi
+./pic help
