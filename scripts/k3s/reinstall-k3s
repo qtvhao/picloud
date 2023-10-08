@@ -13,7 +13,7 @@ docker run -d --restart=unless-stopped \
     rancher/k3s:v1.27.6-k3s1 \
     server --tls-san k3s-server-1 --tls-san $K8S_MASTER_NODE_IP --advertise-address $K8S_MASTER_NODE_IP --advertise-port 6448 \
     --node-name control-plane-master \
-    --disable servicelb --disable traefik --disable metrics-server
+    --disable servicelb --disable traefik --disable metrics-server --disable-scheduler
 
 K3S_URL="https://$K8S_MASTER_NODE_IP:6448"
 while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token" >/dev/null 2>&1; do
@@ -26,7 +26,7 @@ update-ca-certificates
 docker cp picloud-k3s-server:/etc/rancher/k3s/k3s.yaml ~/.kube/config
 sed -i "s/127.0.0.1:6443/127.0.0.1:6448/g" ~/.kube/config
 
-kubectl cordon control-plane-master
+# kubectl cordon control-plane-master
 echo write json $K3S_URL and $K3S_TOKEN to k3s.json
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >k3s.json
 
