@@ -8,6 +8,7 @@ args=("$@")
 arg1=${args[0]}
 if [ "$arg1" == "update" ]; then
     echo "Updating PiCloud"
+    curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +x pic
     exit 0
 fi
 if [ "$arg1" == "install" ]; then
