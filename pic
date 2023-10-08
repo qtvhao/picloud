@@ -76,16 +76,18 @@ if [ "$arg1" == "expose" ]; then
     echo "Tunnel exposed at $CNAME_RECORD"
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
         if [ "22" == "$TUNNEL_PORT" ]; then
-            grep -c "Host $CNAME_RECORD" ~/.ssh/config || echo "Host $CNAME_RECORD" >>~/.ssh/config
-            grep -c "  ProxyCommand cloudflared access ssh --hostname %h" ~/.ssh/config || echo "  ProxyCommand cloudflared access ssh --hostname %h" >> ~/.ssh/config
-            echo " - Added ProxyCommand to ssh config"
+            grep -c "Host $CNAME_RECORD" ~/.ssh/config >/dev/null 2>&1 \
+                || (echo "Host $CNAME_RECORD" >>~/.ssh/config && echo "  ProxyCommand cloudflared access ssh --hostname %h" >> ~/.ssh/config)
             echo
-            echo "To connect to your PiCloud from other devices, add the following to your ssh config:"
-            echo "Host $CNAME_RECORD"
-            echo "  ProxyCommand cloudflared access ssh --hostname %h"
             echo
             echo "To connect to your PiCloud, run:"
             echo "ssh $CNAME_RECORD"
+            echo
+            echo
+            echo "To connect to your PiCloud from other devices, add the following to your ~/.ssh/config:"
+            echo "Host $CNAME_RECORD"
+            echo "  ProxyCommand cloudflared access ssh --hostname %h"
+            echo
         fi
     fi
     exit 0
