@@ -25,6 +25,7 @@ if [ "$arg1" == "expose" ]; then
         echo "Please set DOMAIN in .env"
         exit 1
     fi
+    rm /root/.cloudflared/config.yml
     set -e
     export TUNNEL_FORCE_PROVISIONING_DNS=true
     cloudflared -v
@@ -39,7 +40,7 @@ if [ "$arg1" == "expose" ]; then
     fi
     TUNNEL_HOSTNAME=${args[2]}
     if [ -z "$TUNNEL_HOSTNAME" ]; then
-        TUNNEL_HOSTNAME="localhost"
+        TUNNEL_HOSTNAME="172.17.0.1"
     fi
     TUNNEL_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
     TUNNEL_PORT=${args[3]}
@@ -50,11 +51,33 @@ if [ "$arg1" == "expose" ]; then
     cloudflared tunnel create $TUNNEL_NAME || true
     CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_HOSTNAME-$TUNNEL_PORT.$TUNNEL_NAME.$DOMAIN"
     cloudflared tunnel route dns $TUNNEL_NAME $CNAME_RECORD
+    mkdir -p ~/.picloud/cloudflared
+    echo "" > ~/.picloud/cloudflared/config.yml
+    echo "tunnel: $TUNNEL_NAME" >>~/.picloud/cloudflared/config.yml
+    echo "credentials-file: /etc/cloudflared/creds/credentials.json" >>~/.picloud/cloudflared/config.yml
+    echo "ingress:" >>~/.picloud/cloudflared/config.yml
+    echo "  - hostname: $CNAME_RECORD" >>~/.picloud/cloudflared/config.yml
+    echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>~/.picloud/cloudflared/config.yml
+    echo "  - service: http_status:404" >>~/.picloud/cloudflared/config.yml
+    echo "Created cloudflared config"
+    cat ~/.picloud/cloudflared/config.yml
+    echo "Starting cloudflared"
+    CONTAINER_TUNNEL_NAME="picloud-cloudflared-$TUNNEL_NAME-$TUNNEL_PROTOCOL-$TUNNEL_HOSTNAME-$TUNNEL_PORT"
+    (docker inspect $CONTAINER_TUNNEL_NAME >/dev/null 2>&1 && docker rm -f $CONTAINER_TUNNEL_NAME) || true
+    TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1) 
+    echo "Tunnel ID: $TUNNEL_ID"
+    chmod -R 0777 ~/.cloudflared/$TUNNEL_ID.json
+    docker run -d --name $CONTAINER_TUNNEL_NAME \
+        --restart=always \
+        -v ~/.cloudflared/cert.pem:/etc/cloudflared/cert.pem \
+        -v ~/.cloudflared/$TUNNEL_ID.json:/etc/cloudflared/creds/credentials.json \
+        -v ~/.picloud/cloudflared/config.yml:/etc/cloudflared/config.yml \
+        cloudflare/cloudflared tunnel run
     echo "Tunnel exposed at $CNAME_RECORD"
     if [ "ssh" == "$TUNNEL_PROTOCOL" ]; then
         echo "Host $CNAME_RECORD" >>~/.ssh/config
         echo "  ProxyCommand cloudflared access ssh --hostname %h" >> ~/.ssh/config
-        echo "Added ProxyCommand to ssh config"
+        echo " - Added ProxyCommand to ssh config"
         echo "To connect to your PiCloud, run:"
         echo "ssh $CNAME_RECORD"
     fi
