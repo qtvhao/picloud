@@ -95,6 +95,7 @@ if [ "$arg1" == "join-k3s" ]; then
     ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_net"   || echo ""
     ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_vxlan" || echo ""
     ssh $NODE_IP "$NODE_COMMAND"
+    ssh "$NODE_IP" "sudo systemctl restart k3s-agent"
     echo "Joined worker node to this cluster"
     kubectl get nodes
     exit 0
