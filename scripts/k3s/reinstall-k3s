@@ -11,7 +11,9 @@ docker run -d --restart=unless-stopped \
     -p 6448:6443 \
     -e INSTALL_K3S_EXEC="--flannel-backend=none --disable-network-policy" \
     rancher/k3s:v1.27.6-k3s1 \
-    server --tls-san k3s-server-1 --tls-san $K8S_MASTER_NODE_IP --advertise-address $K8S_MASTER_NODE_IP --advertise-port 6448 --disable servicelb --disable traefik --disable metrics-server
+    server --tls-san k3s-server-1 --tls-san $K8S_MASTER_NODE_IP --advertise-address $K8S_MASTER_NODE_IP --advertise-port 6448 \
+    --node-name control-plane-master \
+    --disable servicelb --disable traefik --disable metrics-server
 
 K3S_URL="https://$K8S_MASTER_NODE_IP:6448"
 while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token" >/dev/null 2>&1; do
@@ -20,6 +22,7 @@ while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/serv
 done
 K3S_TOKEN=$(docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token")
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
+update-ca-certificates
 docker cp picloud-k3s-server:/etc/rancher/k3s/k3s.yaml ~/.kube/config
 sed -i "s/127.0.0.1:6443/127.0.0.1:6448/g" ~/.kube/config
 
