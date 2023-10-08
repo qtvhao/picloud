@@ -64,12 +64,17 @@ if [ "$arg1" == "cilium" ]; then
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
+    args=("$@")
+    USERNAME=${args[1]}
+    PASSWORD=${args[2]}
     echo "Installing Grafana"
     helm repo add grafana https://grafana.github.io/helm-charts
     helm install grafana grafana/grafana --namespace=kube-system
     kubectl get namespace loki || kubectl create namespace loki
     helm upgrade --install --namespace loki promtail grafana/promtail
     helm upgrade --install --set "loki.auth_enabled=false,backend.replicas=2,read.replicas=2,write.replicas=2,minio.enabled=true" --namespace loki loki grafana/loki
+    kubectl get secret --namespace loki grafana && kubectl delete secret --namespace loki grafana
+    kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
     helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
     kubectl get secret --namespace loki grafana
     exit 0
