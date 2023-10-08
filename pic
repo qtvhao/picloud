@@ -18,15 +18,19 @@ if [ "$arg1" == "install" ]; then
     docker version || ./install-docker.sh
     echo "Installed Docker"
     rm install-docker.sh
+    ./pic expose
+    ./pic install-k3s
     exit 0
 fi
 if [ "$arg1" == "expose" ]; then
-    curl https://raw.githubusercontent.com/qtvhao/picloud/main/expose -o expose && chmod +x expose
+    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/cloudflared/expose -o expose && chmod +x expose
     ./expose "$1" "$2" "$3"
+    rm ./expose
     exit 0
 fi
 if [ "$arg1" == "remove" ]; then
     echo "Removing PiCloud"
+    docker rm -f picloud-k3s-server
     apt remove docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-ce-rootless-extras docker-buildx-plugin -y >/dev/null
     exit 0
 fi
@@ -46,6 +50,13 @@ if [ "$arg1" == "status" ]; then
     echo "Status of PiCloud"
     exit 0
 fi
+if [ "$arg1" == "reinstall-k3s" ]; then
+    set -e
+    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/k3s/reinstall-k3s -o ./reinstall-k3s && chmod +x reinstall-k3s
+    ./reinstall-k3s
+    rm ./reinstall-k3s
+    exit 0
+fi
 if [ "$arg1" == "help" ]; then
     echo "Help for PiCloud"
     echo "Usage: ./pic [command]"
@@ -58,6 +69,7 @@ if [ "$arg1" == "help" ]; then
     echo "  stop"
     echo "  restart"
     echo "  status"
+    echo "  install-k3s"
     echo "  help"
 
     exit 0
