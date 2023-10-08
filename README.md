@@ -4,3 +4,16 @@
 - [x] Expose services to the internet securely with [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
 - [x] GitLab CI/CD integration
 - [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
+
+# Usage
+```text
+Usage: ./pic [command]
+Commands:
+  update
+  install
+  remove
+  start
+  stop
+  restart
+  status
+  help```

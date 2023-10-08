@@ -11,7 +11,12 @@ if [ "$arg1" == "update" ]; then
     exit 0
 fi
 if [ "$arg1" == "install" ]; then
-    echo "Installing PiCloud"
+    echo "Installing Docker"
+    curl -fsSL https://get.docker.com -o install-docker.sh
+    chmod +x install-docker.sh
+    ./install-docker.sh
+    echo "Installed Docker"
+    rm install-docker.sh
     exit 0
 fi
 if [ "$arg1" == "remove" ]; then
@@ -36,7 +41,17 @@ if [ "$arg1" == "status" ]; then
 fi
 if [ "$arg1" == "help" ]; then
     echo "Help for PiCloud"
-    echo "Usage: picloud [command]"
+    echo "Usage: ./pic [command]"
+    echo "Commands:"
+    echo "  update"
+    echo "  install"
+    echo "  remove"
+    echo "  start"
+    echo "  stop"
+    echo "  restart"
+    echo "  status"
+    echo "  help"
+
     exit 0
 fi
 ./pic help
