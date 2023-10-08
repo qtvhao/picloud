@@ -11,8 +11,7 @@ docker run -d --restart=unless-stopped \
     -p 6448:6443 \
     rancher/k3s:v1.27.6-k3s1 \
     server --tls-san k3s-server-1 --tls-san $K8S_MASTER_NODE_IP --advertise-address $K8S_MASTER_NODE_IP --advertise-port 6448 \
-    --node-name control-plane-master \
-    --disable-network-policy --disable servicelb --disable traefik --disable metrics-server
+    --node-name control-plane-master
 
 K3S_URL="https://$K8S_MASTER_NODE_IP:6448"
 while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token" >/dev/null 2>&1; do
