@@ -73,6 +73,11 @@ if [ "$arg1" == "cilium" ]; then
     exit 0
 fi
 if [ "$arg1" == "join-k3s" ]; then
+    args=("$@")
+    NODE_IP=${args[1]}
+    echo "Connecting to $NODE_IP"
+    ssh "$NODE_IP" "hostname" || exit 1
+    echo "Connected to $NODE_IP"
     set -e
     K3S_URL=$(jq -r '.k3s_url' k3s.json)
     K3S_TOKEN=$(jq -r '.k3s_token' k3s.json)
@@ -80,8 +85,6 @@ if [ "$arg1" == "join-k3s" ]; then
     echo "K3S_TOKEN: $K3S_TOKEN"
     NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
     echo "Joining worker node to this cluster"
-    args=("$@")
-    NODE_IP=${args[1]}
     echo "NODE_IP: $NODE_IP"
     ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $NODE_IP "$NODE_COMMAND"
     echo "Joined worker node to this cluster"
