@@ -14,13 +14,55 @@ if [ "$arg1" == "install" ]; then
     echo "Installing Docker"
     curl -fsSL https://get.docker.com -o install-docker.sh
     chmod +x install-docker.sh
-    ./install-docker.sh
+    docker version || ./install-docker.sh
     echo "Installed Docker"
     rm install-docker.sh
     exit 0
 fi
+if [ "$arg1" == "expose" ]; then
+    source .env
+    if [ -z "$DOMAIN" ]; then
+        echo "Please set DOMAIN in .env"
+        exit 1
+    fi
+    set -e
+    export TUNNEL_FORCE_PROVISIONING_DNS=true
+    cloudflared -v
+    if [ -z "$TUNNEL_NAME" ]; then
+        TUNNEL_NAME="picloud"
+    fi
+    args=("$@")
+    arg1=${args[0]}
+    TUNNEL_PROTOCOL=${args[1]}
+    if [ -z "$TUNNEL_PROTOCOL" ]; then
+        TUNNEL_PROTOCOL="ssh"
+    fi
+    TUNNEL_HOSTNAME=${args[2]}
+    if [ -z "$TUNNEL_HOSTNAME" ]; then
+        TUNNEL_HOSTNAME="localhost"
+    fi
+    TUNNEL_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
+    TUNNEL_PORT=${args[3]}
+    if [ -z "$TUNNEL_PORT" ]; then
+        TUNNEL_PORT="22"
+    fi
+    cloudflared tunnel login
+    cloudflared tunnel create $TUNNEL_NAME || true
+    CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_HOSTNAME-$TUNNEL_PORT.$TUNNEL_NAME.$DOMAIN"
+    cloudflared tunnel route dns $TUNNEL_NAME $CNAME_RECORD
+    echo "Tunnel exposed at $CNAME_RECORD"
+    if [ "ssh" == "$TUNNEL_PROTOCOL" ]; then
+        echo "Host $CNAME_RECORD" >>~/.ssh/config
+        echo "  ProxyCommand cloudflared access ssh --hostname %h" >> ~/.ssh/config
+        echo "Added ProxyCommand to ssh config"
+        echo "To connect to your PiCloud, run:"
+        echo "ssh $CNAME_RECORD"
+    fi
+    exit 0
+fi
 if [ "$arg1" == "remove" ]; then
     echo "Removing PiCloud"
+    apt remove docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-ce-rootless-extras docker-buildx-plugin -y >/dev/null
     exit 0
 fi
 if [ "$arg1" == "start" ]; then
