@@ -20,6 +20,8 @@ done
 K3S_TOKEN=$(docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token")
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 docker cp picloud-k3s-server:/etc/rancher/k3s/k3s.yaml ~/.kube/config
+sed -i "s/127.0.0.1:6443/127.0.0.1:6448/g" ~/.kube/config
+export KUBECONFIG=~/.kube/config
 CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
 CLI_ARCH=amd64
 if [ "$(uname -m)" = "aarch64" ]; then CLI_ARCH=arm64; fi
