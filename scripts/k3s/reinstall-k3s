@@ -15,7 +15,7 @@ docker run -d --restart=unless-stopped \
 K3S_URL="https://$K8S_MASTER_NODE_IP:6448"
 while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token" >/dev/null 2>&1; do
     echo "Waiting for K3S token"
-    sleep 1
+    sleep 5
 done
 K3S_TOKEN=$(docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token")
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
