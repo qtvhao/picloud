@@ -63,6 +63,34 @@ if [ "$arg1" == "cilium" ]; then
     helm install cilium cilium/cilium --namespace=kube-system
     exit 0
 fi
+if [ "$arg1" == "gitlab" ]; then
+    source .env
+    if [ -z "$DOMAIN" ]; then
+        echo "Please set DOMAIN in .env"
+        exit 1
+    fi
+    helm repo add gitlab https://charts.gitlab.io/ || echo ""
+    helm repo update
+    kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
+    helm upgrade --install gitlab gitlab/gitlab \
+        --namespace gitlab-ns \
+        --set global.ingress.tls.enabled=false,\
+global.ingress.enabled=false,\
+global.edition=ce,\
+global.appConfig.certmanager.enabled=true,\
+gitlab-runner.runners.privileged=true,\
+runners.privileged=true,\
+certmanager-issuer.email=qtvhao@gmail.com,\
+global.edition=ce,\
+certmanager.install=false,\
+global.ingress.configureCertmanager=false,\
+gitlab-runner.install=true,\
+global.kas.tls.enabled=false,\
+nginx-ingress.enabled=false,\
+global.hosts.domain=$DOMAIN
+    ./pic expose tcp gitlab 80
+    exit 0
+fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
     args=("$@")
     USERNAME=${args[1]}
@@ -76,9 +104,9 @@ if [ "$arg1" == "grafana-promtail-loki" ]; then
     kubectl get secret --namespace loki grafana && kubectl delete secret --namespace loki grafana
     kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
     helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
-    kubectl get secret --namespace loki grafana
+    kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
     exit 0
-fi #
+fi
 if [ "$arg1" == "join-k3s" ]; then
     args=("$@")
     NODE_IP=${args[1]}
