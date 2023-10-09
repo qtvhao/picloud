@@ -24,10 +24,10 @@ update-ca-certificates
 docker cp picloud-k3s-server:/etc/rancher/k3s/k3s.yaml ~/.kube/config
 sed -i "s/127.0.0.1:6443/127.0.0.1:6448/g" ~/.kube/config
 
-# kubectl cordon control-plane-master
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 echo write json $K3S_URL and $K3S_TOKEN to k3s.json
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >k3s.json
-
+./pic status
 echo
 echo "To join a worker node to this cluster, run the following command:"
 echo "./pic join-k3s <node-ip>"
