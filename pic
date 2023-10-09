@@ -98,8 +98,10 @@ if [ "$arg1" == "gitlab" ]; then
         --namespace gitlab-ns \
         --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL
     TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
+    TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
     PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
     echo "GitLab root password: $PASSWORD"
+    kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
@@ -116,7 +118,7 @@ if [ "$arg1" == "grafana-promtail-loki" ]; then
     kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
     helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
     PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
-    TUNNEL_NAMESPACE=loki ./expose http grafana 80
+    TUNNEL_NAMESPACE=loki ./pic expose http grafana 80
     echo "Grafana admin password: $PASSWORD"
     exit 0
 fi

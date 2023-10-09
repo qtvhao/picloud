@@ -115,9 +115,11 @@ while true; do
     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/ || true)
     if [ "$status_code" == "200" ]; then
         break
-    else
-        echo "Waiting for $FQDN_RECORD to be ready"
     fi
+    if [ "$status_code" == "302" ]; then
+        break
+    fi
+    echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code"
     sleep 5
 done
 echo
