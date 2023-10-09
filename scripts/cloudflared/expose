@@ -7,9 +7,6 @@ fi
 set -e
 export TUNNEL_FORCE_PROVISIONING_DNS=true
 cloudflared -v
-if [ -z "$TUNNEL_NAME" ]; then
-    TUNNEL_NAME="picloud"
-fi
 args=("$@")
 TUNNEL_PROTOCOL=${args[1]}
 if [ -z "$TUNNEL_PROTOCOL" ]; then
@@ -27,19 +24,23 @@ fi
 if [ -z "$TUNNEL_NAMESPACE" ]; then
     TUNNEL_NAMESPACE="picloud-cloudflared"
 fi
+CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
+if [ -z "$TUNNEL_NAME" ]; then
+    TUNNEL_NAME="picloud-$CNAME_RECORD"
+fi
 cloudflared tunnel login
 cloudflared tunnel create $TUNNEL_NAME || true
-CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT-$TUNNEL_NAME.$DOMAIN"
-cloudflared tunnel route dns $TUNNEL_NAME $CNAME_RECORD
+FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
+cloudflared tunnel route dns $TUNNEL_NAME $FQDN_RECORD
 mkdir -p ~/.picloud/cloudflared
-CONFIG_YAML_FILE="$HOME/.picloud/cloudflared/$CNAME_RECORD.yml"
+CONFIG_YAML_FILE="$HOME/.picloud/cloudflared/$FQDN_RECORD.yml"
 echo "" >$CONFIG_YAML_FILE
 echo "tunnel: $TUNNEL_NAME" >>$CONFIG_YAML_FILE
 echo "credentials-file: /etc/cloudflared/creds/credentials.json" >>$CONFIG_YAML_FILE
 echo "metrics: 0.0.0.0:2000" >>$CONFIG_YAML_FILE
 echo "no-autoupdate: true" >>$CONFIG_YAML_FILE
 echo "ingress:" >>$CONFIG_YAML_FILE
-echo "  - hostname: $CNAME_RECORD" >>$CONFIG_YAML_FILE
+echo "  - hostname: $FQDN_RECORD" >>$CONFIG_YAML_FILE
 echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>$CONFIG_YAML_FILE
 echo "  - service: http_status:404" >>$CONFIG_YAML_FILE
 echo "Created cloudflared config"
@@ -56,7 +57,7 @@ kubectl get configmap $CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE >/dev/null 2>&
 
 kubectl create secret generic tunnel-credentials --from-file=credentials.json=$HOME/.cloudflared/$TUNNEL_ID.json -n $TUNNEL_NAMESPACE
 kubectl create configmap $CONTAINER_TUNNEL_NAME --from-file=config.yaml=$CONFIG_YAML_FILE -n $TUNNEL_NAMESPACE
-echo "---"                                                  >cloudflared-deployment.yaml
+echo "---"                                                  > cloudflared-deployment.yaml
 echo "apiVersion: apps/v1"                                  >>cloudflared-deployment.yaml
 echo "kind: Deployment"                                     >>cloudflared-deployment.yaml
 echo "metadata:"                                            >>cloudflared-deployment.yaml
@@ -107,21 +108,22 @@ echo "                path: config.yaml"                    >>cloudflared-deploy
 
 kubectl get namespace $TUNNEL_NAMESPACE >/dev/null 2>&1 || kubectl create namespace $TUNNEL_NAMESPACE
 kubectl apply -f cloudflared-deployment.yaml -n $TUNNEL_NAMESPACE
+kubectl rollout restart deployment/$CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE
 # rm cloudflared-deployment.yaml
 #
-echo "Tunnel exposed at $CNAME_RECORD"
+echo "Tunnel exposed at $FQDN_RECORD"
 if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
     if [ "22" == "$TUNNEL_PORT" ]; then
-        grep -c "Host $CNAME_RECORD" ~/.ssh/config >/dev/null 2>&1 ||
-            (echo "Host $CNAME_RECORD" >>~/.ssh/config && echo "  ProxyCommand cloudflared access ssh --hostname %h" >>~/.ssh/config)
+        grep -c "Host $FQDN_RECORD" ~/.ssh/config >/dev/null 2>&1 ||
+            (echo "Host $FQDN_RECORD" >>~/.ssh/config && echo "  ProxyCommand cloudflared access ssh --hostname %h" >>~/.ssh/config)
         echo
         echo
         echo "To connect to your PiCloud, run:"
-        echo "ssh $CNAME_RECORD"
+        echo "ssh $FQDN_RECORD"
         echo
         echo
         echo "To connect to your PiCloud from other devices, add the following to your ~/.ssh/config:"
-        echo "Host $CNAME_RECORD"
+        echo "Host $FQDN_RECORD"
         echo "  ProxyCommand cloudflared access ssh --hostname %h"
         echo
     fi
