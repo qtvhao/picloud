@@ -72,6 +72,9 @@ if [ "$arg1" == "cilium" ]; then
     helm install cilium cilium/cilium --namespace=kube-system
     exit 0
 fi
+if [ "$arg1" == "registry-as-a-pull-through-cache" ]; then
+    echo "Installing registry-as-a-pull-through-cache"
+fi
 if [ "$arg1" == "gitlab" ]; then
     source .env
     if [ -z "$DOMAIN" ]; then
@@ -112,8 +115,9 @@ if [ "$arg1" == "grafana-promtail-loki" ]; then
     kubectl get secret --namespace loki grafana && kubectl delete secret --namespace loki grafana
     kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
     helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
-    kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode
-    echo
+    PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
+    TUNNEL_NAMESPACE=loki ./expose http grafana 80
+    echo "Grafana admin password: $PASSWORD"
     exit 0
 fi
 if [ "$arg1" == "join-k3s" ]; then
