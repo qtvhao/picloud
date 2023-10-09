@@ -70,6 +70,10 @@ if [ "$arg1" == "s3" ]; then
     ./scripts/storage/install-minio "$1" "$2" "$3" "$4"
     exit 0
 fi
+if [ "$arg1" == "redis" ]; then
+    ./scripts/database/install-redis "$1" "$2" "$3" "$4"
+    exit 0
+fi
 if [ "$arg1" == "csi-s3" ]; then
     ./scripts/storage/install-minio-csi-driver "$1" "$2" "$3" "$4"
     exit 0
