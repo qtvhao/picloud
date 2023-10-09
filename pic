@@ -88,7 +88,7 @@ gitlab-runner.install=true,\
 global.kas.tls.enabled=false,\
 nginx-ingress.enabled=false,\
 global.hosts.domain=$DOMAIN
-    ./pic expose tcp gitlab 80
+    ./pic expose http gitlab-webservice-default.gitlab-ns 8181
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then

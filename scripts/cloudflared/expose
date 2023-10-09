@@ -29,32 +29,80 @@ cloudflared tunnel create $TUNNEL_NAME || true
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT-$TUNNEL_NAME.$DOMAIN"
 cloudflared tunnel route dns $TUNNEL_NAME $CNAME_RECORD
 mkdir -p ~/.picloud/cloudflared
-echo "" > ~/.picloud/cloudflared/config.yml
-echo "tunnel: $TUNNEL_NAME" >>~/.picloud/cloudflared/config.yml
-echo "credentials-file: /etc/cloudflared/creds/credentials.json" >>~/.picloud/cloudflared/config.yml
-echo "ingress:" >>~/.picloud/cloudflared/config.yml
-echo "  - hostname: $CNAME_RECORD" >>~/.picloud/cloudflared/config.yml
-echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>~/.picloud/cloudflared/config.yml
-echo "  - service: http_status:404" >>~/.picloud/cloudflared/config.yml
+CONFIG_YAML_FILE="$HOME/.picloud/cloudflared/$CNAME_RECORD.yml"
+echo "" >$CONFIG_YAML_FILE
+echo "tunnel: $TUNNEL_NAME" >>$CONFIG_YAML_FILE
+echo "credentials-file: /etc/cloudflared/creds/credentials.json" >>$CONFIG_YAML_FILE
+echo "ingress:" >>$CONFIG_YAML_FILE
+echo "  - hostname: $CNAME_RECORD" >>$CONFIG_YAML_FILE
+echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>$CONFIG_YAML_FILE
+echo "  - service: http_status:404" >>$CONFIG_YAML_FILE
 echo "Created cloudflared config"
-cat ~/.picloud/cloudflared/config.yml
+cat $CONFIG_YAML_FILE
 echo "Starting cloudflared"
 CONTAINER_TUNNEL_NAME="picloud-cloudflared-$TUNNEL_NAME-$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 (docker inspect $CONTAINER_TUNNEL_NAME >/dev/null 2>&1 && docker rm -f $CONTAINER_TUNNEL_NAME) || true
-TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1) 
+TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1)
 echo "Tunnel ID: $TUNNEL_ID"
 chmod -R 0777 ~/.cloudflared/$TUNNEL_ID.json
-docker run -d --name $CONTAINER_TUNNEL_NAME \
-    --restart=always \
-    -v ~/.cloudflared/cert.pem:/etc/cloudflared/cert.pem \
-    -v ~/.cloudflared/$TUNNEL_ID.json:/etc/cloudflared/creds/credentials.json \
-    -v ~/.picloud/cloudflared/config.yml:/etc/cloudflared/config.yml \
-    cloudflare/cloudflared tunnel run
+TF_VAR_TUNNEL_ID=$TUNNEL_ID TF_VAR_CONTAINER_TUNNEL_NAME=$CONTAINER_TUNNEL_NAME TF_VAR_CNAME_RECORD=$CNAME_RECORD TF_VAR_TUNNEL_PROTOCOL=$TUNNEL_PROTOCOL TF_VAR_TUNNEL_HOSTNAME=$TUNNEL_HOSTNAME \
+    terraform apply
+kubectl create secret generic tunnel-credentials --from-file=credentials.json=$HOME/.cloudflared/$TUNNEL_ID.json
+kubectl create configmap $CONTAINER_TUNNEL_NAME --from-file=config.yml=$CONFIG_YAML_FILE
+echo "---" >cloudflared-deployment.yaml
+echo "apiVersion: apps/v1" >>cloudflared-deployment.yaml
+echo "kind: Deployment" >>cloudflared-deployment.yaml
+echo "metadata:" >>cloudflared-deployment.yaml
+echo "  name: cloudflared" >>cloudflared-deployment.yaml
+echo "spec:" >>cloudflared-deployment.yaml
+echo "  selector:" >>cloudflared-deployment.yaml
+echo "    matchLabels:" >>cloudflared-deployment.yaml
+echo "      app: cloudflared" >>cloudflared-deployment.yaml
+echo "  replicas: 2" >>cloudflared-deployment.yaml
+echo "  template:" >>cloudflared-deployment.yaml
+echo "    metadata:" >>cloudflared-deployment.yaml
+echo "      labels:" >>cloudflared-deployment.yaml
+echo "        app: cloudflared" >>cloudflared-deployment.yaml
+echo "    spec:" >>cloudflared-deployment.yaml
+echo "      containers:" >>cloudflared-deployment.yaml
+echo "        - name: cloudflared" >>cloudflared-deployment.yaml
+echo "          image: cloudflare/cloudflared:2023.3.1" >>cloudflared-deployment.yaml
+echo "          args:" >>cloudflared-deployment.yaml
+echo "            - tunnel" >>cloudflared-deployment.yaml
+echo "            - --config" >>cloudflared-deployment.yaml
+echo "            - /etc/cloudflared/config/config.yaml" >>cloudflared-deployment.yaml
+echo "            - run" >>cloudflared-deployment.yaml
+echo "          livenessProbe:" >>cloudflared-deployment.yaml
+echo "            httpGet:" >>cloudflared-deployment.yaml
+echo "              path: /ready" >>cloudflared-deployment.yaml
+echo "              port: 2000" >>cloudflared-deployment.yaml
+echo "            failureThreshold: 1" >>cloudflared-deployment.yaml
+echo "            initialDelaySeconds: 10" >>cloudflared-deployment.yaml
+echo "            periodSeconds: 10" >>cloudflared-deployment.yaml
+echo "          volumeMounts:" >>cloudflared-deployment.yaml
+echo "            - name: config" >>cloudflared-deployment.yaml
+echo "              mountPath: /etc/cloudflared/config" >>cloudflared-deployment.yaml
+echo "              readOnly: true" >>cloudflared-deployment.yaml
+echo "            - name: creds" >>cloudflared-deployment.yaml
+echo "              mountPath: /etc/cloudflared/creds" >>cloudflared-deployment.yaml
+echo "              readOnly: true" >>cloudflared-deployment.yaml
+echo "      volumes:" >>cloudflared-deployment.yaml
+echo "        - name: creds" >>cloudflared-deployment.yaml
+echo "          secret:" >>cloudflared-deployment.yaml
+echo "            secretName: tunnel-credentials" >>cloudflared-deployment.yaml
+echo "        - name: config" >>cloudflared-deployment.yaml
+echo "          configMap:" >>cloudflared-deployment.yaml
+echo "            name: $CONTAINER_TUNNEL_NAME" >>cloudflared-deployment.yaml
+echo "            items:" >>cloudflared-deployment.yaml
+echo "              - key: config.yaml" >>cloudflared-deployment.yaml
+echo "                path: config.yaml" >>cloudflared-deployment.yaml
+
+#
 echo "Tunnel exposed at $CNAME_RECORD"
 if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
     if [ "22" == "$TUNNEL_PORT" ]; then
-        grep -c "Host $CNAME_RECORD" ~/.ssh/config >/dev/null 2>&1 \
-            || (echo "Host $CNAME_RECORD" >>~/.ssh/config && echo "  ProxyCommand cloudflared access ssh --hostname %h" >> ~/.ssh/config)
+        grep -c "Host $CNAME_RECORD" ~/.ssh/config >/dev/null 2>&1 ||
+            (echo "Host $CNAME_RECORD" >>~/.ssh/config && echo "  ProxyCommand cloudflared access ssh --hostname %h" >>~/.ssh/config)
         echo
         echo
         echo "To connect to your PiCloud, run:"
