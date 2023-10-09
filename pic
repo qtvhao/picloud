@@ -109,23 +109,26 @@ if [ "$arg1" == "csi-s3" ]; then
     echo "  region: \"\"" >> csi-s3-secret.yaml
     # 
     kubectl delete -f csi-s3-secret.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/provisioner.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/attacher.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/csi-s3.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/storageclass.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pvc.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pod.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml || true
+    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml || true
     # 
     kubectl apply -f csi-s3-secret.yaml
-    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/provisioner.yaml
-    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/attacher.yaml
-    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/csi-s3.yaml
-    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
-    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pvc.yaml
-    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pod.yaml
+    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml
+    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml
+    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml
+    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
+    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml
+    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml
     kubectl describe pod csi-s3-test-nginx
-    # kubectl exec -ti csi-s3-test-nginx csi-s3-test-nginx bash -c "mount | grep fuse"
-    # kubectl exec -ti csi-s3-test-nginx bash -c "touch /var/lib/www/html/hello_world"
+    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mount | grep fuse" 
+    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mkdir -p /usr/share/nginx/html/s3/"
+    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "date > /usr/share/nginx/html/s3/file"
+    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "cat /usr/share/nginx/html/s3/file"
+    echo "CSI S3 installed"
     exit 0
 fi
 if [ "$arg1" == "cilium" ]; then

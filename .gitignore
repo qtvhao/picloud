@@ -1,3 +1,5 @@
 
 .env
 k3s.json
+csi-s3-secret.yaml
+cloudflared-deployment.yaml
