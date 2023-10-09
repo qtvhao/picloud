@@ -105,17 +105,19 @@ if [ "$arg1" == "csi-s3" ]; then
     echo "stringData:" >> csi-s3-secret.yaml
     echo "  accessKeyID: \"$rootUsername\"" >> csi-s3-secret.yaml
     echo "  secretAccessKey: \"$rootPassword\"" >> csi-s3-secret.yaml
-    echo "  endpoint: \"$ENDPOINT\"" >> csi-s3-secret.yaml
+    echo "  endpoint: \"https://$ENDPOINT\"" >> csi-s3-secret.yaml
     echo "  region: \"\"" >> csi-s3-secret.yaml
     kubectl apply -f csi-s3-secret.yaml
-    kubectl create -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/provisioner.yaml
-    kubectl create -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/attacher.yaml
-    kubectl create -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/csi-s3.yaml
-    kubectl create -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
-    kubectl create -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pvc.yaml
+    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/provisioner.yaml
+    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/attacher.yaml
+    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/csi-s3.yaml
+    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
+    kubectl get pvc csi-s3-pvc && kubectl delete pvc csi-s3-pvc || true
+    kubectl get pod csi-s3-test-nginx && kubectl delete pod csi-s3-test-nginx || true
+    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pvc.yaml
     kubectl get pvc csi-s3-pvc
-    kubectl create -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pod.yaml
-    kubectl exec -ti csi-s3-test-nginx bash -c "mount | grep fuse"
+    kubectl apply -f https://raw.githubusercontent.com/ctrox/csi-s3/master/deploy/kubernetes/examples/pod.yaml
+    kubectl exec csi-s3-test-nginx -- bash
     kubectl exec -ti csi-s3-test-nginx bash -c "touch /var/lib/www/html/hello_world"
     exit 0
 fi
