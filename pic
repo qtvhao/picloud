@@ -53,6 +53,7 @@ if [ "$arg1" == "status" ]; then
 fi
 if [ "$arg1" == "reinstall-k3s" ]; then
     set -e
+    (cat scripts/cloudflared/reinstall-k3s && cp scripts/cloudflared/reinstall-k3s reinstall-k3s && chmod +x reinstall-k3s) || \
     curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/k3s/reinstall-k3s -o ./reinstall-k3s && chmod +x reinstall-k3s
     ./reinstall-k3s
     rm ./reinstall-k3s
