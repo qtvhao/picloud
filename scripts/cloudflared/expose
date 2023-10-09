@@ -33,6 +33,8 @@ CONFIG_YAML_FILE="$HOME/.picloud/cloudflared/$CNAME_RECORD.yml"
 echo "" >$CONFIG_YAML_FILE
 echo "tunnel: $TUNNEL_NAME" >>$CONFIG_YAML_FILE
 echo "credentials-file: /etc/cloudflared/creds/credentials.json" >>$CONFIG_YAML_FILE
+echo "metrics: 0.0.0.0:2000" >>$CONFIG_YAML_FILE
+echo "no-autoupdate: true" >>$CONFIG_YAML_FILE
 echo "ingress:" >>$CONFIG_YAML_FILE
 echo "  - hostname: $CNAME_RECORD" >>$CONFIG_YAML_FILE
 echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>$CONFIG_YAML_FILE
