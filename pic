@@ -81,6 +81,9 @@ if [ "$arg1" == "gitlab" ]; then
     helm repo add gitlab https://charts.gitlab.io/ || echo ""
     helm repo update
     kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
+    args=("$@")
+    PASSWORD=${args[1]}
+    kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
     helm upgrade --install gitlab gitlab/gitlab \
         --namespace gitlab-ns \
         --set global.ingress.tls.enabled=false,global.ingress.enabled=false,global.edition=ce,global.appConfig.certmanager.enabled=true,gitlab-runner.runners.privileged=true,runners.privileged=true,certmanager-issuer.email=qtvhao@gmail.com,global.edition=ce,certmanager.install=false,global.ingress.configureCertmanager=false,gitlab-runner.install=true,global.kas.tls.enabled=false,nginx-ingress.enabled=false,global.hosts.domain=$DOMAIN
