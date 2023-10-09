@@ -51,54 +51,54 @@ kubectl get configmap $CONTAINER_TUNNEL_NAME >/dev/null 2>&1  && kubectl delete 
 
 kubectl create secret generic tunnel-credentials --from-file=credentials.json=$HOME/.cloudflared/$TUNNEL_ID.json
 kubectl create configmap $CONTAINER_TUNNEL_NAME --from-file=config.yaml=$CONFIG_YAML_FILE
-echo "---" >cloudflared-deployment.yaml
-echo "apiVersion: apps/v1" >>cloudflared-deployment.yaml
-echo "kind: Deployment" >>cloudflared-deployment.yaml
-echo "metadata:" >>cloudflared-deployment.yaml
-echo "  name: cloudflared" >>cloudflared-deployment.yaml
-echo "spec:" >>cloudflared-deployment.yaml
-echo "  selector:" >>cloudflared-deployment.yaml
-echo "    matchLabels:" >>cloudflared-deployment.yaml
-echo "      app: cloudflared" >>cloudflared-deployment.yaml
-echo "  replicas: 2" >>cloudflared-deployment.yaml
-echo "  template:" >>cloudflared-deployment.yaml
-echo "    metadata:" >>cloudflared-deployment.yaml
-echo "      labels:" >>cloudflared-deployment.yaml
-echo "        app: cloudflared" >>cloudflared-deployment.yaml
-echo "    spec:" >>cloudflared-deployment.yaml
-echo "      containers:" >>cloudflared-deployment.yaml
-echo "        - name: cloudflared" >>cloudflared-deployment.yaml
-echo "          image: cloudflare/cloudflared" >>cloudflared-deployment.yaml
-echo "          args:" >>cloudflared-deployment.yaml
-echo "            - tunnel" >>cloudflared-deployment.yaml
-echo "            - --no-autoupdate" >>cloudflared-deployment.yaml
-echo "            - --config" >>cloudflared-deployment.yaml
-echo "            - /etc/cloudflared/config/config.yaml" >>cloudflared-deployment.yaml
-echo "            - run" >>cloudflared-deployment.yaml
-echo "          livenessProbe:" >>cloudflared-deployment.yaml
-echo "            httpGet:" >>cloudflared-deployment.yaml
-echo "              path: /ready" >>cloudflared-deployment.yaml
-echo "              port: 2000" >>cloudflared-deployment.yaml
-echo "            failureThreshold: 1" >>cloudflared-deployment.yaml
-echo "            initialDelaySeconds: 10" >>cloudflared-deployment.yaml
-echo "            periodSeconds: 10" >>cloudflared-deployment.yaml
-echo "          volumeMounts:" >>cloudflared-deployment.yaml
-echo "            - name: config" >>cloudflared-deployment.yaml
-echo "              mountPath: /etc/cloudflared/config" >>cloudflared-deployment.yaml
-echo "              readOnly: true" >>cloudflared-deployment.yaml
-echo "            - name: creds" >>cloudflared-deployment.yaml
-echo "              mountPath: /etc/cloudflared/creds" >>cloudflared-deployment.yaml
-echo "              readOnly: true" >>cloudflared-deployment.yaml
-echo "      volumes:" >>cloudflared-deployment.yaml
-echo "        - name: creds" >>cloudflared-deployment.yaml
-echo "          secret:" >>cloudflared-deployment.yaml
-echo "            secretName: tunnel-credentials" >>cloudflared-deployment.yaml
-echo "        - name: config" >>cloudflared-deployment.yaml
-echo "          configMap:" >>cloudflared-deployment.yaml
-echo "            name: $CONTAINER_TUNNEL_NAME" >>cloudflared-deployment.yaml
-echo "            items:" >>cloudflared-deployment.yaml
-echo "              - key: config.yaml" >>cloudflared-deployment.yaml
-echo "                path: config.yaml" >>cloudflared-deployment.yaml
+echo "---"                                                  >cloudflared-deployment.yaml
+echo "apiVersion: apps/v1"                                  >>cloudflared-deployment.yaml
+echo "kind: Deployment"                                     >>cloudflared-deployment.yaml
+echo "metadata:"                                            >>cloudflared-deployment.yaml
+echo "  name: $CONTAINER_TUNNEL_NAME"                       >>cloudflared-deployment.yaml
+echo "spec:"                                                >>cloudflared-deployment.yaml
+echo "  selector:"                                          >>cloudflared-deployment.yaml
+echo "    matchLabels:"                                     >>cloudflared-deployment.yaml
+echo "      app: cloudflared"                               >>cloudflared-deployment.yaml
+echo "  replicas: 2"                                        >>cloudflared-deployment.yaml
+echo "  template:"                                          >>cloudflared-deployment.yaml
+echo "    metadata:"                                        >>cloudflared-deployment.yaml
+echo "      labels:"                                        >>cloudflared-deployment.yaml
+echo "        app: cloudflared"                             >>cloudflared-deployment.yaml
+echo "    spec:"                                            >>cloudflared-deployment.yaml
+echo "      containers:"                                    >>cloudflared-deployment.yaml
+echo "        - name: cloudflared"                          >>cloudflared-deployment.yaml
+echo "          image: cloudflare/cloudflared"              >>cloudflared-deployment.yaml
+echo "          args:"                                      >>cloudflared-deployment.yaml
+echo "            - tunnel"                                 >>cloudflared-deployment.yaml
+echo "            - --no-autoupdate"                        >>cloudflared-deployment.yaml
+echo "            - --config"                               >>cloudflared-deployment.yaml
+echo "            - /etc/cloudflared/config/config.yaml"    >>cloudflared-deployment.yaml
+echo "            - run"                                    >>cloudflared-deployment.yaml
+echo "          livenessProbe:"                             >>cloudflared-deployment.yaml
+echo "            httpGet:"                                 >>cloudflared-deployment.yaml
+echo "              path: /ready"                           >>cloudflared-deployment.yaml
+echo "              port: 2000"                             >>cloudflared-deployment.yaml
+echo "            failureThreshold: 1"                      >>cloudflared-deployment.yaml
+echo "            initialDelaySeconds: 10"                  >>cloudflared-deployment.yaml
+echo "            periodSeconds: 10"                        >>cloudflared-deployment.yaml
+echo "          volumeMounts:"                              >>cloudflared-deployment.yaml
+echo "            - name: config"                           >>cloudflared-deployment.yaml
+echo "              mountPath: /etc/cloudflared/config"     >>cloudflared-deployment.yaml
+echo "              readOnly: true"                         >>cloudflared-deployment.yaml
+echo "            - name: creds"                            >>cloudflared-deployment.yaml
+echo "              mountPath: /etc/cloudflared/creds"      >>cloudflared-deployment.yaml
+echo "              readOnly: true"                         >>cloudflared-deployment.yaml
+echo "      volumes:"                                       >>cloudflared-deployment.yaml
+echo "        - name: creds"                                >>cloudflared-deployment.yaml
+echo "          secret:"                                    >>cloudflared-deployment.yaml
+echo "            secretName: tunnel-credentials"           >>cloudflared-deployment.yaml
+echo "        - name: config"                               >>cloudflared-deployment.yaml
+echo "          configMap:"                                 >>cloudflared-deployment.yaml
+echo "            name: $CONTAINER_TUNNEL_NAME"             >>cloudflared-deployment.yaml
+echo "            items:"                                   >>cloudflared-deployment.yaml
+echo "              - key: config.yaml"                     >>cloudflared-deployment.yaml
+echo "                path: config.yaml"                    >>cloudflared-deployment.yaml
 
 kubectl apply -f cloudflared-deployment.yaml
 # rm cloudflared-deployment.yaml
