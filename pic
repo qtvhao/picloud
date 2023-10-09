@@ -78,6 +78,10 @@ if [ "$arg1" == "gitlab" ]; then
         echo "Please set DOMAIN in .env"
         exit 1
     fi
+    if [ -z "$EMAIL" ]; then
+        echo "Please set EMAIL in .env"
+        exit 1
+    fi
     set -e
     helm repo add gitlab https://charts.gitlab.io/ || echo ""
     helm repo update
@@ -85,11 +89,14 @@ if [ "$arg1" == "gitlab" ]; then
     args=("$@")
     PASSWORD=${args[1]}
     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
-    kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
-    helm upgrade --install gitlab gitlab/gitlab \
+    # kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+    # PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
+    helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-6.11.9.tgz \
         --namespace gitlab-ns \
-        --set global.ingress.tls.enabled=false,global.ingress.enabled=false,global.edition=ce,global.appConfig.certmanager.enabled=true,gitlab-runner.runners.privileged=true,runners.privileged=true,certmanager-issuer.email=qtvhao@gmail.com,global.edition=ce,certmanager.install=false,global.ingress.configureCertmanager=false,gitlab-runner.install=true,global.kas.tls.enabled=false,nginx-ingress.enabled=false,global.hosts.domain=$DOMAIN
+        --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL
     TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
+    PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
+    echo "GitLab root password: $PASSWORD"
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
