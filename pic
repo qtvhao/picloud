@@ -23,8 +23,9 @@ if [ "$arg1" == "install" ]; then
     exit 0
 fi
 if [ "$arg1" == "expose" ]; then
+    (cat scripts/cloudflared/expose && cp scripts/cloudflared/expose expose && chmod +x expose) || \
     curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/cloudflared/expose -o expose && chmod +x expose
-    ./expose "$1" "$2" "$3"
+    ./expose "$1" "$2" "$3" "$4"
     rm ./expose
     exit 0
 fi

@@ -45,10 +45,12 @@ CONTAINER_TUNNEL_NAME="picloud-cloudflared-$TUNNEL_NAME-$TUNNEL_PROTOCOL-$TUNNEL
 TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1)
 echo "Tunnel ID: $TUNNEL_ID"
 chmod -R 0777 ~/.cloudflared/$TUNNEL_ID.json
-TF_VAR_TUNNEL_ID=$TUNNEL_ID TF_VAR_CONTAINER_TUNNEL_NAME=$CONTAINER_TUNNEL_NAME TF_VAR_CNAME_RECORD=$CNAME_RECORD TF_VAR_TUNNEL_PROTOCOL=$TUNNEL_PROTOCOL TF_VAR_TUNNEL_HOSTNAME=$TUNNEL_HOSTNAME \
-    terraform apply
+
+kubectl get secret tunnel-credentials >/dev/null 2>&1  && kubectl delete secret tunnel-credentials || true
+kubectl get configmap $CONTAINER_TUNNEL_NAME >/dev/null 2>&1  && kubectl delete configmap $CONTAINER_TUNNEL_NAME || true
+
 kubectl create secret generic tunnel-credentials --from-file=credentials.json=$HOME/.cloudflared/$TUNNEL_ID.json
-kubectl create configmap $CONTAINER_TUNNEL_NAME --from-file=config.yml=$CONFIG_YAML_FILE
+kubectl create configmap $CONTAINER_TUNNEL_NAME --from-file=config.yaml=$CONFIG_YAML_FILE
 echo "---" >cloudflared-deployment.yaml
 echo "apiVersion: apps/v1" >>cloudflared-deployment.yaml
 echo "kind: Deployment" >>cloudflared-deployment.yaml
@@ -66,9 +68,10 @@ echo "        app: cloudflared" >>cloudflared-deployment.yaml
 echo "    spec:" >>cloudflared-deployment.yaml
 echo "      containers:" >>cloudflared-deployment.yaml
 echo "        - name: cloudflared" >>cloudflared-deployment.yaml
-echo "          image: cloudflare/cloudflared:2023.3.1" >>cloudflared-deployment.yaml
+echo "          image: cloudflare/cloudflared" >>cloudflared-deployment.yaml
 echo "          args:" >>cloudflared-deployment.yaml
 echo "            - tunnel" >>cloudflared-deployment.yaml
+echo "            - --no-autoupdate" >>cloudflared-deployment.yaml
 echo "            - --config" >>cloudflared-deployment.yaml
 echo "            - /etc/cloudflared/config/config.yaml" >>cloudflared-deployment.yaml
 echo "            - run" >>cloudflared-deployment.yaml
@@ -97,6 +100,8 @@ echo "            items:" >>cloudflared-deployment.yaml
 echo "              - key: config.yaml" >>cloudflared-deployment.yaml
 echo "                path: config.yaml" >>cloudflared-deployment.yaml
 
+kubectl apply -f cloudflared-deployment.yaml
+# rm cloudflared-deployment.yaml
 #
 echo "Tunnel exposed at $CNAME_RECORD"
 if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
