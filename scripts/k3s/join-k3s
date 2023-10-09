@@ -1,0 +1,23 @@
+args=("$@")
+NODE_IP=${args[0]}
+echo "Connecting to $NODE_IP"
+ssh "$NODE_IP" "hostname" || exit 1
+echo "Connected to $NODE_IP"
+docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
+scp /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
+ssh "$NODE_IP" "update-ca-certificates"
+set -e
+K3S_URL=$(jq -r '.k3s_url' k3s.json)
+K3S_TOKEN=$(jq -r '.k3s_token' k3s.json)
+echo "K3S_URL: $K3S_URL"
+echo "K3S_TOKEN: $K3S_TOKEN"
+NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
+echo "Joining worker node to this cluster"
+echo "NODE_IP: $NODE_IP"
+ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_host" || echo ""
+ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_net" || echo ""
+ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_vxlan" || echo ""
+ssh $NODE_IP "$NODE_COMMAND"
+ssh "$NODE_IP" "sudo systemctl restart k3s-agent"
+echo "Joined worker node to this cluster"
+kubectl get nodes
