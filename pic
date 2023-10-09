@@ -67,68 +67,11 @@ if [ "$arg1" == "reinstall-k3s" ]; then
     exit 0
 fi
 if [ "$arg1" == "s3" ]; then
-    set -e
-    source .env
-    if [ -z "$DOMAIN" ]; then
-        echo "Please set DOMAIN in .env"
-        exit 1
-    fi
-    echo "Installing S3"
-    helm repo add minio https://charts.min.io/
-    # ,rootUser=rootuser,rootPassword=$ROOT_PASSWORD
-    helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,users[0].policy=readwrite,resources.requests.memory=512Mi minio minio/minio
-    helm get notes minio
-    rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
-    rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
-    TUNNEL_NAMESPACE=default ./pic expose http minio-console 9001
-    TUNNEL_NAMESPACE=default ./pic expose http minio 9000
-    echo "Minio root username: $rootUsername"
-    echo "Minio root password: $rootPassword"
-    echo "Minio console: https://http-minio-console-9001.$DOMAIN/login"
+    ./scripts/storage/install-minio "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "csi-s3" ]; then
-    set -e
-    source .env
-    ./pic s3
-    echo "Installing CSI S3"
-    ENDPOINT="http-minio-9000.$DOMAIN"
-    rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
-    rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
-    # ACCESS_KEY_ID=$(kubectl get secret --namespace default minio -o jsonpath="{.data.accesskey}" | base64 --decode)
-    # SECRET_ACCESS_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.secretkey}" | base64 --decode)
-    echo "apiVersion: v1" > csi-s3-secret.yaml
-    echo "kind: Secret" >> csi-s3-secret.yaml
-    echo "metadata:" >> csi-s3-secret.yaml
-    echo "  namespace: kube-system" >> csi-s3-secret.yaml
-    echo "  name: csi-s3-secret" >> csi-s3-secret.yaml
-    echo "stringData:" >> csi-s3-secret.yaml
-    echo "  accessKeyID: \"$rootUsername\"" >> csi-s3-secret.yaml
-    echo "  secretAccessKey: \"$rootPassword\"" >> csi-s3-secret.yaml
-    echo "  endpoint: \"https://$ENDPOINT\"" >> csi-s3-secret.yaml
-    echo "  region: \"\"" >> csi-s3-secret.yaml
-    # 
-    kubectl delete -f csi-s3-secret.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml || true
-    kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml || true
-    # 
-    kubectl apply -f csi-s3-secret.yaml
-    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml
-    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml
-    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml
-    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
-    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml
-    kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml
-    kubectl describe pod csi-s3-test-nginx
-    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mount | grep fuse" 
-    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mkdir -p /usr/share/nginx/html/s3/"
-    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "date > /usr/share/nginx/html/s3/file"
-    kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "cat /usr/share/nginx/html/s3/file"
-    echo "CSI S3 installed"
+    ./scripts/storage/install-minio-csi-driver "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "cilium" ]; then
@@ -141,50 +84,11 @@ if [ "$arg1" == "registry-as-a-pull-through-cache" ]; then
     echo "Installing registry-as-a-pull-through-cache"
 fi
 if [ "$arg1" == "gitlab" ]; then
-    source .env
-    if [ -z "$DOMAIN" ]; then
-        echo "Please set DOMAIN in .env"
-        exit 1
-    fi
-    if [ -z "$EMAIL" ]; then
-        echo "Please set EMAIL in .env"
-        exit 1
-    fi
-    set -e
-    helm repo add gitlab https://charts.gitlab.io/ || echo ""
-    helm repo update
-    kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
-    args=("$@")
-    PASSWORD=${args[1]}
-    kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
-    # kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
-    # PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
-    helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-6.11.9.tgz \
-        --namespace gitlab-ns \
-        --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL
-    TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
-    TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
-    PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
-    echo "GitLab root password: $PASSWORD"
-    kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
+    ./scripts/continuous-integration-deployment/gitlab "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
-    args=("$@")
-    USERNAME=${args[1]}
-    PASSWORD=${args[2]}
-    echo "Installing Grafana"
-    helm repo add grafana https://grafana.github.io/helm-charts
-    helm install grafana grafana/grafana --namespace=loki
-    kubectl get namespace loki || kubectl create namespace loki
-    helm upgrade --install --namespace loki promtail grafana/promtail
-    helm upgrade --install --namespace loki loki grafana/loki
-    kubectl get secret --namespace loki grafana && kubectl delete secret --namespace loki grafana
-    kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
-    helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
-    PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
-    TUNNEL_NAMESPACE=loki ./pic expose http grafana 80
-    echo "Grafana admin password: $PASSWORD"
+    ./scripts/logging-monitoring/grafana-promtail-loki "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "join-k3s" ]; then
@@ -195,20 +99,7 @@ if [ "$arg1" == "join-k3s" ]; then
     exit 0
 fi
 if [ "$arg1" == "help" ]; then
-    echo "Help for PiCloud"
-    echo "Usage: ./pic [command]"
-    echo "Commands:"
-    echo "  update"
-    echo "  expose [protocol] [hostname] [port]"
-    echo "  install"
-    echo "  remove"
-    echo "  start"
-    echo "  stop"
-    echo "  restart"
-    echo "  status"
-    echo "  install-k3s"
-    echo "  help"
-
+    ./scripts/help
     exit 0
 fi
 ./pic help

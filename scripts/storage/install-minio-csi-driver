@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e
+source .env
+./pic s3
+echo "Installing CSI S3"
+ENDPOINT="http-minio-9000.$DOMAIN"
+rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
+rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
+# ACCESS_KEY_ID=$(kubectl get secret --namespace default minio -o jsonpath="{.data.accesskey}" | base64 --decode)
+# SECRET_ACCESS_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+echo "apiVersion: v1" > csi-s3-secret.yaml
+echo "kind: Secret" >> csi-s3-secret.yaml
+echo "metadata:" >> csi-s3-secret.yaml
+echo "  namespace: kube-system" >> csi-s3-secret.yaml
+echo "  name: csi-s3-secret" >> csi-s3-secret.yaml
+echo "stringData:" >> csi-s3-secret.yaml
+echo "  accessKeyID: \"$rootUsername\"" >> csi-s3-secret.yaml
+echo "  secretAccessKey: \"$rootPassword\"" >> csi-s3-secret.yaml
+echo "  endpoint: \"https://$ENDPOINT\"" >> csi-s3-secret.yaml
+echo "  region: \"\"" >> csi-s3-secret.yaml
+# 
+kubectl delete -f csi-s3-secret.yaml || true
+kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml || true
+kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml || true
+kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml || true
+kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml || true
+kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml || true
+kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml || true
+# 
+kubectl apply -f csi-s3-secret.yaml
+kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml
+kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml
+kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml
+kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
+kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml
+kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml
+kubectl describe pod csi-s3-test-nginx
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mount | grep fuse" 
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mkdir -p /usr/share/nginx/html/s3/"
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "date > /usr/share/nginx/html/s3/file"
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "cat /usr/share/nginx/html/s3/file"
+echo "CSI S3 installed"

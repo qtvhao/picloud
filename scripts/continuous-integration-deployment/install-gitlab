@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+source .env
+if [ -z "$DOMAIN" ]; then
+    echo "Please set DOMAIN in .env"
+    exit 1
+fi
+if [ -z "$EMAIL" ]; then
+    echo "Please set EMAIL in .env"
+    exit 1
+fi
+set -e
+helm repo add gitlab https://charts.gitlab.io/ || echo ""
+helm repo update
+kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
+args=("$@")
+PASSWORD=${args[1]}
+kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
+# kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+# PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
+helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-6.11.9.tgz \
+    --namespace gitlab-ns \
+    --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
+PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
+echo "GitLab root password: $PASSWORD"
+kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
