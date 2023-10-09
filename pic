@@ -66,6 +66,15 @@ if [ "$arg1" == "reinstall-k3s" ]; then
     rm ./reinstall-k3s
     exit 0
 fi
+if [ "$arg1" == "s3" ]; then
+    set -e
+    echo "Installing S3"
+    helm repo add minio https://charts.min.io/
+    # ,rootUser=rootuser,rootPassword=$ROOT_PASSWORD
+    helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,users[0].policy=readwrite,resources.requests.memory=512Mi minio minio/minio
+    TUNNEL_NAMESPACE=default ./pic expose http minio-console 9001
+    exit 0
+fi
 if [ "$arg1" == "cilium" ]; then
     echo "Installing Cilium"
     helm repo add cilium https://helm.cilium.io/

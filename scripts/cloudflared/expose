@@ -119,6 +119,9 @@ while true; do
     if [ "$status_code" == "302" ]; then
         break
     fi
+    if [ "$status_code" == "403" ]; then
+        break
+    fi
     echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code"
     sleep 5
 done
