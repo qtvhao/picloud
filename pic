@@ -68,11 +68,51 @@ if [ "$arg1" == "reinstall-k3s" ]; then
 fi
 if [ "$arg1" == "s3" ]; then
     set -e
+    source .env
+    if [ -z "$DOMAIN" ]; then
+        echo "Please set DOMAIN in .env"
+        exit 1
+    fi
     echo "Installing S3"
     helm repo add minio https://charts.min.io/
     # ,rootUser=rootuser,rootPassword=$ROOT_PASSWORD
     helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,users[0].policy=readwrite,resources.requests.memory=512Mi minio minio/minio
+    helm get notes minio
+    rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
+    rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
     TUNNEL_NAMESPACE=default ./pic expose http minio-console 9001
+    TUNNEL_NAMESPACE=default ./pic expose http minio 9000
+    echo "Minio root username: $rootUsername"
+    echo "Minio root password: $rootPassword"
+    echo "Minio console: https://http-minio-console-9001.$DOMAIN/login"
+    exit 0
+fi
+if [ "$arg1" == "csi-s3" ]; then
+    set -e
+    source .env
+    ./pic s3
+    echo "Installing CSI S3"
+    ENDPOINT="http-minio-9000.$DOMAIN"
+    rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
+    rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
+    # ACCESS_KEY_ID=$(kubectl get secret --namespace default minio -o jsonpath="{.data.accesskey}" | base64 --decode)
+    # SECRET_ACCESS_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+    echo "apiVersion: v1" > csi-s3-secret.yaml
+    echo "kind: Secret" >> csi-s3-secret.yaml
+    echo "metadata:" >> csi-s3-secret.yaml
+    echo "  namespace: kube-system" >> csi-s3-secret.yaml
+    echo "  name: csi-s3-secret" >> csi-s3-secret.yaml
+    echo "stringData:" >> csi-s3-secret.yaml
+    echo "accessKeyID: \"$rootUsername\"" >> csi-s3-secret.yaml
+    echo "secretAccessKey: \"$rootPassword\"" >> csi-s3-secret.yaml
+    echo "endpoint: \"$ENDPOINT\"" >> csi-s3-secret.yaml
+    echo "region: \"\"" >> csi-s3-secret.yaml
+    kubectl apply -f csi-s3-secret.yaml
+    # 
+    cd deploy/kubernetes
+    kubectl create -f provisioner.yaml
+    kubectl create -f attacher.yaml
+    kubectl create -f csi-s3.yaml
     exit 0
 fi
 if [ "$arg1" == "cilium" ]; then
