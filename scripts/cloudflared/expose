@@ -111,6 +111,16 @@ kubectl apply -f cloudflared-deployment.yaml -n $TUNNEL_NAMESPACE
 kubectl rollout restart deployment/$CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE
 # rm cloudflared-deployment.yaml
 #
+while true; do
+    status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/ || true)
+    if [ "$status_code" == "200" ]; then
+        break
+    else
+        echo "Waiting for $FQDN_RECORD to be ready"
+    fi
+    sleep 5
+done
+echo
 echo "Tunnel exposed at $FQDN_RECORD"
 if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
     if [ "22" == "$TUNNEL_PORT" ]; then
