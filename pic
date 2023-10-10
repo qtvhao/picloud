@@ -86,10 +86,14 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
     echo "arg \$6: $6"
     echo "arg \$7: $7"
     echo "arg \$8: $8"
-    "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" || \
-        curl $remoteUrl -o $scriptFile && \
-        chmod +x $scriptFile && \
-        $scriptFile "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")
+    if [ "$scriptFileExists" == "true" ]; then
+        cp "$2/$3" "$scriptFile"
+    else
+        curl $remoteUrl -o $scriptFile
+    fi
+    chmod +x $scriptFile
+    "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     rm $scriptFile
     exit 0
 fi
