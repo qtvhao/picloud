@@ -111,7 +111,7 @@ fi
 if [ "$arg1" == "gitlab" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/continuous-integration-deployment" \
-    "gitlab" "$1" "$2" "$3" "$4"
+    "install-gitlab" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
