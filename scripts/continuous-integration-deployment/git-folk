@@ -6,6 +6,9 @@ args=("$@")
 # loop through args and process them
 for arg in "$@"; do
     echo "arg: $arg"
+    if [ -z "$arg" ]; then
+        break;
+    fi
     REPO_URL=$arg
     REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
     PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
