@@ -81,7 +81,9 @@ if [ "$arg1" == "redis" ]; then
     exit 0
 fi
 if [ "$arg1" == "csi-s3" ]; then
-    ./scripts/storage/install-minio-csi-driver "$1" "$2" "$3" "$4"
+    (cat scripts/storage/install-minio-csi-driver && cp scripts/storage/install-minio-csi-driver install-minio-csi-driver && chmod +x install-minio-csi-driver) ||
+    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/storage/install-minio-csi-driver -o ./install-minio-csi-driver && chmod +x install-minio-csi-driver
+    ./install-minio-csi-driver "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "cilium" ]; then
