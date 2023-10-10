@@ -64,6 +64,17 @@ if [ "$arg1" == "reinstall-k3s" ]; then
     "reinstall-k3s"
     exit 0
 fi
+if [ "$arg1" == "wait" ]; then
+    set -e
+    RESOURCE_TYPE=$2
+    DEPLOYMENT=$3
+    NAMESPACE=$4
+    CONDITION=$5
+    while true; do
+        kubectl wait --for=condition=$CONDITION $RESOURCE_TYPE/$DEPLOYMENT -n $NAMESPACE --timeout 10s && break || sleep 5
+    done
+    exit 0
+fi
 if [ "$arg1" == "s3" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/storage" \
