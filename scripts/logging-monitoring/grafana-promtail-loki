@@ -5,8 +5,8 @@ USERNAME=${args[1]}
 PASSWORD=${args[2]}
 echo "Installing Grafana"
 helm repo add grafana https://grafana.github.io/helm-charts
-helm install grafana grafana/grafana --namespace=loki
 kubectl get namespace loki || kubectl create namespace loki
+helm install grafana grafana/grafana --namespace=loki
 helm upgrade --install --namespace loki promtail grafana/promtail
 helm upgrade --install --namespace loki loki grafana/loki
 kubectl get secret --namespace loki grafana && kubectl delete secret --namespace loki grafana
