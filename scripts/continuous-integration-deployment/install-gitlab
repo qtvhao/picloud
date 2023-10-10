@@ -20,7 +20,10 @@ kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && 
 # PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-6.11.9.tgz \
     --namespace gitlab-ns \
-    --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL
+    --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL &
+while true; do
+    kubectl wait --for=condition=Ready=true deploy/gitlab-webservice-default -n gitlab-ns --timeout 10s && break || sleep 5
+done
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
