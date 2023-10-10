@@ -20,4 +20,8 @@ ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_vxlan" || echo ""
 ssh $NODE_IP "$NODE_COMMAND"
 ssh "$NODE_IP" "sudo systemctl restart k3s-agent"
 echo "Joined worker node to this cluster"
-kubectl get nodes
+NODE_NAME=$(ssh "$NODE_IP" "hostname")
+kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo ""
+kubectl run test-connectivity --image=rancher/curl \
+    --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
+    -- https://metrics-server.kube-system.svc.cluster.local:443
