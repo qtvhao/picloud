@@ -9,6 +9,6 @@ for arg in "$@"; do
         break;
     fi
     FOLDER=$arg
-    (cd "$FOLDER" && pwd && terraform init >> terraform-init.log)
+    (cd "$FOLDER" && pwd && terraform init) >> terraform-init.log
 done
 rm terraform-init.log
