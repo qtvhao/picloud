@@ -8,16 +8,16 @@ set -e
 export TUNNEL_FORCE_PROVISIONING_DNS=true
 cloudflared -v
 args=("$@")
-TUNNEL_PROTOCOL=${args[1]}
+TUNNEL_PROTOCOL=${args[0]}
 if [ -z "$TUNNEL_PROTOCOL" ]; then
     TUNNEL_PROTOCOL="tcp"
 fi
-TUNNEL_HOSTNAME=${args[2]}
+TUNNEL_HOSTNAME=${args[1]}
 if [ -z "$TUNNEL_HOSTNAME" ]; then
     TUNNEL_HOSTNAME="172.17.0.1"
 fi
 TUNNEL_NICE_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
-TUNNEL_PORT=${args[3]}
+TUNNEL_PORT=${args[2]}
 if [ -z "$TUNNEL_PORT" ]; then
     TUNNEL_PORT="22"
 fi
