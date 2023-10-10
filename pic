@@ -25,7 +25,7 @@ fi
 if [ "$arg1" == "expose" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/cloudflared" \
-    "expose" "$1" "$2" "$3" "$4"
+    "expose" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
 if [ "$arg1" == "remove" ]; then
@@ -66,13 +66,13 @@ fi
 if [ "$arg1" == "s3" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/storage" \
-    "install-minio" "$1" "$2" "$3" "$4"
+    "install-minio" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
 if [ "$arg1" == "redis" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/database" \
-    "install-redis" "$1" "$2" "$3" "$4"
+    "install-redis" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
 if [ "$arg1" == "exec-local-or-remote" ]; then
@@ -82,6 +82,11 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
     echo "scriptFile: $scriptFile"
     echo "scriptFile exists: $(test -f "$scriptFile" && echo "true" || echo "false")"
     echo "remoteUrl: $remoteUrl"
+    echo "arg \$4: $4"
+    echo "arg \$5: $5"
+    echo "arg \$6: $6"
+    echo "arg \$7: $7"
+    echo "arg \$8: $8"
     "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" || \
         curl $remoteUrl -o $scriptFile && \
         chmod +x $scriptFile && \
@@ -92,7 +97,7 @@ fi
 if [ "$arg1" == "csi-s3" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/storage" \
-    "install-minio-csi-driver" "$1" "$2" "$3" "$4"
+    "install-minio-csi-driver" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
 if [ "$arg1" == "cilium" ]; then
@@ -115,7 +120,7 @@ fi
 if [ "$arg1" == "join-k3s" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/k3s" \
-    "join-k3s" "$1" "$2" "$3" "$4"
+    "join-k3s" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
 if [ "$arg1" == "help" ]; then
