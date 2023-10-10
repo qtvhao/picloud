@@ -50,7 +50,7 @@ if [ "$arg1" == "status" ]; then
     echo "Status of PiCloud"
     kubectl create deployment test-connectivity --image=rancher/curl -- sleep 86400
     while true; do
-        kubectl exec -it $(kubectl get pods -l app=test-connectivity -o jsonpath='{.items[0].metadata.name}') -- curl http://example.com && break ||
+        kubectl exec -it $(kubectl get pods -l app=test-connectivity -o jsonpath='{.items[0].metadata.name}') -- curl http://example.com >/dev/null 2>&1 && break || \
             echo "Waiting for test-connectivity pod to be ready"
         sleep 5
     done
