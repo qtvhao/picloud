@@ -1,9 +1,21 @@
+NODES=$(kubectl get nodes -o json | jq -r '.items[].metadata.name')
+echo "Found nodes: $NODES"
+# loop through nodes and k3s-agent-uninstall
+for NODE in $NODES; do
+    match="192.168."
+    NODE_IP=$(kubectl get node $NODE -o json | jq -r '.status.addresses[] | select(.type == "InternalIP") | .address' | head -n1)
+    if [[ $NODE_IP == $match* ]]; then
+        echo "Uninstalling k3s from $NODE"
+        ssh $NODE_IP "k3s-agent-uninstall.sh"
+        kubectl delete node $NODE
+    fi
+done
 set -e
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
 echo "Installing k3s"
-docker network inspect picloud || docker network create picloud
-docker inspect picloud-k3s-server && docker rm -f picloud-k3s-server
+docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
+docker inspect picloud-k3s-server >/dev/null 2>&1 && docker rm -f picloud-k3s-server || echo "picloud-k3s-server not found"
 docker run -d --restart=unless-stopped \
     --privileged \
     --name picloud-k3s-server \
