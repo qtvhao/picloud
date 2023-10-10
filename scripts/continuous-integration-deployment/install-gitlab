@@ -20,7 +20,11 @@ kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && 
 # PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-6.11.9.tgz \
     --namespace gitlab-ns \
-    --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL &
+    --set global.hosts.domain=$DOMAIN,certmanager-issuer.email=$EMAIL,\
+gitlab-runner.install=true,\
+global.edition=ce,\
+gitlab-runner.runners.privileged=true,\
+runners.privileged=true &
 ./pic wait deploy       gitlab-minio                  gitlab-ns Available
 ./pic wait deploy       gitlab-registry               gitlab-ns Available
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
@@ -29,6 +33,9 @@ REDIS_POD=$(kubectl get pods --namespace gitlab-ns -l "app=redis,release=gitlab"
 ./pic wait deploy       gitlab-webservice-default     gitlab-ns Available
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
+while true; do
+    kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
+done
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
