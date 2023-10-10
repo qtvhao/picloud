@@ -14,15 +14,13 @@ echo "K3S_TOKEN: $K3S_TOKEN"
 NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
-ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_host" || echo ""
-ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_net" || echo ""
-ssh -o ConnectTimeout=5 "$NODE_IP" "ip link delete cilium_vxlan" || echo ""
 ssh $NODE_IP "$NODE_COMMAND"
 ssh "$NODE_IP" "sudo systemctl restart k3s-agent"
 echo "Joined worker node to this cluster"
 ssh "$NODE_IP" "iptables -w -P FORWARD ACCEPT"
 NODE_NAME=$(ssh "$NODE_IP" "hostname")
-kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo ""
-kubectl run test-connectivity --image=busybox \
+
+kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
+kubectl run test-connectivity --image=rancher/curl \
     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
-    -- nslookup kubernetes.default.svc.cluster.local.
+    http://example.com

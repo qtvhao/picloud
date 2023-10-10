@@ -48,15 +48,6 @@ if [ "$arg1" == "restart" ]; then
 fi
 if [ "$arg1" == "status" ]; then
     echo "Status of PiCloud"
-    kubectl get deployment test-connectivity >/dev/null 2>&1 || \
-        kubectl create deployment test-connectivity --image=rancher/curl -- sleep 86400
-    while true; do
-        sleep 5
-        echo "Waiting for test-connectivity pod to be ready"
-        kubectl get pods -l app=test-connectivity >/dev/null 2>&1 || continue;
-        kubectl get pods -l app=test-connectivity -o jsonpath='{.items[0].metadata.name}' >/dev/null 2>&1 || continue;
-        kubectl exec -it $(kubectl get pods -l app=test-connectivity -o jsonpath='{.items[0].metadata.name}') -- curl http://example.com >/dev/null 2>&1 && break || continue;
-    done
     echo "PiCloud is running"
     exit 0
 fi
