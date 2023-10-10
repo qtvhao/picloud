@@ -137,7 +137,8 @@ if [ "$arg1" == "join-k3s" ]; then
     exit 0
 fi
 if [ "$arg1" == "help" ]; then
-    ./scripts/help
+    ./pic exec-local-or-remote "scripts/logging-monitoring" \
+    "help"
     exit 0
 fi
 ./pic help
