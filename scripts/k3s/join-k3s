@@ -22,5 +22,6 @@ NODE_NAME=$(ssh "$NODE_IP" "hostname")
 
 kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
 kubectl run test-connectivity --image=rancher/curl \
+    --restart=Never \
     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
     http://example.com
