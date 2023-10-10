@@ -75,10 +75,24 @@ if [ "$arg1" == "s3" ]; then
 fi
 if [ "$arg1" == "redis" ]; then
     set -e
-    (cat scripts/database/install-redis && cp scripts/database/install-redis install-redis && chmod +x install-redis) ||
-    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/database/install-redis -o ./install-redis && chmod +x install-redis
-    ./install-redis "$1" "$2" "$3" "$4"
+    ./pic exec-local-or-remote "scripts/database" \
+    "install-redis" "$1" "$2" "$3" "$4"
     exit 0
+fi
+if [ "$arg1" == "exec-local-or-remote" ]; then
+    set -e
+    scriptFile="./$3"
+    remoteUrl="https://raw.githubusercontent.com/qtvhao/picloud/main/$2/$3"
+    echo "scriptFile: $scriptFile"
+    echo "scriptFile exists: $(test -f "$scriptFile" && echo "true" || echo "false")"
+    echo "remoteUrl: $remoteUrl"
+    "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" || \
+        curl $remoteUrl -o $scriptFile && \
+        chmod +x $scriptFile && \
+        $scriptFile "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    rm $scriptFile
+    exit 0
+fi
 fi
 if [ "$arg1" == "csi-s3" ]; then
     (cat scripts/storage/install-minio-csi-driver && cp scripts/storage/install-minio-csi-driver install-minio-csi-driver && chmod +x install-minio-csi-driver) ||
