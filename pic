@@ -71,7 +71,9 @@ if [ "$arg1" == "s3" ]; then
     exit 0
 fi
 if [ "$arg1" == "redis" ]; then
-    ./scripts/database/install-redis "$1" "$2" "$3" "$4"
+    (cat scripts/database/install-redis && cp scripts/database/install-redis install-redis && chmod +x install-redis) ||
+    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/database/install-redis -o ./install-redis && chmod +x install-redis
+    ./install-redis "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "csi-s3" ]; then
