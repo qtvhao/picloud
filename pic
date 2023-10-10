@@ -23,10 +23,8 @@ if [ "$arg1" == "install" ]; then
     exit 0
 fi
 if [ "$arg1" == "expose" ]; then
-    (cat scripts/cloudflared/expose && cp scripts/cloudflared/expose expose && chmod +x expose) ||
-        curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/cloudflared/expose -o expose && chmod +x expose
-    ./expose "$1" "$2" "$3" "$4"
-    rm ./expose
+    ./pic exec-local-or-remote "scripts/cloudflared" \
+    "expose" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "remove" ]; then
@@ -60,17 +58,14 @@ if [ "$arg1" == "status" ]; then
 fi
 if [ "$arg1" == "reinstall-k3s" ]; then
     set -e
-    (cat scripts/k3s/reinstall-k3s && cp scripts/k3s/reinstall-k3s reinstall-k3s && chmod +x reinstall-k3s) ||
-        curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/k3s/reinstall-k3s -o ./reinstall-k3s && chmod +x reinstall-k3s
-    ./reinstall-k3s
-    rm ./reinstall-k3s
+    ./pic exec-local-or-remote "scripts/k3s" \
+    "reinstall-k3s"
     exit 0
 fi
 if [ "$arg1" == "s3" ]; then
     set -e
-    (cat scripts/storage/install-minio && cp scripts/storage/install-minio install-minio && chmod +x install-minio) ||
-    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/storage/install-minio -o ./install-minio && chmod +x install-minio
-    ./install-minio "$1" "$2" "$3" "$4"
+    ./pic exec-local-or-remote "scripts/storage" \
+    "install-minio" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "redis" ]; then
@@ -95,9 +90,8 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
 fi
 fi
 if [ "$arg1" == "csi-s3" ]; then
-    (cat scripts/storage/install-minio-csi-driver && cp scripts/storage/install-minio-csi-driver install-minio-csi-driver && chmod +x install-minio-csi-driver) ||
-    curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/storage/install-minio-csi-driver -o ./install-minio-csi-driver && chmod +x install-minio-csi-driver
-    ./install-minio-csi-driver "$1" "$2" "$3" "$4"
+    ./pic exec-local-or-remote "scripts/storage" \
+    "install-minio-csi-driver" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "cilium" ]; then
@@ -118,10 +112,9 @@ if [ "$arg1" == "grafana-promtail-loki" ]; then
     exit 0
 fi
 if [ "$arg1" == "join-k3s" ]; then
-    (cat scripts/k3s/join-k3s && cp scripts/k3s/join-k3s join-k3s && chmod +x join-k3s) ||
-        curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/k3s/join-k3s -o ./join-k3s && chmod +x join-k3s
-    ./scripts/k3s/join-k3s "$1" "$2" "$3" "$4"
-    rm ./join-k3s
+    set -e
+    ./pic exec-local-or-remote "scripts/k3s" \
+    "join-k3s" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "help" ]; then
