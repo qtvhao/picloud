@@ -110,11 +110,15 @@ if [ "$arg1" == "registry-as-a-pull-through-cache" ]; then
     echo "Installing registry-as-a-pull-through-cache"
 fi
 if [ "$arg1" == "gitlab" ]; then
-    ./scripts/continuous-integration-deployment/gitlab "$1" "$2" "$3" "$4"
+    set -e
+    ./pic exec-local-or-remote "scripts/continuous-integration-deployment" \
+    "gitlab" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "grafana-promtail-loki" ]; then
-    ./scripts/logging-monitoring/grafana-promtail-loki "$1" "$2" "$3" "$4"
+    set -e
+    ./pic exec-local-or-remote "scripts/logging-monitoring" \
+    "grafana-promtail-loki" "$1" "$2" "$3" "$4"
     exit 0
 fi
 if [ "$arg1" == "join-k3s" ]; then
