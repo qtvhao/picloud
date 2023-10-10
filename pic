@@ -23,6 +23,7 @@ if [ "$arg1" == "install" ]; then
     exit 0
 fi
 if [ "$arg1" == "expose" ]; then
+    set -e
     ./pic exec-local-or-remote "scripts/cloudflared" \
     "expose" "$1" "$2" "$3" "$4"
     exit 0
@@ -90,6 +91,7 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
 fi
 fi
 if [ "$arg1" == "csi-s3" ]; then
+    set -e
     ./pic exec-local-or-remote "scripts/storage" \
     "install-minio-csi-driver" "$1" "$2" "$3" "$4"
     exit 0
