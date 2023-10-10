@@ -4,7 +4,7 @@ echo
 source .env
 args=("$@")
 for arg in "$@"; do
-    echo "arg: $arg"
+    echo "arg: '$arg'"
     if [ -z "$arg" ]; then
         break;
     fi
