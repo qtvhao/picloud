@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+echo
+source .env
+args=("$@")
+# loop through args and process them
+for arg in "$@"; do
+    echo "arg: $arg"
+    REPO_URL=$arg
+    REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
+    PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
+    echo "GitLab root password: $PASSWORD"
+    mkdir repos
+    echo "Cloning $REPO_NAME from $REPO_URL"
+    ( \
+        cd repos && git clone $REPO_URL $REPO_NAME && \
+        cd $REPO_NAME && \
+        git push --set-upstream https://root:$PASSWORD@http-gitlab-webservice-default-8181.$DOMAIN/root/$REPO_NAME.git $(git rev-parse --abbrev-ref HEAD)
+    )
+    rm -rf repos
+done
