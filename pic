@@ -89,7 +89,6 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
     rm $scriptFile
     exit 0
 fi
-fi
 if [ "$arg1" == "csi-s3" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/storage" \
