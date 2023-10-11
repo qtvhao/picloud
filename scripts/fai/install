@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+echo "FROM debian:10" > Dockerfile
+# wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
+# cp fai-project.gpg /etc/apt/trusted.gpg.d/
+# echo "deb http://fai-project.org/download buster koeln" > /etc/apt/sources.list.d/fai.list
+# apt-get update
+# aptitude install fai-quickstart
+echo "RUN apt-get update && apt-get install -y wget" >> Dockerfile
+echo "RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg" >> Dockerfile
+echo "RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/" >> Dockerfile
+echo "RUN echo \"deb http://fai-project.org/download buster koeln\" > /etc/apt/sources.list.d/fai.list" >> Dockerfile
+echo "RUN apt-get update" >> Dockerfile
+echo "RUN apt install fai-quickstart -y" >> Dockerfile
+# sed -i -e 's/^#deb/deb/' /etc/fai/apt/sources.list
+# sed -i -e 's/#LOGUSER/LOGUSER/' /etc/fai/fai.conf
+echo "RUN sed -i -e 's/^#deb/deb/' /etc/fai/apt/sources.list" >> Dockerfile
+echo "RUN sed -i -e 's/#LOGUSER/LOGUSER/' /etc/fai/fai.conf" >> Dockerfile
+docker build -t fai .
+docker rm -f fai || true
+docker run --name fai --privileged -it fai fai-setup -v
+
+docker run --name fai -v ~/fai:/srv/fai/config --privileged -it fai-setup
