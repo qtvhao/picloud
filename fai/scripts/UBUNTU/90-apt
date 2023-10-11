@@ -1,0 +1,11 @@
+#! /bin/bash
+
+# check if we already use an external mirror
+grep -q "external mirror" $target/etc/apt/sources.list && exit 0
+
+cat <<EOM > $target/etc/apt/sources.list
+# external mirror
+deb $ubuntumirror/ubuntu $ubuntudist main restricted universe multiverse
+deb $ubuntumirror/ubuntu $ubuntudist-updates main restricted universe multiverse
+deb $ubuntumirror/ubuntu $ubuntudist-security main restricted universe multiverse
+EOM

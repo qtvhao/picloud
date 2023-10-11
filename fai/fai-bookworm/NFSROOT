@@ -1,0 +1,70 @@
+# package list for creating the NFSROOT
+
+PACKAGES install-norec FULL
+nfs-common fai-nfsroot rpcbind
+rsync
+lshw procinfo
+dump reiserfsprogs xfsprogs xfsdump btrfs-progs
+hwinfo hdparm smartmontools nvme-cli
+zile
+numactl
+udns-utils
+netcat-traditional nmap
+pxelinux syslinux-common
+ca-certificates # for get-config-dir-https and apt-transport-https
+usbutils pciutils
+ssh
+netselect
+mdadm
+cryptsetup
+#git # git consumes a lot of disk space on the FAI CD
+
+PACKAGES install-norec
+# dracut replaces live-boot and initramfs-tools
+dracut live-boot- initramfs-tools-
+dracut-config-generic
+dracut-network
+sysvinit-core systemd-sysv-
+curl lftp
+less
+ntpsec-ntpdate rdate
+dosfstools
+lvm2
+psmisc
+dialog
+console-common kbd
+xz-utils pigz zstd
+gpg
+
+
+# some network cards needs firmware
+PACKAGES install-norec NONFREE
+firmware-bnx2 firmware-bnx2x firmware-realtek
+firmware-cavium
+firmware-misc-nonfree
+
+
+# you should not edit the lines below
+# architecture dependend list of packages that are installed
+
+PACKAGES install-norec I386
+grub-pc
+efibootmgr
+linux-image-686-pae
+
+PACKAGES install-norec AMD64
+grub-pc
+grub-efi-amd64-bin
+efibootmgr
+linux-image-amd64
+#linux-image-amd64/bookworm-backports # if you want to use a newer kernel
+
+PACKAGES install-norec ARM64
+grub-efi-arm64
+efibootmgr
+linux-image-arm64
+
+PACKAGES install-norec ARMHF
+grub-efi-arm
+efibootmgr
+linux-image-armmp

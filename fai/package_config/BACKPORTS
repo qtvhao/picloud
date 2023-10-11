@@ -1,0 +1,28 @@
+# this part is currently used because these are not available as bpo for bullseye
+# move from NONFREE into this file
+PACKAGES install BULLSEYE
+# you may want these non-free kernel drivers
+firmware-bnx2 firmware-bnx2x firmware-realtek
+firmware-linux-nonfree
+linux-image-amd64$bpo # yes bpo kernel is already available
+wireless-regdb # not yet available as bpo
+
+
+
+
+
+
+PACKAGES install STRETCH
+#linux-image-amd64$bpo
+linux-image-4.19.0-0.bpo.9-amd64-unsigned
+
+PACKAGES install BUSTER ###BULLSEYE
+linux-image-amd64$bpo
+
+# this package is needed because of a Breaks in linux-image-amd64_5.6.14-2~bpo10+1_amd64.deb
+# Breaks: initramfs-tools (<< 0.120+deb8u2), wireless-regdb (<< 2019.06.03-1~), xserver-xorg-input-vmmouse (<< 1:13.0.99)
+# if not added, fai-mirror will only add wireless-regdb from stable to the mirror, but installation fails because of breaks
+wireless-regdb$bpo
+
+#linux-image-5.6.0-0.bpo.2-amd64
+#linux-image-5.6.0-0.bpo.2-amd64-unsigned

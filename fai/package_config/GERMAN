@@ -1,0 +1,5 @@
+PACKAGES install
+task-german
+
+PACKAGES install GNOME
+firefox-esr-l10n-de thunderbird-l10n-de

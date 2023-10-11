@@ -1,0 +1,11 @@
+KEYMAP=us
+TIMEZONE=UTC
+locales="en_US"
+ROOTPW='$6$U246ughgyOM9jP6I$pfr49KrXr9tD3ZFIhHVo80ZeiIGi3HNEt/JVlb.ghthj4krOg5lWheS4Mnqur.m6CDUBbSkvbJMijYG5ZzXXT/'
+username=debian
+USERPW='$6$0QVgi4.aj/hnco4C$Gn6GSHRk3D2NgssdDltTmnbMYOh9zdyXDNTKwQ2Gg5RObla.202DRoJU4ED1vNNpVWCWq9PYi5hyMAIm3YwZ50'
+release=bookworm
+secsuite=bookworm-security
+bpo=
+postinst=
+rclocal=1

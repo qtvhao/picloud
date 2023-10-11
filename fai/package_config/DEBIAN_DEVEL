@@ -1,0 +1,31 @@
+PACKAGES install-norec
+
+debootstrap
+debmirror
+
+libncurses5-dev
+
+subversion subversion-tools
+git-buildpackage pristine-tar tig
+build-essential
+dpkg-dev-el
+debian-policy developers-reference maint-guide
+debian-keyring
+gnupg2
+reportbug
+dh-make devscripts
+lintian
+debconf-utils
+dupload fakeroot
+apt-file apt-show-versions
+apt-rdepends
+pbuilder
+dlocate dctrl-tools alien
+asciidoc asciidoc-dblatex dblatex docbook-xsl
+pandoc
+debian-goodies
+libfile-fcntllock-perl
+libparse-debcontrol-perl
+
+aptitude-doc-en
+debconf-doc

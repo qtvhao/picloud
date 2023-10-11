@@ -1,0 +1,35 @@
+#! /bin/bash
+
+if [ -n "$APTPROXY" ]; then
+    echo "Acquire::http::Proxy \"$APTPROXY\";" > $target/etc/apt/apt.conf.d/02proxy
+else
+    rm -f $target/etc/apt/apt.conf.d/02proxy
+fi
+
+# some machines may not have a correct time
+echo "Acquire::Check-Date=false;" > $target/etc/apt/apt.conf.d/01nodatecheck
+
+echo force-unsafe-io > $target/etc/dpkg/dpkg.cfg.d/unsafe-io
+
+# do only execute during fai-diskimage
+if [ X$FAI_ACTION = Xinstall -a $do_init_tasks -eq 1 ]; then
+    exit 0
+fi
+
+if [ -n "$apt_cdn" -a -n "$release" ]; then
+    cat <<EOF > $target/etc/apt/sources.list
+deb $apt_cdn/debian $release main contrib non-free
+deb $security_cdn/debian-security $secsuite main contrib non-free
+deb [trusted=yes] http://fai-project.org/download $release koeln
+EOF
+    # the testing release does not have security updates yet, so
+    # disable the line matching debian-security
+    #if [ "$release" = "bullseye" ]; then
+    #	sed -i -e '/debian-security / s/^#*/#/' $target/etc/apt/sources.list
+    #fi
+fi
+
+ainsl /etc/apt/sources.list "$repo"
+if ifclass BACKPORTS; then
+    ainsl -v /etc/apt/sources.list "^deb $apt_cdn/debian $release-backports main contrib non-free"
+fi

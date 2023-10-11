@@ -1,0 +1,94 @@
+#! /bin/bash
+# support for GRUB version 2
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+# do only execute for Debian and similar distros
+if ! ifclass DEBIAN ; then
+    exit 0
+fi
+
+set -a
+
+# do not set up grub during dirinstall
+if [ "$FAI_ACTION" = "dirinstall" ] ; then
+    exit 0
+fi
+# during softupdate use this file
+[ -r $LOGDIR/disk_var.sh ] && . $LOGDIR/disk_var.sh
+
+if [ -z "$BOOT_DEVICE" ]; then
+    exit 189
+fi
+
+# disable os-prober because of #802717
+ainsl /etc/default/grub 'GRUB_DISABLE_OS_PROBER=true'
+
+# efivars may still be mounted from the host system during fai-diskimage
+if [ -d $target/sys/firmware/efi/efivars ]; then
+    umount $target/sys/firmware/efi/efivars
+fi
+
+# skip the rest, if not an initial installation
+if [ $FAI_ACTION != "install" ]; then
+    $ROOTCMD update-grub
+    exit $error
+fi
+
+get_stable_devname() {
+
+    local _DEV="$1"
+    local i
+    declare -a _RES
+
+    # prefer SCSI over ATA over WWN over path
+    # do not use by-path
+
+    for i in $($ROOTCMD udevadm info -r --query=symlink "$_DEV"); do
+        if [[ "$i" =~ /by-id/scsi ]]; then
+            _RES[10]="$i"
+        elif [[ "$i" =~ /by-id/ata ]]; then
+            _RES[20]="$i"
+        elif [[ "$i" =~ /by-id/wwn ]]; then
+            _RES[99]="$i"
+        fi
+    done
+
+    echo "${_RES[@]::1}"
+}
+
+# handle /boot in lvm-on-md
+_bdev=$(readlink -f $BOOT_DEVICE)
+if [ "${_bdev%%-*}" = "/dev/dm" ]; then
+  BOOT_DEVICE=$( lvs --noheadings -o devices $BOOT_DEVICE | sed -e 's/^*\([^(]*\)(.*$/\1/' )
+fi
+
+# Check if RAID is used for the boot device
+if [[ $BOOT_DEVICE =~ '/dev/md' ]]; then
+    raiddev=${BOOT_DEVICE#/dev/}
+    # install grub on all members of RAID
+    for device in $(LC_ALL=C perl -ne 'if(/^'$raiddev'\s.+raid\d+\s(.+)/){ $_=$1; s/\d+\[\d+\]//g; s/(nvme.+?)p/$1/g; print }' /proc/mdstat); do
+	pdevice=$(get_stable_devname /dev/$device)
+	if [ -z "$pdevice" ]; then
+	    # if we cannot find a persistent name (for e.g. in a VM) use old name
+	    pdevice="/dev/$device"
+	fi
+	mbrdevices+="$pdevice, "
+	echo Installing grub on /dev/$device = $pdevice
+	$ROOTCMD grub-install --no-floppy "/dev/$device"
+    done
+    # remove last ,
+    mbrdevices=${mbrdevices%, }
+else
+    mbrdevices=$(get_stable_devname $BOOT_DEVICE)
+    if [ -z "$mbrdevices" ]; then
+	# if we cannot find a persistent name (for e.g. in a VM) use old name
+	mbrdevices=$BOOT_DEVICE
+    fi
+    echo "Installing grub on $BOOT_DEVICE = $mbrdevices"
+    $ROOTCMD grub-install --no-floppy "$mbrdevices"
+fi
+
+echo "grub-pc grub-pc/install_devices multiselect $mbrdevices" | $ROOTCMD debconf-set-selections
+$ROOTCMD dpkg-reconfigure grub-pc
+exit $error

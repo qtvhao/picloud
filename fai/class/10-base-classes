@@ -1,0 +1,11 @@
+#! /bin/bash
+
+# do only execute if this is called on the client being installed. Do not use during fai-diskimage
+if [ X$FAI_ACTION = Xinstall -a $do_init_tasks -eq 0 ]; then
+    exit 0
+fi
+
+# Echo architecture and OS name in uppercase. Do NOT remove these two lines.
+command -v dpkg >&/dev/null && dpkg --print-architecture | tr a-z A-Z
+
+exit 0

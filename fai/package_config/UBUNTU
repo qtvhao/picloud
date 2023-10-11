@@ -1,0 +1,28 @@
+PACKAGES install I386
+linux-image-generic
+memtest86+
+
+PACKAGES install CHROOT
+linux-image-generic-
+
+PACKAGES install AMD64
+linux-image-generic
+memtest86+
+
+PACKAGES install GRUB_PC
+grub-pc
+
+PACKAGES install
+ubuntu-minimal
+ubuntu-server
+
+PACKAGES install XORG
+ubuntu-server-
+ubuntu-standard
+ubuntu-desktop
+
+PACKAGES install GERMAN
+language-pack-gnome-de
+
+PACKAGES install HWE
+linux-generic-hwe-22.04

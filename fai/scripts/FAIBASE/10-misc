@@ -1,0 +1,37 @@
+#! /bin/bash
+
+# (c) Thomas Lange, 2001-2012, lange@debian.org
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+echo $TIMEZONE    > $target/etc/timezone
+if [ -L $target/etc/localtime ]; then
+    fai-link /etc/localtime /usr/share/zoneinfo/${TIMEZONE}
+else
+    cp -f /usr/share/zoneinfo/${TIMEZONE} $target/etc/localtime
+fi
+
+if [ -f $target/etc/hosts.orig ]; then
+    mv $target/etc/hosts.orig $target/etc/hosts
+fi
+if [ -n "$IPADDR" ]; then
+    ifclass DHCPC || ainsl -s /etc/hosts "$IPADDR $HOSTNAME.$DOMAIN $HOSTNAME"
+else
+    ifclass DHCPC && ainsl -s /etc/hosts "127.0.0.1 $HOSTNAME"
+fi
+fcopy -iM /etc/hosts /etc/motd
+
+# make /root accessible only by root
+chmod -c 0700 $target/root
+chown -c root:root $target/root
+# copy default dotfiles for root account
+fcopy -ir /root
+
+# use tmpfs for /tmp if not defined in disk_config
+if ! grep -Pq '\s/tmp\s' $target/etc/fstab; then
+    ainsl /etc/fstab "tmpfs     /tmp tmpfs     nodev,nosuid,size=50%,mode=1777   0    0"
+fi
+chmod -c 1777 ${target}/tmp
+chown -c 0:0  ${target}/tmp
+
+exit $error

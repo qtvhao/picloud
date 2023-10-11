@@ -1,0 +1,9 @@
+# example of new config file for setup-storage
+#
+# <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
+
+disk_config disk1 disklabel:gpt bootable:1 fstabkey:uuid align-at:1M
+
+primary /boot/efi   512M      vfat   rw
+primary /      2G-      ext4  rw,noatime,errors=remount-ro
+primary swap   200-4G  swap  sw

@@ -1,0 +1,14 @@
+# <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
+
+# entire disk with LVM, all in one partition
+
+disk_config disk1 fstabkey:uuid align-at:1M
+
+primary /boot	500	ext2	rw,noatime
+primary -       4G-	-       -
+
+disk_config lvm
+
+vg vg1  disk1.2
+vg1-root     /       3G-      ext4    noatime,rw
+vg1-swap     swap    200-4G   swap    sw

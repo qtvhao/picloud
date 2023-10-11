@@ -1,0 +1,72 @@
+PACKAGES install-norec
+debconf-utils
+file
+zstd
+less
+linuxlogo
+rsync
+openssh-client
+time
+procinfo
+eject
+sudo
+locales
+console-setup kbd
+pciutils usbutils
+unattended-upgrades
+
+PACKAGES install-norec I386
+linux-image-686-pae
+memtest86+
+
+PACKAGES install-norec CHROOT
+linux-image-686-pae-
+linux-image-amd64-
+
+PACKAGES install-norec AMD64
+linux-image-amd64
+memtest86+
+
+PACKAGES install-norec ARM64
+grub-efi-arm64
+linux-image-arm64
+
+PACKAGES install-norec GRUB_PC
+grub-pc
+
+PACKAGES install-norec GRUB_EFI
+grub-efi dosfstools
+
+PACKAGES install LVM
+lvm2
+
+PACKAGES install CLOUD
+unattended-upgrades
+
+PACKAGES install XFCE
+task-xfce-desktop
+
+PACKAGES install GNOME
+task-gnome-desktop
+
+PACKAGES install KDE
+task-kde-desktop
+
+PACKAGES install LXDE
+task-lxde-desktop
+
+PACKAGES install LXQT
+task-lxqt-desktop
+
+PACKAGES install MATE
+task-mate-desktop
+
+PACKAGES install CINNAMON
+task-cinnamon-desktop
+
+PACKAGES install WEBSERVER
+task-web-server
+
+PACKAGES install-norec SSH_SERVER
+openssh-server
+
