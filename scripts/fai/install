@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "FROM kasmweb/desktop:1.14.0" > Dockerfile
+echo "FROM kasmweb/core-ubuntu-jammy:1.14.0" > Dockerfile
 # wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
 # cp fai-project.gpg /etc/apt/trusted.gpg.d/
 # echo "deb http://fai-project.org/download buster koeln" > /etc/apt/sources.list.d/fai.list
