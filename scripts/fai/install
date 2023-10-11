@@ -17,12 +17,15 @@ echo "RUN apt install fai-quickstart -y" >> Dockerfile
 # sed -i -e 's/#LOGUSER/LOGUSER/' /etc/fai/fai.conf
 echo "RUN sed -i -e 's/^#deb/deb/' /etc/fai/apt/sources.list" >> Dockerfile
 echo "RUN sed -i -e 's/#LOGUSER/LOGUSER/' /etc/fai/fai.conf" >> Dockerfile
+echo "ENTRYPOINT [\"/bin/bash\"]" >> Dockerfile
 docker build -t fai .
 rm Dockerfile
+rm fai-mirror.log || true
+rm fai-setup.log || true
+rm fai-checkpkgs.log || true
 docker rm -f fai || true
 docker image inspect fai-setup > /dev/null 2>&1 || \
     (docker run --name fai --privileged -it fai fai-setup -v) > fai-setup.log
-rm fai-setup.log || true
 docker image inspect fai-setup > /dev/null 2>&1 || \
     docker commit fai fai-setup
 args=("$@")
@@ -34,8 +37,6 @@ docker rm -f fai-mk-configspace || true
 docker run --name fai-mk-configspace    -v ~/fai:/srv/fai/config --privileged -it fai-setup fai-mk-configspace
 docker rm -f fai-setup || true ;\
 (docker run --name fai-setup            -v ~/fai:/srv/fai/config --privileged -it --entrypoint /bin/bash fai-setup fai-mirror -v /srv/$HOSTNAME) > fai-mirror.log
-rm fai-mirror.log || true
 (docker run --name fai-checkpkgs        -v ~/fai:/srv/fai/config --privileged -it --entrypoint /bin/bash fai-setup checkpkgs /srv/$HOSTNAME) > fai-checkpkgs.log
-rm fai-checkpkgs.log || true
 exit 0
 # docker run --name fai -v ~/fai:/srv/fai/config --privileged -it fai-setup fai-cd -m /tmp/ $HOSTNAME
