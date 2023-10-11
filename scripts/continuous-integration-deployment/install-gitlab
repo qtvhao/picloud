@@ -24,7 +24,7 @@ helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.edition=ce,\
-global.hosts.domain="$DOMAIN",\
+global.hosts.domain="http-gitlab-webservice-default-8181.$DOMAIN",\
 gitlab-runner.install=true,\
 runners.privileged=true,\
 gitlab-runner.runners.privileged=true &
