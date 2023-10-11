@@ -24,6 +24,7 @@ helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.edition=ce,\
+global.hosts.domain="$DOMAIN",\
 gitlab-runner.install=true,\
 runners.privileged=true,\
 gitlab-runner.runners.privileged=true &
@@ -36,7 +37,6 @@ gitlab-runner.runners.privileged=true &
 # global.ingress.configureCertmanager=false,\
 # global.kas.tls.enabled=true,\
 # nginx-ingress.enabled=false,\
-# global.hosts.domain="$DOMAIN",\
 #  &
 ./pic wait deploy       gitlab-minio                  gitlab-ns Available
 ./pic wait deploy       gitlab-registry               gitlab-ns Available
