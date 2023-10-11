@@ -109,6 +109,13 @@ if [ "$arg1" == "csi-s3" ]; then
     "install-minio-csi-driver" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
+if [ "$arg1" == "pxe-boot" ]; then
+    set -e
+    ./pic exec-local-or-remote "scripts/infrastructure" \
+    "pxe-boot" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    # for example ./pic pxe-boot 192.168.1.110 8c:dc:d4:34:0c:f0 sda eno1
+    exit 0
+fi
 if [ "$arg1" == "cilium" ]; then
     echo "Installing Cilium"
     helm repo add cilium https://helm.cilium.io/

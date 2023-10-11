@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Boot with PXE"
+args=("$@")
+echo "args: ${args[@]}"
+echo "Start PXE over IPv4"

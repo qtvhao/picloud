@@ -24,10 +24,11 @@ helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.edition=ce,\
+gitlab-runner.install=true,\
+runners.privileged=true,\
 gitlab-runner.runners.privileged=true &
 #   --set global.ingress.tls.enabled=true,\
 # global.ingress.enabled=false,\
-# gitlab-runner.install=true,\
 # 
 # global.appConfig.certmanager.enabled=true,\
 # global.edition=ce,\
@@ -36,7 +37,7 @@ gitlab-runner.runners.privileged=true &
 # global.kas.tls.enabled=true,\
 # nginx-ingress.enabled=false,\
 # global.hosts.domain="$DOMAIN",\
-# runners.privileged=true &
+#  &
 ./pic wait deploy       gitlab-minio                  gitlab-ns Available
 ./pic wait deploy       gitlab-registry               gitlab-ns Available
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
