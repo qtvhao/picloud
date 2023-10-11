@@ -151,4 +151,8 @@ stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
 FILE_SIZE_IN_MB=$(du -m $HOSTNAME-fai-cd.iso | cut -f1)
 echo "File size in MB: $FILE_SIZE_IN_MB"
 dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE status=progress bs=4M
+echo "Bootable USB created"
+echo "Unmounting $USB_DEVICE"
+eject $USB_DEVICE
+echo "Ready to install. Please reboot and select USB device as boot device."
 exit 0
