@@ -166,4 +166,29 @@ if [ "$arg1" == "help" ]; then
     "help"
     exit 0
 fi
+if [ "$arg1" == "local-registry" ]; then
+    set -e
+    docker rm -f docker-registry || true
+    docker run -d --name docker-registry -p 5000:5000 \
+        -v ./k8s/.docker-registry-data:/var/lib/registry \
+        -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+        --restart always \
+        registry:2
+    REGISTRY_IP_ADDRESS=$(hostname -I | head -n1 | awk '{print $1}')
+    cat <<EOF > /etc/docker/daemon.json
+{
+    "insecure-registries":["$REGISTRY_IP_ADDRESS:5000"],
+    "registry-mirrors": ["http://$REGISTRY_IP_ADDRESS:5000"],
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    }
+}
+EOF
+    service docker restart
+    docker pull alpine
+exit 0
+fi
 ./pic help

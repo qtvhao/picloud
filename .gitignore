@@ -4,3 +4,6 @@ k3s.json
 csi-s3-secret.yaml
 cloudflared-deployment.yaml
 redis.json
+k8s/.docker-registry-data/docker/registry/v2/blobs/
+k8s/.docker-registry-data/docker/registry/v2/repositories/
+k8s/.docker-registry-data/scheduler-state.json
