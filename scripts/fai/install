@@ -120,7 +120,18 @@ docker image inspect fai-setup > /dev/null 2>&1 || \
     docker commit fai fai-setup
 args=("$@")
 HOSTNAME=${args[0]}
+USB_DEVICE=${args[1]}
+if [ -z "$HOSTNAME" ]; then
+    echo "HOSTNAME is empty"
+    exit 1
+fi
+if [ -z "$USB_DEVICE" ]; then
+    lsblk --nodeps
+    echo "USB_DEVICE is empty"
+    exit 1
+fi
 echo "HOSTNAME: $HOSTNAME"
+echo "USB_DEVICE: $USB_DEVICE"
 # 
 rm -rf ~/fai/
 docker rm -f fai-mk-configspace || true
@@ -130,6 +141,14 @@ docker image inspect fai-mirror > /dev/null 2>&1 || \
     (docker run --name fai-mirror            -v ~/fai:/srv/fai/config --privileged -it --entrypoint /bin/bash fai-setup fai-mirror -v -cDEFAULT,DEBIAN /srv/$HOSTNAME) > fai-mirror.log
 docker image inspect fai-mirror > /dev/null 2>&1 || \
     docker commit fai-mirror fai-mirror
-# (docker run --name fai-checkpkgs        -v ~/fai:/srv/fai/config --privileged -it --entrypoint /bin/bash fai-setup checkpkgs /srv/$HOSTNAME) > fai-checkpkgs.log
+# 
+docker rm -f fai-cd || true ;
+stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
+    (docker run --name fai-cd            -v ~/fai:/srv/fai/config --privileged -it --entrypoint /bin/bash fai-mirror fai-cd -m /srv/$HOSTNAME fai-cd.iso) > fai-cd.log
+stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
+    docker cp fai-cd:/fai-cd.iso $HOSTNAME-fai-cd.iso
+# 
+FILE_SIZE_IN_MB=$(du -m $HOSTNAME-fai-cd.iso | cut -f1)
+echo "File size in MB: $FILE_SIZE_IN_MB"
+dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE status=progress bs=4M
 exit 0
-# docker run --name fai -v ~/fai:/srv/fai/config --privileged -it fai-setup fai-cd -m /tmp/ $HOSTNAME
