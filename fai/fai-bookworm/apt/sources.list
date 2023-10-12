@@ -1,8 +1,8 @@
 # These lines should work for many sites
 
-deb http://ftp.hk.debian.org/debian bookworm main contrib non-free non-free-firmware
-deb http://ftp.hk.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
-#deb http://ftp.hk.debian.org/debian bookworm-backports main contrib non-free
+deb http://mirror.bizflycloud.vn/debian bookworm main contrib non-free non-free-firmware
+deb http://mirror.bizflycloud.vn/debian-security bookworm-security main contrib non-free non-free-firmware
+#deb http://mirror.bizflycloud.vn/debian bookworm-backports main contrib non-free
 
 # repository that may contain newer fai packages for bookworm
 deb http://fai-project.org/download bookworm koeln
