@@ -128,8 +128,8 @@ fi
 echo "HOSTNAME: $HOSTNAME"
 echo "USB_DEVICE: $USB_DEVICE"
 #
-docker image rm -f fai-setup || true
-docker image rm -f fai-mirror || true
+# docker image rm -f fai-setup || true
+# docker image rm -f fai-mirror || true
 docker image rm -f fai-cd || true
 
 docker rm -f fai || true
@@ -154,22 +154,24 @@ docker stop fai || true
 docker image inspect fai-setup > /dev/null 2>&1 || \
     docker commit fai fai-setup
 # 
-docker rm -f fai-mirror || true ;
-docker image inspect fai-mirror > /dev/null 2>&1 || \
-    (docker run --name fai-mirror \
+docker rm -f fai-mirror || true
+docker run --name fai-mirror \
         -e cl=$cl \
-        --privileged -it --entrypoint /bin/bash \
-        fai-setup fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /srv/$HOSTNAME) > fai-mirror.log
+        --privileged -d --entrypoint /bin/bash \
+        fai-setup -c "sleep 86400"
+docker image inspect fai-mirror > /dev/null 2>&1 || \
+    (docker exec -it fai-mirror fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /srv/$HOSTNAME) > fai-mirror.log
 rm fai-mirror.log || true
 docker image inspect fai-mirror > /dev/null 2>&1 || \
     docker commit fai-mirror fai-mirror
 # 
-docker rm -f fai-cd || true ;
+docker rm -f fai-cd || true
 stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
-    (docker run --name fai-cd \
+    docker run --name fai-cd \
         -e cl=$cl \
-        --privileged -it --entrypoint /bin/bash \
-        fai-mirror fai-cd -C /srv/fai/config/fai-bookworm -g grub.cfg.install-only -m /srv/$HOSTNAME /fai-cd.iso) > fai-cd.log
+        --privileged -d --entrypoint /bin/bash \
+        fai-mirror -c "sleep 86400"
+(docker exec -it fai-cd fai-cd -C /srv/fai/config/fai-bookworm -g grub.cfg.install-only -m /srv/$HOSTNAME /fai-cd.iso) > fai-cd.log
 rm fai-cd.log || true
 # 
 exit 0
