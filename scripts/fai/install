@@ -128,8 +128,8 @@ fi
 echo "HOSTNAME: $HOSTNAME"
 echo "USB_DEVICE: $USB_DEVICE"
 #
-# docker image rm -f fai-setup || true
-# docker image rm -f fai-mirror || true
+docker image rm -f fai-setup || true
+docker image rm -f fai-mirror || true
 docker image rm -f fai-cd || true
 
 docker rm -f fai || true
@@ -138,7 +138,8 @@ docker image inspect fai-setup > /dev/null 2>&1 || \
     docker run --name fai --privileged --entrypoint /bin/bash -d fai -c "sleep 86400"
 docker image inspect fai-setup > /dev/null 2>&1 || \
     (docker exec -it fai fai-setup -v) > fai-setup.log
-rm fai-setup.log || true
+# cat fai-setup.log | head -n100
+rm  fai-setup.log || true
 docker cp ./fai/basefiles               fai:/srv/fai/config || true
 docker cp ./fai/class                   fai:/srv/fai/config || true
 docker cp ./fai/debconf                 fai:/srv/fai/config || true
@@ -160,8 +161,9 @@ docker run --name fai-mirror \
         --privileged -d --entrypoint /bin/bash \
         fai-setup -c "sleep 86400"
 docker image inspect fai-mirror > /dev/null 2>&1 || \
-    (docker exec -it fai-mirror fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /srv/$HOSTNAME) > fai-mirror.log
-rm fai-mirror.log || true
+    (docker exec -it fai-mirror fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/mirror) > fai-mirror.log
+# cat fai-mirror.log | head -n100
+rm  fai-mirror.log || true
 docker image inspect fai-mirror > /dev/null 2>&1 || \
     docker commit fai-mirror fai-mirror
 # 
@@ -171,8 +173,9 @@ stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
         -e cl=$cl \
         --privileged -d --entrypoint /bin/bash \
         fai-mirror -c "sleep 86400"
-(docker exec -it fai-cd fai-cd -C /srv/fai/config/fai-bookworm -g grub.cfg.install-only -m /srv/$HOSTNAME /fai-cd.iso) > fai-cd.log
-rm fai-cd.log || true
+(docker exec -it fai-cd fai-cd -C /srv/fai/config/fai-bookworm -g grub.cfg.install-only -m /tmp/mirror /fai-cd.iso) > fai-cd.log
+# cat fai-cd.log | head -n100
+rm  fai-cd.log || true
 # 
 exit 0
 stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
