@@ -139,20 +139,18 @@ docker image inspect fai-setup > /dev/null 2>&1 || \
     docker run --name fai --privileged --entrypoint /bin/bash -d fai -c "sleep 86400"
 docker image inspect fai-setup > /dev/null 2>&1 || \
     (docker exec -it fai fai-setup -v) > fai-setup.log
-docker cp ./fai/basefiles               fai:/srv/fai/config
-docker cp ./fai/class                   fai:/srv/fai/config
-docker cp ./fai/debconf                 fai:/srv/fai/config
-docker cp ./fai/disk_config             fai:/srv/fai/config
-docker cp ./fai/fai-bookworm            fai:/srv/fai/config
-docker cp ./fai/files                   fai:/srv/fai/config
-docker cp ./fai/hooks                   fai:/srv/fai/config
-docker cp ./fai/package_config          fai:/srv/fai/config
-docker cp ./fai/scripts                 fai:/srv/fai/config
-docker cp ./fai/grub.cfg.install-only   fai:/srv/fai/config
-#
-docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/config/files/root-ssh-key
-docker stop fai
-exit 0
+docker cp ./fai/basefiles               fai:/srv/fai/config || true
+docker cp ./fai/class                   fai:/srv/fai/config || true
+docker cp ./fai/debconf                 fai:/srv/fai/config || true
+docker cp ./fai/disk_config             fai:/srv/fai/config || true
+docker cp ./fai/fai-bookworm            fai:/srv/fai/config || true
+docker cp ./fai/files                   fai:/srv/fai/config || true
+docker cp ./fai/hooks                   fai:/srv/fai/config || true
+docker cp ./fai/package_config          fai:/srv/fai/config || true
+docker cp ./fai/scripts                 fai:/srv/fai/config || true
+docker cp ./fai/grub.cfg.install-only   fai:/srv/fai/config || true
+docker cp ~/.ssh/id_rsa.pub             fai:/srv/fai/config/files/root-ssh-key || true
+docker stop fai || true
 docker image inspect fai-setup > /dev/null 2>&1 || \
     docker commit fai fai-setup
 # 
@@ -160,7 +158,6 @@ docker rm -f fai-mirror || true ;
 docker image inspect fai-mirror > /dev/null 2>&1 || \
     (docker run --name fai-mirror \
         -e cl=$cl \
-        -v ./fai:/srv/fai/config \
         --privileged -it --entrypoint /bin/bash \
         fai-setup fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /srv/$HOSTNAME) > fai-mirror.log
 docker image inspect fai-mirror > /dev/null 2>&1 || \
@@ -170,7 +167,7 @@ docker rm -f fai-cd || true ;
 stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
     (docker run --name fai-cd \
         -e cl=$cl \
-        -v ./fai:/srv/fai/config --privileged -it --entrypoint /bin/bash \
+        --privileged -it --entrypoint /bin/bash \
         fai-mirror fai-cd -C /srv/fai/config/fai-bookworm -g grub.cfg.install-only -m /srv/$HOSTNAME /fai-cd.iso) > fai-cd.log
 # 
 stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
