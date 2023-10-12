@@ -106,6 +106,7 @@ echo "RUN apt install -y accountsservice adduser adwaita-icon-theme bubblewrap c
   shared-mime-info sound-theme-freedesktop systemd systemd-sysv tar tzdata ucf\
   udev upower util-linux x11-common x11-xkb-utils x11-xserver-utils\
   xdg-dbus-proxy xkb-data xserver-common xwayland zlib1g" >> Dockerfile
+echo "ARG DEBIAN_FRONTEND=noninteractive" >> Dockerfile
 echo "RUN apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm dracut live-boot- initramfs-tools- dracut-config-generic dracut-network sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg" >> Dockerfile
 echo "ENTRYPOINT [\"/bin/bash\"]" >> Dockerfile
 docker build -t fai .
