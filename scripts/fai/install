@@ -105,10 +105,11 @@ echo "RUN apt install -y accountsservice adduser adwaita-icon-theme bubblewrap c
   python3-minimal python3.9 python3.9-minimal readline-common sensible-utils\
   shared-mime-info sound-theme-freedesktop systemd systemd-sysv tar tzdata ucf\
   udev upower util-linux x11-common x11-xkb-utils x11-xserver-utils\
-  xdg-dbus-proxy xkb-data xserver-common xwayland zlib1g"
+  xdg-dbus-proxy xkb-data xserver-common xwayland zlib1g" >> Dockerfile
+echo "RUN apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm dracut live-boot- initramfs-tools- dracut-config-generic dracut-network sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg" >> Dockerfile
 echo "ENTRYPOINT [\"/bin/bash\"]" >> Dockerfile
 docker build -t fai .
-# exit 0
+exit 0
 rm Dockerfile
 rm fai-cd.log || true
 rm fai-mirror.log || true
@@ -134,12 +135,14 @@ docker image rm -f fai-cd || true
 
 docker rm -f fai || true
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
-docker image inspect fai-setup > /dev/null 2>&1 || \
-    docker run --name fai --privileged --entrypoint /bin/bash -d fai -c "sleep 86400"
-docker image inspect fai-setup > /dev/null 2>&1 || \
+docker run --name fai --privileged --entrypoint /bin/bash -d fai -c "sleep 86400"
+# docker image inspect fai-setup > /dev/null 2>&1 || \
     (docker exec -it fai fai-setup -v) > fai-setup.log
-# cat fai-setup.log | head -n100
-rm  fai-setup.log || true
+# /srv/fai/nfsroot-bookworm/var/tmp/packages.nfsroot
+cat fai-setup.log | tail -n100
+# rm  fai-setup.log || true
+exit 0
+docker cp ./fai/fai-bookworm/nfsroot.conf fai:/etc/fai/nfsroot.conf || true
 docker cp ./fai/basefiles               fai:/srv/fai/config || true
 docker cp ./fai/class                   fai:/srv/fai/config || true
 docker cp ./fai/debconf                 fai:/srv/fai/config || true
@@ -151,23 +154,24 @@ docker cp ./fai/package_config          fai:/srv/fai/config || true
 docker cp ./fai/scripts                 fai:/srv/fai/config || true
 docker cp ./fai/grub.cfg.install-only   fai:/srv/fai/config || true
 docker cp ~/.ssh/id_rsa.pub             fai:/srv/fai/config/files/root-ssh-key || true
-docker stop fai || true
-docker image inspect fai-setup > /dev/null 2>&1 || \
-    docker commit fai fai-setup
+# docker stop fai || true
+# docker image inspect fai-setup > /dev/null 2>&1 || \
+#     docker commit fai fai-setup
 # 
-docker rm -f fai-mirror || true
-docker run --name fai-mirror \
-        -e cl=$cl \
-        --privileged -d --entrypoint /bin/bash \
-        fai-setup -c "sleep 86400"
-docker image inspect fai-mirror > /dev/null 2>&1 || \
-    (docker exec -it fai-mirror fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/mirror) > fai-mirror.log
+# docker rm -f fai-mirror || true
+# docker run --name fai-mirror \
+#         -e cl=$cl \
+#         --privileged -d --entrypoint /bin/bash \
+#         fai-setup -c "sleep 86400"
+# docker image inspect fai-mirror > /dev/null 2>&1 || \
+    (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/mirror) > fai-mirror.log
 # cat fai-mirror.log | head -n100
-rm  fai-mirror.log || true
-docker image inspect fai-mirror > /dev/null 2>&1 || \
-    docker commit fai-mirror fai-mirror
+# rm  fai-mirror.log || true
+# docker image inspect fai-mirror > /dev/null 2>&1 || \
+    # docker commit fai-mirror fai-mirror
 # 
-docker rm -f fai-cd || true
+exit 0
+# docker rm -f fai-cd || true
 stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
     docker run --name fai-cd \
         -e cl=$cl \
