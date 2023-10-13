@@ -1,17 +1,29 @@
 FROM debian:bookworm as fai-mk-configspace
-
 RUN apt-get update && apt-get install -y wget
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
 RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
 RUN echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list
 RUN echo "" >> /etc/apt/sources.list
-RUN apt update && apt install -y fai-server fai-client fai-doc
+RUN apt update && apt install -y fai-quickstart apt-cacher-ng
 RUN fai-mk-configspace
 # Thanks to https://raw.githubusercontent.com/ricardobranco777/docker-fai/master/Dockerfile
+
+FROM fai-mk-configspace as fai-setup
+RUN apt-get install -y lsb-release
+RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
+RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
+RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
+RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
+RUN /etc/init.d/apt-cacher-ng start && apt update
+RUN cp /etc/apt/sources.list /etc/fai/apt/
+RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
+	sed -ri 's/^Remap-(gentoo|sfnet):/#&/' /etc/apt-cacher-ng/acng.conf && \
+	echo "http://deb.debian.org/debian" > /etc/apt-cacher-ng/backends_debian
+RUN /etc/init.d/apt-cacher-ng start && fai-setup -v
+
 FROM debian:bookworm
 COPY --from=fai-mk-configspace /srv/fai/config /fai-mk-configspace
-# Redirection sites like http.debian.net or httpredir.debian.org don't seem to work well with apt-cacher-ng
-ENV	MAIN_REPO	us.archive.ubuntu.com
+COPY --from=fai-setup /var/cache/apt-cacher-ng /var/cache/apt-cacher-ng
 
 RUN apt-get update && apt-get install -y wget
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
@@ -23,21 +35,20 @@ RUN echo "" >> /etc/apt/sources.list
 RUN	apt-get update && \
 	apt-get upgrade -y && \
 	apt-get install --no-install-recommends -y apt-cacher-ng \
-		fai-quickstart
+		fai-quickstart openssh-server- openssh-client
 	# 	apt-transport-https \
 	# 	aptitude \
 	# 	binutils \
 	# 	bzip2 \
 	# 	ca-certificates \
 	# 	fai-client \
-	# 	fai-server isc-dhcp-server- nfs-kernel-server- openbsd-inetd- openssh-server- tcpd- tftpd-hpa- update-inetd- \
+	# 	fai-server isc-dhcp-server- nfs-kernel-server- openbsd-inetd- tcpd- tftpd-hpa- update-inetd- \
 	# 	debian-archive-keyring \
 	# 	gawk \
 	# 	grub-pc-bin \
 	# 	less \
 	# 	liblz4-tool \
 	# 	memtest86+ \
-	# 	openssh-client \
 	# 	patch \
 	# 	reprepro \
 	# 	tzdata \
@@ -47,17 +58,15 @@ RUN	apt-get update && \
 	# 	xz-utils && \
 	# apt-get clean
 
-# get /etc/lsb-release
 RUN apt-get install -y lsb-release
-RUN echo lsb_release
+
 # Configuration
 RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
 RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
 RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
 # find and replace deb.debian.org with 127.0.0.1:9999 in 
-RUN rm /etc/apt/sources.list.d/debian.sources
-RUN	export DISTRIB_CODENAME=$(lsb_release -cs) && \
-	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
+# RUN rm /etc/apt/sources.list.d/debian.sources
+RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 	sed -ri 's/^Remap-(gentoo|sfnet):/#&/' /etc/apt-cacher-ng/acng.conf && \
 	echo "http://deb.debian.org/debian" > /etc/apt-cacher-ng/backends_debian
 	#  && \
@@ -71,7 +80,7 @@ RUN	export DISTRIB_CODENAME=$(lsb_release -cs) && \
     #  && \
 	# chmod +x /etc/fai/nfsroot-hooks/* && \
 	# chmod +x /usr/local/bin/*
-# RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
+RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
 RUN /etc/init.d/apt-cacher-ng start && apt update
 RUN cp /etc/apt/sources.list /etc/fai/apt/
 # Apply some patches
@@ -82,7 +91,7 @@ RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 		/usr/sbin/fai-make-nfsroot.orig /usr/bin/fai-mirror.orig /usr/sbin/fai-cd.orig
 
 # Add these volumes to speed up fai-setup & fai-mirror
-VOLUME	/var/cache/apt-cacher-ng
+# VOLUME	/var/cache/apt-cacher-ng
 # RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y accountsservice adduser adwaita-icon-theme bubblewrap coreutils cpp cpp-10\
 #   dbus dbus-user-session dbus-x11 dconf-cli dconf-gsettings-backend\
 #   dconf-service debconf dictionaries-common dmsetup dpkg emacsen-common\
@@ -172,8 +181,7 @@ VOLUME	/var/cache/apt-cacher-ng
 #   udev upower util-linux x11-common x11-xkb-utils x11-xserver-utils\
 #   xdg-dbus-proxy xkb-data xserver-common xwayland zlib1g
 # ARG DEBIAN_FRONTEND=noninteractive
-# RUN apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm dracut live-boot- initramfs-tools- dracut-config-generic dracut-network sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
-# sed -i -re "s/${MAIN_REPO}/${REPO}/" /etc/apt/sources.list /etc/fai/apt/sources.list /etc/fai/nfsroot.conf ; 
+# RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
 CMD	test -n "pa.archive.ubuntu.com" && \
 	/etc/init.d/apt-cacher-ng start && \
 	/bin/bash
