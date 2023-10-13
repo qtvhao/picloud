@@ -66,7 +66,6 @@ RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 	# chmod +x /etc/fai/nfsroot-hooks/* && \
 	# chmod +x /usr/local/bin/*
 RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
-RUN /etc/init.d/apt-cacher-ng start && apt update
 RUN cp /etc/apt/sources.list /etc/fai/apt/
 # Apply some patches
 # RUN	patch /usr/sbin/fai-cd < /tmp/fai-cd.patch && \
@@ -76,7 +75,7 @@ RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 		/usr/sbin/fai-make-nfsroot.orig /usr/bin/fai-mirror.orig /usr/sbin/fai-cd.orig
 
 # Add these volumes to speed up fai-setup & fai-mirror
-RUN apt install -y dosfstools mtools
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it
 
 # RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
 CMD	test -n "pa.archive.ubuntu.com" && \
