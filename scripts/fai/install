@@ -3,6 +3,7 @@ set -e
 cp scripts/fai/Dockerfile ./Dockerfile || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile
 docker build -t fai .
 rm Dockerfile
+rm time.log || true
 rm fai-cd.log || true
 rm fai-mirror.log || true
 rm fai-setup.log || true
@@ -30,9 +31,9 @@ export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
-time (docker run --name apt-cacher-ng \
+stat /var/cache/apt-cacher-ng/debrep/pool/main/w/wait-for-it || time (docker run --name apt-cacher-ng \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
-    --privileged --entrypoint /bin/bash -it fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && fai-setup -v" > apt-cacher-ng.log)
+    --privileged --entrypoint /bin/bash -it fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && fai-setup -v" > apt-cacher-ng.log) >> time.log
 echo "apt-cacher-ng started"
 docker rm -f apt-cacher-ng > /dev/null 2>&1 || true
 rm apt-cacher-ng.log > /dev/null 2>&1 || true
@@ -42,7 +43,7 @@ docker run --name fai \
     --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && sleep 5 && sleep 86400"
 echo "Fai-setup starting"
 time ((docker exec -it fai fai-setup -v) > fai-setup.log)
-cat fai-setup.log | tail -n100
+cat fai-setup.log | tail -n50
 rm fai-setup.log
 # docker cp ./fai/fai-bookworm/nfsroot.conf fai:/etc/fai/nfsroot.conf || true
 # docker cp ./fai/basefiles               fai:/srv/fai/config || true
@@ -58,7 +59,7 @@ rm fai-setup.log
 # docker cp ~/.ssh/id_rsa.pub             fai:/srv/fai/config/files/root-ssh-key || true
 # docker cp fai-mirror:/etc/fai/ ./fai/fai-bookworm || true
 (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/mirror) > fai-mirror.log
-cat fai-mirror.log | tail -n100
+cat fai-mirror.log | tail -n50
 rm fai-mirror.log
 echo "Fai-mirror started"
 # rm  fai-mirror.log || true
@@ -66,10 +67,9 @@ echo "Fai-mirror started"
     # docker commit fai-mirror fai-mirror
 # 
 # docker rm -f fai-cd || true
-stat $HOSTNAME-fai-cd.iso > /dev/null 2>&1 || \
 (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/mirror /fai-cd.iso) > fai-cd.log
 echo "Fai-cd started"
-cat fai-cd.log | head -n100
+cat fai-cd.log | tail -n50
 rm  fai-cd.log || true
 # 
 docker cp fai-cd:/fai-cd.iso $HOSTNAME-fai-cd.iso
