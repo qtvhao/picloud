@@ -8,31 +8,8 @@ RUN apt update && apt install -y fai-quickstart apt-cacher-ng
 RUN fai-mk-configspace
 # Thanks to https://raw.githubusercontent.com/ricardobranco777/docker-fai/master/Dockerfile
 
-FROM fai-mk-configspace as fai-setup
-RUN apt-get install -y lsb-release
-RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
-RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
-RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
-RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
-RUN /etc/init.d/apt-cacher-ng start && apt update
-RUN cp /etc/apt/sources.list /etc/fai/apt/
-RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
-	sed -ri 's/^Remap-(gentoo|sfnet):/#&/' /etc/apt-cacher-ng/acng.conf && \
-	echo "http://deb.debian.org/debian" > /etc/apt-cacher-ng/backends_debian
-# RUN /etc/init.d/apt-cacher-ng start && fai-setup -v
-RUN rm /etc/apt/sources.list.d/debian.sources
-ARG DEBIAN_FRONTEND=noninteractive
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y debconf-utils
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y debconf-utils fai-client fai-setup-storage file iputils-arping
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y syslinux-efi zstd
-
 FROM debian:bookworm
 COPY --from=fai-mk-configspace /srv/fai/config /fai-mk-configspace
-COPY --from=fai-setup /var/cache/apt-cacher-ng /var/cache/apt-cacher-ng
-RUN chmod -R 777 /var/cache/apt-cacher-ng
 RUN apt-get update && apt-get install -y wget
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
 RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
@@ -69,6 +46,7 @@ RUN	apt-get update && \
 RUN apt-get install -y lsb-release
 
 # Configuration
+RUN rm /etc/apt/sources.list.d/debian.sources
 RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
 RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
 RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
@@ -98,6 +76,7 @@ RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 		/usr/sbin/fai-make-nfsroot.orig /usr/bin/fai-mirror.orig /usr/sbin/fai-cd.orig
 
 # Add these volumes to speed up fai-setup & fai-mirror
+RUN apt install -y dosfstools mtools
 
 # RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
 CMD	test -n "pa.archive.ubuntu.com" && \
