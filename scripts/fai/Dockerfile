@@ -50,6 +50,7 @@ RUN rm /etc/apt/sources.list.d/debian.sources
 RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
 RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
 RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
+RUN echo "deb http://fai-project.org/download bookworm koeln" >> /etc/apt/sources.list
 # find and replace deb.debian.org with 127.0.0.1:9999 in 
 RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 	sed -ri 's/^Remap-(gentoo|sfnet):/#&/' /etc/apt-cacher-ng/acng.conf && \
