@@ -37,14 +37,14 @@ stat /var/cache/apt-cacher-ng/debrep/pool/main/w/wait-for-it || time (docker run
 echo "apt-cacher-ng started"
 docker rm -f apt-cacher-ng > /dev/null 2>&1 || true
 rm apt-cacher-ng.log > /dev/null 2>&1 || true
-docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
-docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
-sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' ./fai/fai-bookworm/nfsroot.conf
 docker run --name fai \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     -v ./fai:/srv/fai/config \
     --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && sleep 5 && sleep 86400"
 echo "Fai-setup starting"
+docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
+docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
+sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' ./fai/fai-bookworm/nfsroot.conf
 time ((docker exec -it fai fai-setup -v) > fai-setup.log)
 cat fai-setup.log | tail -n50
 rm fai-setup.log

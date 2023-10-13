@@ -1,3 +1,4 @@
 deb http://127.0.0.1:9999/debian/ 			bookworm 				main
 deb http://127.0.0.1:9999/debian/ 			bookworm-updates 		main
 deb http://127.0.0.1:9999/debian-security/ 	bookworm-security 	main
+deb http://fai-project.org/download bookworm koeln
