@@ -28,6 +28,8 @@ stat /var/cache/apt-cacher-ng/debrep/pool/main/w/wait-for-it || time (docker run
 echo "apt-cacher-ng started"
 docker rm -f apt-cacher-ng > /dev/null 2>&1 || true
 rm apt-cacher-ng.log > /dev/null 2>&1 || true
+cat ~/.ssh/id_rsa.pub || ssh-keygen
+cp ~/.ssh/id_rsa.pub ./fai/files/root-ssh-key
 docker run --name fai \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     -v ./fai:/srv/fai/config \

@@ -206,6 +206,18 @@ if [ "$arg1" == "dd" ]; then
     exit 0
     # status=progress
 fi
+if [ "$arg1" == "find-nodename" ]; then
+    args=("$@")
+    NODE_NAME=${args[1]}
+    echo "NODE_NAME: $NODE_NAME"
+    MAX=255
+    for i in `seq 1 $MAX`; do
+        echo "Checking 192.168.1.$i"
+        timeout .1 ssh -o PasswordAuthentication=no -o PubkeyAuthentication=yes -i ~/.ssh/id_rsa \
+         "192.168.1.$i" "cat /var/log/fai/ip-192-168-1-13/last-install/boot.log | grep -i IPADDR" || true
+    done
+    exit 0
+fi
 if [ "$arg1" == "help" ]; then
     ./pic exec-local-or-remote "scripts" \
     "help"
