@@ -62,6 +62,8 @@ echo "Fai-mirror started"
 
 docker exec -it fai bash -c "echo \"$HOSTNAME\" > /srv/fai/nfsroot/etc/hostname"
 (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /fai-cd.iso) > fai-cd.log
+docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
+docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-cd started"
 cat fai-cd.log | tail -n50
 rm  fai-cd.log || true
