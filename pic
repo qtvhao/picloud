@@ -163,46 +163,8 @@ if [ "$arg1" == "fai" ]; then
 fi
 if [ "$arg1" == "dd" ]; then
     set -e
-    syslinux -h || apt-get install syslinux -y
-    pv -h || apt-get install pv -y
-    args=("$@")
-    HOSTNAME=${args[1]}
-    USB_DEVICE=${args[2]}
-    if [ "$HOSTNAME" == "" ]; then
-        echo "Please provide hostname"
-        exit 1
-    fi
-    if [ "$USB_DEVICE" == "" ]; then
-        echo
-        lsblk -n --nodeps
-        echo "Please provide USB device"
-        exit 1
-    fi
-    echo "HOSTNAME: $HOSTNAME"
-    echo "USB_DEVICE: $USB_DEVICE"
-    FILE_SIZE_IN_MB=$(du -m $HOSTNAME-fai-cd.iso | cut -f1)
-    echo "File size in MB: $FILE_SIZE_IN_MB""Mb"
-    echo "Deleting All Partitions From $USB_DEVICE"
-
-    echo "Creating Partition scheme MBR"
-    echo "Target system: BIOS"
-    echo "Persistent partition size: 0"
-    echo "File system type: fat32"
-    echo "Cluster size: 8192 bytes (default)"
-    # Quick format
-    # Create extended label and icon files
-    dd if=/dev/zero of=$USB_DEVICE bs=1M count=1
-    parted -s $USB_DEVICE mklabel msdos
-    parted -s $USB_DEVICE mkpart primary fat32 0% 100%
-    parted -s $USB_DEVICE set 1 boot on
-    # set MBR
-
-    # Create file system FAT32 with label "FAI" and icon "FAI" on $USB_DEVICE partition 1
-    mkfs.vfat -F 32 -n "FAI" -I $USB_DEVICE
-    # isohybrid $HOSTNAME-fai-cd.iso --entry 4 --type 0x1c
-    # Create file system ext4 with label "FAI" on $USB_DEVICE partition 2
-    # copy $HOSTNAME-fai-cd.iso to $USB_DEVICE partition 1
-    dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE bs=1M status=progress
+    ./pic exec-local-or-remote "scripts/fai" \
+    "dd" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
     # status=progress
 fi
