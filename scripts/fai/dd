@@ -10,8 +10,9 @@ if [ "$HOSTNAME" == "" ]; then
 fi
 if [ "$USB_DEVICE" == "" ]; then
     echo
-    lsblk -n --nodeps
     echo "Please provide USB device"
+    echo "List of USB devices:"
+    lsblk -n --nodeps | awk '{print $1}' | sed 's/^/    /'
     exit 1
 fi
 echo "HOSTNAME: $HOSTNAME"
@@ -39,4 +40,5 @@ mkfs.vfat -F 32 -n "FAI" -I $USB_DEVICE
 # Create file system ext4 with label "FAI" on $USB_DEVICE partition 2
 # copy $HOSTNAME-fai-cd.iso to $USB_DEVICE partition 1
 dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE bs=1M status=progress
+./pic wait-nodename
 exit 0

@@ -168,17 +168,45 @@ if [ "$arg1" == "dd" ]; then
     exit 0
     # status=progress
 fi
-if [ "$arg1" == "find-nodename" ]; then
-    args=("$@")
-    NODE_NAME=${args[1]}
-    echo "NODE_NAME: $NODE_NAME"
+if [ "$arg1" == "list-nodename" ]; then
     MAX=255
+    echo "" > fai-hosts.txt
     for i in `seq 1 $MAX`; do
-        echo "Checking 192.168.1.$i"
-        timeout .1 ssh -o PasswordAuthentication=no -o PubkeyAuthentication=yes -i ~/.ssh/id_rsa \
-         "192.168.1.$i" "cat /var/log/fai/ip-192-168-1-13/last-install/boot.log | grep -i IPADDR" || true
+        (timeout 10 ssh "192.168.1.$i" "stat /var/log/fai/localhost/last/boot.log" > /dev/null 2>&1 && \
+            echo "192.168.1.$i $(ssh "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log")" >> fai-hosts.txt) &
     done
+    sleep 5
+    cat fai-hosts.txt
+    rm fai-hosts.txt
     exit 0
+fi
+if [ "$arg1" == "wait-nodename" ]; then
+    set -e
+    CHECK_AT=$(date +%s)
+    echo "Waiting for new node to be ready"
+    echo "CHECK_AT: $CHECK_AT"
+    while true; do
+        nodes=$(./pic list-nodename)
+        # loop through lines in $nodes, echo
+        while IFS= read -r line; do
+            if [ -z "$line" ]; then
+                continue
+            fi
+            # echo "line: $line"
+            IP_ADDRESS=$(echo $line | awk '{print $1}')
+            # echo "IP_ADDRESS: $IP_ADDRESS"
+            LAST_BOOT=$(echo $line | awk '{print $2}')
+            if [ "$LAST_BOOT" -gt "$CHECK_AT" ]; then
+                echo "IP_ADDRESS: $IP_ADDRESS"
+                echo "LAST_BOOT: $LAST_BOOT"
+                echo "CHECK_AT: $CHECK_AT"
+                echo "Node $IP_ADDRESS is ready"
+                exit 0
+            fi
+        done <<< "$nodes"
+        
+        sleep 5
+    done
 fi
 if [ "$arg1" == "help" ]; then
     ./pic exec-local-or-remote "scripts" \
