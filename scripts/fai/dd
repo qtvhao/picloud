@@ -47,10 +47,11 @@ parted -s $USB_DEVICE print
 # Create file system ext4 with label "FAI" on $USB_DEVICE partition 2
 # copy $HOSTNAME-fai-cd.iso to $USB_DEVICE partition 1
 time (dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE bs=4M status=progress && sync)
-exit 0
 eject $USB_DEVICE
 # mkdir -p /mnt/fai-usb
 # mount $USB_DEVICE /mnt/fai-usb
 # ls -l /mnt/fai-usb
+echo "At this point, you can boot from the USB stick and wait for the installation to finish (until the machine shuts down)."
+echo "After the installation is finished, you can remove the USB stick and boot the machine from the hard disk."
 ./pic wait-nodename
 exit 0

@@ -24,13 +24,15 @@ docker build -t fai .
 rm Dockerfile
 stat /var/cache/apt-cacher-ng/debrep/pool/main/w/wait-for-it || time (docker run --name apt-cacher-ng \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
-    --privileged --entrypoint /bin/bash -it fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && fai-setup -v" > apt-cacher-ng.log) >> time.log
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
+    --privileged --entrypoint /bin/bash -it fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && fai-setup -vf" > apt-cacher-ng.log) >> time.log
 echo "apt-cacher-ng started"
 docker rm -f apt-cacher-ng > /dev/null 2>&1 || true
 rm apt-cacher-ng.log > /dev/null 2>&1 || true
 cat ~/.ssh/id_rsa.pub || ssh-keygen
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai \
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
     -v ./fai/basefiles:/srv/fai/config/basefiles \
     -v ./fai/class:/srv/fai/config/class \
     -v ./fai/debconf:/srv/fai/config/debconf \
@@ -49,7 +51,7 @@ docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
 docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
 sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' ./fai/fai-bookworm/nfsroot.conf
 echo "Fai-setup starting"
-time ((docker exec -it fai fai-setup -v) > fai-setup.log)
+time ((docker exec -it fai fai-setup -vf) > fai-setup.log)
 cat fai-setup.log | tail -n50
 rm fai-setup.log
 

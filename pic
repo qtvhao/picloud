@@ -170,14 +170,13 @@ if [ "$arg1" == "dd" ]; then
 fi
 if [ "$arg1" == "list-nodename" ]; then
     MAX=255
-    echo "" > fai-hosts.txt
     for i in `seq 1 $MAX`; do
-        (timeout 10 ssh "192.168.1.$i" "stat /var/log/fai/localhost/last/boot.log" > /dev/null 2>&1 && \
-            echo "192.168.1.$i $(ssh "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log")" >> fai-hosts.txt) &
+        timeout .1 ping -c1 "192.168.1.$i" > /dev/null 2>&1 || continue;
+        timeout 5 ssh "192.168.1.$i" "hostname" > /dev/null 2>&1 || continue;
+        ssh -o PubKeyAuthentication=no "192.168.1.$i" "hostname" > /dev/null 2>&1 || continue;
+        timeout 5 ssh "192.168.1.$i" "stat /var/log/fai/localhost/last/boot.log" > /dev/null 2>&1 || continue;
+        echo "192.168.1.$i $(ssh "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log")"
     done
-    sleep 5
-    cat fai-hosts.txt
-    rm fai-hosts.txt
     exit 0
 fi
 if [ "$arg1" == "wait-nodename" ]; then
