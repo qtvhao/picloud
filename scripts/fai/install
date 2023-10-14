@@ -6,25 +6,16 @@ rm fai-mirror.log || true
 rm fai-setup.log || true
 args=("$@")
 HOSTNAME=${args[0]}
-USB_DEVICE=${args[1]}
 if [ -z "$HOSTNAME" ]; then
-    echo "HOSTNAME is empty"
-    exit 1
-fi
-if [ -z "$USB_DEVICE" ]; then
-    lsblk --nodeps
-    echo "USB_DEVICE is empty"
+    echo "HOSTNAME is empty. Specify a hostname for the new machine."
+    echo "Usage: ./pic fai HOSTNAME"
     exit 1
 fi
 echo "HOSTNAME: $HOSTNAME"
-echo "USB_DEVICE: $USB_DEVICE"
 #
-docker image rm -f fai-setup > /dev/null 2>&1 || true
-docker image rm -f fai-mirror > /dev/null 2>&1 || true
-docker image rm -f fai-cd > /dev/null 2>&1 || true
 
 docker rm -f fai || true
-export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
+export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
@@ -41,28 +32,33 @@ docker run --name fai \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     -v ./fai:/srv/fai/config \
     --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
-echo "Fai-setup starting"
 docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
 docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
 sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' ./fai/fai-bookworm/nfsroot.conf
+echo "Fai-setup starting"
 time ((docker exec -it fai fai-setup -v) > fai-setup.log)
 cat fai-setup.log | tail -n50
 rm fai-setup.log
 
-(docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/mirror) > fai-mirror.log
+(docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log
 cat fai-mirror.log | tail -n50
 rm fai-mirror.log
 echo "Fai-mirror started"
 
-(docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/mirror /fai-cd.iso) > fai-cd.log
+docker exec -it fai bash -c "echo \"$HOSTNAME\" > /srv/fai/nfsroot/etc/hostname"
+(docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /fai-cd.iso) > fai-cd.log
 echo "Fai-cd started"
 cat fai-cd.log | tail -n50
 rm  fai-cd.log || true
 
+echo
+echo
 docker cp fai:/fai-cd.iso $HOSTNAME-fai-cd.iso
 echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
 echo "Run the following command to burn the image to a USB stick:"
-echo "./pic dd $HOSTNAME $USB_DEVICE"
+echo "    ./pic dd $HOSTNAME /dev/USB_DEVICE_NAME"
+echo "USB device list:"
+lsblk -n -o NAME | awk '{print $1}' | sed 's/^/    /'
 exit 0
