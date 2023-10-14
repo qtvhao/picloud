@@ -1,8 +1,5 @@
 #!/bin/bash
 set -e
-cp scripts/fai/Dockerfile ./Dockerfile || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile
-docker build -t fai .
-rm Dockerfile
 rm time.log || true
 rm fai-cd.log || true
 rm fai-mirror.log || true
@@ -31,6 +28,9 @@ export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
+cp scripts/fai/Dockerfile ./Dockerfile || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile
+docker build -t fai .
+rm Dockerfile
 stat /var/cache/apt-cacher-ng/debrep/pool/main/w/wait-for-it || time (docker run --name apt-cacher-ng \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -it fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && fai-setup -v" > apt-cacher-ng.log) >> time.log
@@ -60,13 +60,9 @@ cat fai-cd.log | tail -n50
 rm  fai-cd.log || true
 
 docker cp fai:/fai-cd.iso $HOSTNAME-fai-cd.iso
-
-FILE_SIZE_IN_MB=$(du -m $HOSTNAME-fai-cd.iso | cut -f1)
-echo "File size in MB: $FILE_SIZE_IN_MB""Mb"
-exit 0
-# dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE status=progress bs=4M
-echo "Bootable USB created"
-echo "Unmounting $USB_DEVICE"
-# eject $USB_DEVICE
-echo "Ready to install. Please reboot and select USB device as boot device."
+echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
+echo "All data on the first disk will be overridden without any further confirmation."
+echo "Ready to burn."
+echo "Run the following command to burn the image to a USB stick:"
+echo "./pic dd $HOSTNAME $USB_DEVICE"
 exit 0

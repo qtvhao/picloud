@@ -161,6 +161,22 @@ if [ "$arg1" == "fai" ]; then
     "install" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
+if [ "$arg1" == "dd" ]; then
+    set -e
+    args=("$@")
+    HOSTNAME=${args[1]}
+    USB_DEVICE=${args[2]}
+    echo "HOSTNAME: $HOSTNAME"
+    echo "USB_DEVICE: $USB_DEVICE"
+    dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE status=progress bs=4M
+    FILE_SIZE_IN_MB=$(du -m $HOSTNAME-fai-cd.iso | cut -f1)
+    echo "File size in MB: $FILE_SIZE_IN_MB""Mb"
+    echo "Bootable USB created"
+    echo "Unmounting $USB_DEVICE"
+    eject $USB_DEVICE || true
+
+    exit 0
+fi
 if [ "$arg1" == "help" ]; then
     ./pic exec-local-or-remote "scripts" \
     "help"
