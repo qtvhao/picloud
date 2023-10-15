@@ -215,7 +215,7 @@ if [ "$arg1" == "wait-nodename" ]; then
             if [ -z "$IP_ADDRESS" ]; then
                 continue
             fi
-            if [ "$LAST_BOOT" -lt "$CHECK_AT" ]; then
+            if [ "$LAST_BOOT" -gt "$CHECK_AT" ]; then
                 echo "IP_ADDRESS: $IP_ADDRESS"
                 echo "LAST_BOOT: $LAST_BOOT"
                 echo "CHECK_AT: $CHECK_AT"
