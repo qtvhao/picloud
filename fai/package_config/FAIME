@@ -2,5 +2,6 @@ PACKAGES install-norec
 xrdp
 curl
 git
+netcat-traditional
 PACKAGES install
 task-english 

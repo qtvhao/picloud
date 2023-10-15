@@ -1,6 +1,7 @@
 args=("$@")
 NODE_IP=${args[0]}
 echo "Connecting to $NODE_IP"
+ssh-keyscan -H "$NODE_IP" >> ~/.ssh/known_hosts
 ssh "$NODE_IP" "hostname" || exit 1
 echo "Connected to $NODE_IP"
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt

@@ -15,6 +15,8 @@ args=("$@")
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
 echo "Installing k3s"
+curl -fsSL https://get.docker.com -o install-docker.sh
+docker ps > /dev/null 2>&1 || sh install-docker.sh
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
 docker inspect picloud-k3s-server >/dev/null 2>&1 && docker rm -f picloud-k3s-server || echo "picloud-k3s-server not found"
 docker run -d --restart=unless-stopped \
@@ -35,6 +37,7 @@ done
 K3S_TOKEN=$(docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token")
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 update-ca-certificates
+mkdir -p ~/.kube
 docker cp picloud-k3s-server:/etc/rancher/k3s/k3s.yaml ~/.kube/config
 sed -i "s/127.0.0.1:6443/127.0.0.1:6448/g" ~/.kube/config
 

@@ -40,7 +40,7 @@ The script will automatically install k3s-agent on listed machines.
 
 The script also automatically find machines which installed with FAI in LAN and install k3s-agent on them.
 ```bash
-./pic reinstall-k3s
+./pic reinstall-k3s $(hostname -I | cut -d' ' -f1)
 ```
 
 # Usage
