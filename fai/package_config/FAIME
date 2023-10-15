@@ -1,4 +1,4 @@
 PACKAGES install-norec
-
+xrdp
 PACKAGES install
 task-english 
