@@ -17,7 +17,7 @@ echo "NODE_IP: $NODE_IP"
 ssh $NODE_IP "$NODE_COMMAND"
 ssh "$NODE_IP" "sudo systemctl restart k3s-agent"
 echo "Joined worker node to this cluster"
-ssh "$NODE_IP" "iptables -w -P FORWARD ACCEPT"
+ssh "$NODE_IP" "(iptables -h && iptables -w -P FORWARD ACCEPT) || true"
 NODE_NAME=$(ssh "$NODE_IP" "hostname")
 
 kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
