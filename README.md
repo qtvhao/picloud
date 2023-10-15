@@ -14,9 +14,10 @@ curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +
 
 ## FAI (Fully Automated Installation)
 ```bash
-host_name="z440"
-usb_device="/dev/sdc"
-./pic fai $host_name
+host_name="z440" # set your own hostname
+usb_device="/dev/sdc" # set your own USB device
+github_username="qtvhao" # set your own github username
+./pic fai $host_name $github_username
 ./pic dd $host_name $usb_device
 # Boot from USB and wait for installation to complete
 ```

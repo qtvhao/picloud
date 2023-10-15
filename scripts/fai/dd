@@ -53,5 +53,6 @@ eject $USB_DEVICE
 # ls -l /mnt/fai-usb
 echo "At this point, you can boot from the USB stick and wait for the installation to finish (until the machine shuts down)."
 echo "After the installation is finished, you can remove the USB stick and boot the machine from the hard disk."
+echo "In order to connect to machines, you need to add your public ssh key to github."
 ./pic wait-nodename
 exit 0

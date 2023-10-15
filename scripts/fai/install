@@ -6,6 +6,14 @@ rm fai-mirror.log || true
 rm fai-setup.log || true
 args=("$@")
 HOSTNAME=${args[0]}
+GITHUB_USERNAME=${args[1]}
+if [ -z "$GITHUB_USERNAME" ]; then
+    echo "In order to connect to machines, you need to add your public ssh key to github."
+    echo "Visit https://github.com/settings/keys to add your public ssh key."
+    echo "GITHUB_USERNAME is empty. Specify a github username for the new machine."
+    echo "Usage: ./pic fai HOSTNAME GITHUB_USERNAME"
+    exit 1
+fi
 if [ -z "$HOSTNAME" ]; then
     echo "HOSTNAME is empty. Specify a hostname for the new machine."
     echo "Usage: ./pic fai HOSTNAME"
@@ -49,7 +57,12 @@ docker run --name fai \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 echo "Copying ssh key to fai container"
-docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/config/files/root-ssh-key
+GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
+GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
+echo "GITHUB_KEYS: $GITHUB_KEYS"
+echo "$GITHUB_KEYS" > ./fai/files/root-ssh-key
+docker cp ./fai/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
+rm ./fai/files/root-ssh-key
 docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
 docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
 docker cp fai/files/etc/systemd/sleep.conf.d/ fai:/srv/fai/nfsroot/etc/systemd/sleep.conf.d/
