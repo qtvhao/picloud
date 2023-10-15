@@ -22,6 +22,9 @@ docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile ./Dockerfile || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile
 docker build -t fai .
 rm Dockerfile
+rm -rf /srv/fai/nfsroot/ || true
+mkdir -p /srv/fai/nfsroot/etc/systemd/ || true
+chmod -R 0777 /srv/fai/nfsroot/ || true
 stat /var/cache/apt-cacher-ng/debrep/pool/main/w/wait-for-it || time (docker run --name apt-cacher-ng \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
