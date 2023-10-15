@@ -11,6 +11,11 @@
 ```bash
 curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +x pic
 ```
+Or run with Docker (limited functions):
+```bash
+docker build -t pic https://github.com/qtvhao/picloud.git
+docker run -it -v ~/.ssh/:/root/.ssh/ pic bash
+```
 
 ## FAI (Fully Automated Installation)
 ```bash
