@@ -17,6 +17,10 @@ docker build -t pic https://github.com/qtvhao/picloud.git
 docker run -it -v ~/.ssh/:/root/.ssh/ pic bash
 ```
 
+```bash
+docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename
+```
+
 ## FAI (Fully Automated Installation)
 ```bash
 host_name="z440" # set your own hostname
