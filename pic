@@ -175,6 +175,7 @@ if [ "$arg1" == "list-nodename" ]; then
         timeout .05 nc -z "192.168.1.$i" 22 > /dev/null 2>&1 || continue;
         # echo "192.168.1.$i:22 is pingable"
 
+        ssh-keyscan -H "192.168.1.$i" >> ~/.ssh/known_hosts 2>/dev/null
         timeout 5 ssh \
             -o PasswordAuthentication=no \
             -o StrictHostKeyChecking=no \
