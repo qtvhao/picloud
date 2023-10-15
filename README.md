@@ -23,7 +23,7 @@ usb_device="/dev/sdc"
 
 ## Install/Reinstall Kubernetes cluster with k3s
 
-The script will automatically install k3s-agent on the current machine and listed machines.
+The script will automatically install k3s-agent on listed machines.
 ```bash
 ./pic reinstall-k3s [NODE_IP_1] [NODE_IP_2] [NODE_IP_3] ...
 ```
