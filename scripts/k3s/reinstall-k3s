@@ -6,7 +6,7 @@ for NODE in $NODES; do
     NODE_IP=$(kubectl get node $NODE -o json | jq -r '.status.addresses[] | select(.type == "InternalIP") | .address' | head -n1)
     if [[ $NODE_IP == $match* ]]; then
         echo "Uninstalling k3s from $NODE"
-        ssh $NODE_IP "k3s-agent-uninstall.sh"
+        ssh $NODE_IP "k3s-agent-uninstall.sh" > /dev/null 2>&1 || true
         kubectl delete node $NODE
     fi
 done
@@ -47,15 +47,13 @@ jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url
 for arg in $args; do
     ./pic join-k3s $arg
 done
-nodes=$(./pic list-nodename)
-while IFS= read -r line; do
-    if [ -z "$line" ]; then
+nodes=$(./pic list-nodename | awk '{print $1}' | tr '\n' ' ')
+for node in $nodes; do
+    if [ -z "$node" ]; then
         continue
     fi
-    echo "line: $line"
-    IP_ADDRESS=$(echo $line | awk '{print $1}')
-    ./pic join-k3s $IP_ADDRESS
-done <<< "$nodes"
+    ./pic join-k3s "$node"
+done
 
 echo
 echo "To join a worker node to this cluster, run the following command:"

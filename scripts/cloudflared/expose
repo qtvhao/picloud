@@ -44,7 +44,7 @@ echo "  - hostname: $FQDN_RECORD" >>$CONFIG_YAML_FILE
 echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>$CONFIG_YAML_FILE
 echo "  - service: http_status:404" >>$CONFIG_YAML_FILE
 echo "Created cloudflared config"
-cat $CONFIG_YAML_FILE
+# cat $CONFIG_YAML_FILE
 echo "Starting cloudflared"
 CONTAINER_TUNNEL_NAME="cloudflared-$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 (docker inspect $CONTAINER_TUNNEL_NAME >/dev/null 2>&1 && docker rm -f $CONTAINER_TUNNEL_NAME) || true
