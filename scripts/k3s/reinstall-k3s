@@ -47,6 +47,16 @@ jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url
 for arg in $args; do
     ./pic join-k3s $arg
 done
+nodes=$(./pic list-nodename)
+while IFS= read -r line; do
+    if [ -z "$line" ]; then
+        continue
+    fi
+    echo "line: $line"
+    IP_ADDRESS=$(echo $line | awk '{print $1}')
+    ./pic join-k3s $IP_ADDRESS
+done <<< "$nodes"
+
 echo
 echo "To join a worker node to this cluster, run the following command:"
 echo "./pic join-k3s <node-ip>"

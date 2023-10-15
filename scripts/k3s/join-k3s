@@ -11,7 +11,7 @@ K3S_URL=$(jq -r '.k3s_url' k3s.json)
 K3S_TOKEN=$(jq -r '.k3s_token' k3s.json)
 echo "K3S_URL: $K3S_URL"
 echo "K3S_TOKEN: $K3S_TOKEN"
-NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
+NODE_COMMAND="apt update && apt install -y curl && curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
 ssh $NODE_IP "$NODE_COMMAND"
