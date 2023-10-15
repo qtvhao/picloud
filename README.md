@@ -1,11 +1,11 @@
 # picloud
-- [ ] Automated bare metal provisioning with PXE boot
+- [x] Automated bare metal installation with [FAI](https://fai-project.org/)
 - [x] Automated Kubernetes installation and management with [k3s](https://k3s.io/)
 - [x] Expose services to the internet securely with [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
 - [x] GitLab CI/CD integration
-- [ ] Minio S3 compatible object storage
-- [ ] S3FS for mounting Minio as a filesystem use CSI driver
-- [ ] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
+- [x] Minio S3 compatible object storage
+- [x] S3FS for mounting Minio as a filesystem use CSI driver
+- [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
 - [ ] Registry as a pull through cache with [Docker Registry](https://docs.docker.com/registry/)
 # Installation
 ```bash
@@ -21,6 +21,11 @@ usb_device="/dev/sdc"
 # Boot from USB and wait for installation to complete
 ```
 
+## Install/Reinstall Kubernetes cluster with k3s
+```bash
+./pic reinstall-k3s [NODE_IP_1] [NODE_IP_2] [NODE_IP_3] ...
+```
+
 # Usage
 ```text
 Usage: ./pic [command]
@@ -32,4 +37,5 @@ Commands:
   stop
   restart
   status
-  help```
+  help
+```
