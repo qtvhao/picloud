@@ -24,7 +24,7 @@ NODE_NAME=$(ssh "$NODE_IP" "hostname")
 
 kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
 kubectl run test-connectivity --image=rancher/curl \
-    --restart=Always \
+    --restart=OnFailure \
     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
     http://example.com
 kubectl -n kube-system rollout restart deployment coredns
