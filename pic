@@ -12,6 +12,7 @@ if [ "$arg1" == "update" ]; then
     exit 0
 fi
 if [ "$arg1" == "recommended" ]; then
+    set -e
     echo "Installing recommended packages"
     ./pic reinstall-k3s $(hostname -I | cut -d' ' -f1)
     GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
@@ -19,6 +20,7 @@ if [ "$arg1" == "recommended" ]; then
     ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD"
     ./pic csi-s3
     ./pic redis
+    exit 0
 fi
 if [ "$arg1" == "install" ]; then
     echo "Installing Docker"
