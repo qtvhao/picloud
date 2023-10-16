@@ -29,13 +29,10 @@ kubectl run test-connectivity --image=rancher/curl \
     http://example.com
 kubectl -n kube-system rollout restart deployment coredns
 waitPodToSucceeded() {
-    kubectl get pod -l run=test-connectivity -o json | jq ".items[0].status.containerStatuses[0].state.terminated.reason"
+    kubectl get pod -l run=test-connectivity -o json | jq -r ".items[0].status.containerStatuses[0].state.terminated.reason"
 }
 while [ "$(waitPodToSucceeded)" != "Completed" ]; do
-    echo "Waiting for test-connectivity pod to complete"
-    if [ "Completed" == "$(waitPodToSucceeded)" ]; then
-        break
-    fi
+    echo "Waiting for test-connectivity pod to complete. Status: ""$(waitPodToSucceeded)"
     if [ "Error" == "$(waitPodToSucceeded)" ]; then
         echo "Error running test-connectivity pod"
     fi
