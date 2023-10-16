@@ -11,6 +11,10 @@ for NODE in $NODES; do
     fi
 done
 set -e
+if [ ! -f ./id_rsa ]; then
+    echo "Place your id_rsa file in the current directory to join nodes to this cluster"
+    exit 1
+fi
 args=("$@")
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
@@ -60,7 +64,7 @@ jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url
 for arg in $args; do
     ./pic join-k3s $arg
 done
-nodes=$(./pic list-nodename | awk '{print $1}' | tr '\n' ' ')
+nodes=$(./pic list-nodename ./id_rsa | awk '{print $1}' | tr '\n' ' ')
 for node in $nodes; do
     if [ -z "$node" ]; then
         continue

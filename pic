@@ -15,7 +15,7 @@ if [ "$arg1" == "recommended" ]; then
     set -e
     echo "Installing recommended packages"
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-    ./pic reinstall-k3s $(hostname -I | cut -d' ' -f1)
+    ./pic reinstall-k3s
     GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
     ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD"
     ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD"
