@@ -16,11 +16,11 @@ if [ "$arg1" == "recommended" ]; then
     echo "Installing recommended packages"
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     ./pic reinstall-k3s
+    ./pic redis
     GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
     ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD"
     ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD"
     ./pic csi-s3
-    ./pic redis
     exit 0
 fi
 if [ "$arg1" == "install" ]; then

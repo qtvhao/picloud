@@ -28,6 +28,10 @@ global.hosts.gitlab.name="http-gitlab-webservice-default-8181.$DOMAIN",\
 global.hosts.gitlab.https=true,\
 gitlab-runner.install=true,\
 runners.privileged=true,\
+redis.install=false,\
+global.redis.host=redis-master.default.svc.cluster.local,\
+global.redis.auth.secret=redis,\
+global.redis.auth.key=redis-password,\
 gitlab-runner.runners.privileged=true &
 #   --set global.ingress.tls.enabled=true,\
 # global.ingress.enabled=false,\
@@ -41,7 +45,6 @@ gitlab-runner.runners.privileged=true &
 #  &
 ./pic wait deploy       gitlab-minio                  gitlab-ns Available
 ./pic wait deploy       gitlab-registry               gitlab-ns Available
-kubectl wait -l statefulset.kubernetes.io/pod-name=gitlab-redis-master-0 --for=condition=ready pod --timeout=-1s -n gitlab-ns
 ./pic wait deploy       gitlab-toolbox                gitlab-ns Available
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
 ./pic wait deploy       gitlab-webservice-default     gitlab-ns Available
