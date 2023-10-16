@@ -19,9 +19,11 @@ curl -fsSL https://get.docker.com -o install-docker.sh
 docker ps > /dev/null 2>&1 || sh install-docker.sh
 rm install-docker.sh || true
 kubectl version > /dev/null 2>&1 || \
-    curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl
+    (curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl)
 helm version > /dev/null 2>&1 || \
     (curl https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz -o helm-v3.13.1-linux-amd64.tar.gz && tar -xvf helm-v3.13.1-linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 linux-amd64/helm)
+cloudflared  version || \
+    (curl https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared-linux-amd64.deb && dpkg -i cloudflared-linux-amd64.deb)
 ./k9s info > /dev/null 2>&1 || \
     (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s)
 rm k9s_Linux_amd64.tar.gz || true
