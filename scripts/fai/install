@@ -62,9 +62,9 @@ echo "Copying ssh key to fai container"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
 # echo "GITHUB_KEYS: $GITHUB_KEYS"
-echo "$GITHUB_KEYS" > ./fai/files/root-ssh-key
-docker cp ./fai/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
-rm ./fai/files/root-ssh-key
+rm -rf /srv/fai/config/files/root-ssh-key || true
+echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
+docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
 docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
 docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
 docker cp fai/files/etc/systemd/sleep.conf.d/ fai:/srv/fai/nfsroot/etc/systemd/sleep.conf.d/
