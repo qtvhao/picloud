@@ -18,6 +18,10 @@ echo "Installing k3s"
 curl -fsSL https://get.docker.com -o install-docker.sh
 docker ps > /dev/null 2>&1 || sh install-docker.sh
 rm install-docker.sh || true
+kubectl version > /dev/null 2>&1 || \
+    curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl
+helm version > /dev/null 2>&1 || \
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
 docker inspect picloud-k3s-server >/dev/null 2>&1 && docker rm -f picloud-k3s-server || echo "picloud-k3s-server not found"
 docker run -d --restart=unless-stopped \
