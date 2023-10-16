@@ -2,6 +2,7 @@ PACKAGES install-norec
 xrdp
 curl
 git
+jq
 cloudflare-warp
 netcat-traditional
 PACKAGES install
