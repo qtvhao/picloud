@@ -11,8 +11,10 @@ fi
 if [ "$USB_DEVICE" == "" ]; then
     echo
     echo "Please provide USB device"
+    echo "Run the following command to burn the image to a USB stick:"
+    echo "    ./pic dd $HOSTNAME /dev/USB_DEVICE_NAME"
     echo "List of USB devices:"
-    lsblk -n --nodeps | awk '{print $1}' | sed 's/^/    /'
+    lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd '$HOSTNAME' \/dev\//'
     exit 1
 fi
 echo "HOSTNAME: $HOSTNAME"
