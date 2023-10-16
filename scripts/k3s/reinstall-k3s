@@ -17,6 +17,7 @@ echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
 echo "Installing k3s"
 curl -fsSL https://get.docker.com -o install-docker.sh
 docker ps > /dev/null 2>&1 || sh install-docker.sh
+rm install-docker.sh || true
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
 docker inspect picloud-k3s-server >/dev/null 2>&1 && docker rm -f picloud-k3s-server || echo "picloud-k3s-server not found"
 docker run -d --restart=unless-stopped \
