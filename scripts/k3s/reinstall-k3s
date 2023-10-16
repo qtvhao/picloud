@@ -12,7 +12,7 @@ for NODE in $NODES; do
 done
 set -e
 if [ ! -f ./id_rsa ]; then
-    echo "Place your id_rsa file in the current directory to join nodes to this cluster"
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload ./id_rsa in your github account into the current directory"
     exit 1
 fi
 args=("$@")
