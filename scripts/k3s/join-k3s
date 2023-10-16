@@ -24,10 +24,21 @@ NODE_NAME=$(ssh "$NODE_IP" "hostname")
 
 kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
 kubectl run test-connectivity --image=rancher/curl \
-    --restart=Never \
+    --restart=Always \
     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
     http://example.com
-kubectl wait -l run=test-connectivity --for=condition=ready pod --timeout=-1s
-kubectl wait -l run=test-connectivity --for=condition=ready pod --timeout=-1s
-kubectl describe pod/test-connectivity
+kubectl -n kube-system rollout restart deployment coredns
+waitPodToSucceeded() {
+    kubectl get pod -l run=test-connectivity -o json | jq ".items[0].status.containerStatuses[0].state.terminated.reason"
+}
+while [ "$(waitPodToSucceeded)" != "Completed" ]; do
+    echo "Waiting for test-connectivity pod to complete"
+    if [ "Completed" == "$(waitPodToSucceeded)" ]; then
+        break
+    fi
+    if [ "Error" == "$(waitPodToSucceeded)" ]; then
+        echo "Error running test-connectivity pod"
+    fi
+    sleep 5
+done
 echo "Node $NODE_NAME is ready"
