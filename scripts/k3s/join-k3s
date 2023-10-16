@@ -27,3 +27,5 @@ kubectl run test-connectivity --image=rancher/curl \
     --restart=Never \
     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
     http://example.com
+kubectl wait -l run=test-connectivity --for=condition=ready pod --timeout=-1s
+echo "Node $NODE_NAME is ready"
