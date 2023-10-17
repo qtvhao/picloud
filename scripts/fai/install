@@ -36,28 +36,21 @@ time docker build -t fai-config -f Dockerfile.fai-config .
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
 
-stat /var/cache/apt-cacher-ng/debrep/pool/main/ > /dev/null 2>&1 || \
-(docker run --name apt-cacher-ng \
-    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
-    --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400" && \
-time (docker exec -it apt-cacher-ng bash -c "fai-config -v" > apt-cacher-ng.log 2>&1) && \
-(docker rm -f apt-cacher-ng > /dev/null 2>&1 || true))
-echo "apt-cacher-ng started"
-rm apt-cacher-ng.log > /dev/null 2>&1 || true
-stat ~/.ssh/id_rsa.pub > /dev/null 2>&1 || ssh-keygen
-
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai-config \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
-time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
-exit 0
+FAI_CONFIG_IMAGE_ID=$(docker image inspect fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
+FAI_SETUP_BASE="fai-setup-base-$FAI_CONFIG_IMAGE_ID"
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
 echo "Fai-setup finished"
-time docker commit fai-config fai-config
-echo "Fai-setup committed"
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-setup $FAI_SETUP_BASE
+echo "Fai-setup committed: $FAI_SETUP_BASE"
+docker tag $FAI_SETUP_BASE fai-setup-base
 # 
 cp scripts/fai/Dockerfile.fai-setup ./Dockerfile.fai-setup || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-setup -o ./Dockerfile.fai-setup
 time docker build -t fai-setup -f Dockerfile.fai-setup .
+exit 0
 echo "Dockerfile.fai-setup built"
 rm Dockerfile.fai-setup
 docker run --name fai \

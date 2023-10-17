@@ -1,4 +1,4 @@
-FROM fai-config
+FROM fai-setup-base
 
 RUN mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/
 RUN mkdir -p /srv/fai/nfsroot/usr/share/keyrings/
