@@ -21,6 +21,10 @@ TUNNEL_PORT=${args[2]}
 if [ -z "$TUNNEL_PORT" ]; then
     TUNNEL_PORT="22"
 fi
+EXPECTED_STATUS_CODE=${args[3]}
+if [ -z "$EXPECTED_STATUS_CODE" ]; then
+    EXPECTED_STATUS_CODE="200"
+fi
 if [ -z "$TUNNEL_NAMESPACE" ]; then
     TUNNEL_NAMESPACE="picloud-cloudflared"
 fi
@@ -132,6 +136,9 @@ while true; do
         break
     fi
     if [ "$status_code" == "403" ]; then
+        break
+    fi
+    if [ "$EXPECTED_STATUS_CODE" == "$status_code" ]; then
         break
     fi
     echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code"

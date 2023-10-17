@@ -43,8 +43,8 @@ gitlab-runner.runners.privileged=true &
 # global.kas.tls.enabled=true,\
 # nginx-ingress.enabled=false,\
 #  &
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181 502
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000 502
 ./pic wait deploy       gitlab-minio                  gitlab-ns Available
 ./pic wait deploy       gitlab-registry               gitlab-ns Available
 ./pic wait deploy       gitlab-toolbox                gitlab-ns Available
