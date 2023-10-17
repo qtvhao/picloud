@@ -1,0 +1,46 @@
+#!/bin/bash
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "IDENTIFY_FILE is empty. Specify a identify file for the new machine."
+    echo "Usage: ./pic list-nodename IDENTIFY_FILE"
+    exit 1
+fi
+chmod 600 "$IDENTIFY_FILE"
+MAX=254
+for i in `seq 2 $MAX`; do
+    timeout .05 ping -c1 "192.168.1.$i" > /dev/null 2>&1 || continue;
+    # echo
+    echo "192.168.1.$i is pingable"
+    timeout .05 nc -z "192.168.1.$i" 22 || continue;
+    # echo "192.168.1.$i:22 is pingable"
+    timeout 2 ssh \
+        -i "$IDENTIFY_FILE" \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        "192.168.1.$i" "hostname" > /dev/null 2>&1 || continue;
+    # echo "192.168.1.$i is sshable"
+    PRODUCT_NAME=$(ssh \
+        -i "$IDENTIFY_FILE" \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        "192.168.1.$i" "dmidecode" | grep "Product Name:" | head -n1 | sed 's/Product Name: //g' \
+        | sed "s/[^[:alnum:]-]/-/g" \
+        | sed -e "s/^-//g" \
+        | sed -e "s/-$//g" \
+        | tr '[:upper:]' '[:lower:]')
+    # echo "192.168.1.$i 0 $PRODUCT_NAME"
+    # echo "PRODUCT_NAME: $PRODUCT_NAME"
+    timeout 5 ssh \
+        -i "$IDENTIFY_FILE" \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        "192.168.1.$i" \
+        "stat /var/log/fai/localhost/last/boot.log" > /dev/null 2>&1 || continue;
+    # echo "192.168.1.$i is faiable"
+    echo "192.168.1.$i $(ssh \
+        -i "$IDENTIFY_FILE" \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log") $PRODUCT_NAME"
+done
