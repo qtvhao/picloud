@@ -1,12 +1,23 @@
 args=("$@")
 NODE_IP=${args[0]}
+IDENTIFY_FILE=${args[1]}
 echo "Connecting to $NODE_IP"
-ssh-keyscan -H "$NODE_IP" >> ~/.ssh/known_hosts
-ssh "$NODE_IP" "hostname" || exit 1
+if [ -z "$NODE_IP" ]; then
+    echo "NODE_IP is empty. Specify a node ip for the new machine."
+    echo "Usage: ./pic join-k3s NODE_IP IDENTIFY_FILE"
+    exit 1
+fi
+if [ ! -f $IDENTIFY_FILE ]; then
+    echo "$IDENTIFY_FILE does not exist. Please create a ssh key pair in order to connect to the new machine."
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload ./id_rsa in your github account into the current directory"
+    echo "Usage: ./pic join-k3s NODE_IP IDENTIFY_FILE"
+    exit 1
+fi
+ssh -i $IDENTIFY_FILE "$NODE_IP" "hostname" || exit 1
 echo "Connected to $NODE_IP"
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 scp /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
-ssh "$NODE_IP" "update-ca-certificates"
+ssh -i $IDENTIFY_FILE "$NODE_IP" "update-ca-certificates"
 set -e
 K3S_URL=$(jq -r '.k3s_url' k3s.json)
 K3S_TOKEN=$(jq -r '.k3s_token' k3s.json)
@@ -16,11 +27,11 @@ export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 NODE_COMMAND="apt update && apt install -y curl && curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN K3S_NODE_NAME=$K3S_NODE_NAME sh -"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
-ssh $NODE_IP "$NODE_COMMAND"
-ssh "$NODE_IP" "sudo systemctl restart k3s-agent"
+ssh -i $IDENTIFY_FILE "$NODE_IP" "$NODE_COMMAND"
+ssh -i $IDENTIFY_FILE "$NODE_IP" "sudo systemctl restart k3s-agent"
 echo "Joined worker node to this cluster"
-ssh "$NODE_IP" "(iptables -h >/dev/null 2>&1 && iptables -w -P FORWARD ACCEPT) || true"
-NODE_NAME=$(ssh "$NODE_IP" "hostname")
+ssh -i $IDENTIFY_FILE "$NODE_IP" "(iptables -h >/dev/null 2>&1 && iptables -w -P FORWARD ACCEPT) || true"
+NODE_NAME=$(ssh -i $IDENTIFY_FILE "$NODE_IP" "hostname")
 
 kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
 kubectl run test-connectivity --image=rancher/curl \

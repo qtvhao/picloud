@@ -11,8 +11,9 @@ for NODE in $NODES; do
     fi
 done
 set -e
-if [ ! -f ./id_rsa ]; then
-    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload ./id_rsa in your github account into the current directory"
+IDENTIFY_FILE="./id_rsa"
+if [ ! -f $IDENTIFY_FILE ]; then
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload $IDENTIFY_FILE in your github account"
     exit 1
 fi
 args=("$@")
@@ -62,16 +63,16 @@ jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url
 ./pic status
 # loop through $args
 for arg in $args; do
-    ./pic join-k3s $arg
+    ./pic join-k3s $arg $IDENTIFY_FILE
 done
 nodes=$(./pic list-nodename ./id_rsa | awk '{print $1}' | tr '\n' ' ')
 for node in $nodes; do
     if [ -z "$node" ]; then
         continue
     fi
-    ./pic join-k3s "$node"
+    ./pic join-k3s "$node" $IDENTIFY_FILE
 done
 
 echo
 echo "To join a worker node to this cluster, run the following command:"
-echo "./pic join-k3s <node-ip>"
+echo "./pic join-k3s <node-ip> <identify-file>"
