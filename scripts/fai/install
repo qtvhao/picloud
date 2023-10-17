@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
-rm time.log || true
-rm fai-cd.log || true
-rm fai-mirror.log || true
-rm fai-setup.log || true
+rm time.log > /dev/null 2>&1 || true
+rm fai-cd.log > /dev/null 2>&1 || true
+rm fai-mirror.log > /dev/null 2>&1 || true
+rm fai-setup.log > /dev/null 2>&1 || true
 args=("$@")
 HOSTNAME=${args[0]}
 GITHUB_USERNAME=${args[1]}
@@ -29,32 +29,26 @@ mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile ./Dockerfile.fai || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile.fai
-docker build -t fai -f Dockerfile.fai .
+time docker build -t fai -f Dockerfile.fai .
+echo "Dockerfile.fai built"
 rm Dockerfile.fai
-# rm -rf /srv/fai/ || true
-mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/ || true
-mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/ || true
-mkdir -p /srv/fai/nfsroot/usr/share/keyrings/ || true
-chmod -R 0777 /srv/fai/nfsroot/ || true
 
-stat /var/cache/apt-cacher-ng/debrep/pool/main/z/zile > /dev/null 2>&1 || \
-    time docker run --name apt-cacher-ng \
-        -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
-        -v /srv/fai/:/srv/fai/ \
-        --privileged --entrypoint /bin/bash -it fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && fai-setup -vf" > apt-cacher-ng.log
-
-docker rm -f apt-cacher-ng > /dev/null 2>&1 || true
+stat /var/cache/apt-cacher-ng/debrep/pool/main/ > /dev/null 2>&1 || \
+(docker run --name apt-cacher-ng \
+    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
+    --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400" && \
+time (docker exec -it apt-cacher-ng bash -c "fai-setup -v" > apt-cacher-ng.log 2>&1) && \
+(docker rm -f apt-cacher-ng > /dev/null 2>&1 || true))
+echo "apt-cacher-ng started"
 rm apt-cacher-ng.log > /dev/null 2>&1 || true
 cat ~/.ssh/id_rsa.pub > /dev/null 2>&1 || ssh-keygen
 
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai \
-    -v /srv/fai/:/srv/fai/ \
     -v ./fai/basefiles:/srv/fai/config/basefiles \
     -v ./fai/class:/srv/fai/config/class \
     -v ./fai/debconf:/srv/fai/config/debconf \
     -v ./fai/disk_config:/srv/fai/config/disk_config \
-    -v ./fai/fai-bookworm:/srv/fai/config/fai-bookworm \
     -v ./fai/files/etc/:/srv/fai/config/files/etc/ \
     -v ./fai/grub.cfg.install-only:/srv/fai/config/grub.cfg.install-only \
     -v ./fai/hooks:/srv/fai/config/hooks \
@@ -67,21 +61,14 @@ GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
 echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
 docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
-docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/sources.list
-docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/nfsroot.conf
-docker cp fai/files/etc/systemd/sleep.conf.d/nosuspend.conf fai:/srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf
-docker cp fai/files/etc/resolv.conf fai:/srv/fai/nfsroot/etc/resolv.conf
-curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-docker cp /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg fai:/srv/fai/nfsroot/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' ./fai/fai-bookworm/nfsroot.conf
-# 
-sudo mkdir -p --mode=0755 /usr/share/keyrings
-curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
-docker cp /usr/share/keyrings/cloudflare-main.gpg fai:/srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
-echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
-docker cp /etc/apt/sources.list.d/cloudflared.list fai:/srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
+# addition packages and repositories and keyrings
+#  END
 echo "Fai-setup starting"
-time ((docker exec -it fai fai-setup -vf) > fai-setup.log)
+time ( (docker exec -it fai fai-setup -v) > fai-setup.log )
+# Start validate
+
+# End validate
+exit 0
 cat fai-setup.log | tail -n50
 rm fai-setup.log
 
@@ -91,7 +78,8 @@ rm fai-mirror.log
 echo "Fai-mirror started"
 
 docker exec -it fai bash -c "echo \"$HOSTNAME\" > /srv/fai/nfsroot/etc/hostname"
-(docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /fai-cd.iso) > fai-cd.log
+docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/systemd/sleep.conf.d"
+time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /fai-cd.iso) > fai-cd.log)
 docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
 # docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-cd started"

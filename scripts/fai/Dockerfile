@@ -75,8 +75,19 @@ RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 	rm -f /tmp/fai-cd.patch /tmp/fai-make-nfsroot.patch /tmp/fai-mirror.patch \
 # 		/usr/sbin/fai-make-nfsroot.orig /usr/bin/fai-mirror.orig /usr/sbin/fai-cd.orig
 
-# Add these volumes to speed up fai-setup & fai-mirror
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl
+RUN mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/
+RUN mkdir -p /srv/fai/nfsroot/usr/share/keyrings/
+RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /srv/fai/nfsroot/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+RUN curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
+RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
+RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
+RUN mkdir -p /srv/fai/config/fai-bookworm/apt/
+COPY fai/files/etc/systemd/sleep.conf.d/nosuspend.conf /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf
+COPY fai/files/etc/resolv.conf fai:/srv/fai/nfsroot/etc/resolv.conf
+RUN cp /etc/apt/sources.list /srv/fai/config/fai-bookworm/apt/sources.list
+RUN cp /etc/fai/nfsroot.conf /srv/fai/config/fai-bookworm/nfsroot.conf
+RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /srv/fai/config/fai-bookworm/nfsroot.conf
 
 # RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
 CMD	test -n "pa.archive.ubuntu.com" && \
