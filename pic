@@ -203,6 +203,17 @@ if [ "$arg1" == "list-nodename" ]; then
             -o StrictHostKeyChecking=no \
             "192.168.1.$i" "hostname" || continue;
         echo "192.168.1.$i is sshable"
+        PRODUCT_NAME=$(ssh \
+            -i "$IDENTIFY_FILE" \
+            -o PasswordAuthentication=no \
+            -o StrictHostKeyChecking=no \
+            "192.168.1.$i" "dmidecode" | grep "Product Name:" | head -n1 | sed 's/Product Name: //g' \
+            | sed "s/[^[:alnum:]-]/-/g" \
+            | sed -e "s/^-//g" \
+            | sed -e "s/-$//g" \
+            | tr '[:upper:]' '[:lower:]')
+        echo "192.168.1.$i 0 $PRODUCT_NAME"
+        # echo "PRODUCT_NAME: $PRODUCT_NAME"
         timeout 5 ssh \
             -i "$IDENTIFY_FILE" \
             -o PasswordAuthentication=no \
@@ -210,12 +221,6 @@ if [ "$arg1" == "list-nodename" ]; then
             "192.168.1.$i" \
             "stat /var/log/fai/localhost/last/boot.log" > /dev/null 2>&1 || continue;
         echo "192.168.1.$i is faiable"
-        PRODUCT_NAME=$(ssh "192.168.1.$i" "dmidecode" | grep "Product Name:" | head -n1 | sed 's/Product Name: //g' \
-            | sed "s/[^[:alnum:]-]/-/g" \
-            | sed -e "s/^-//g" \
-            | sed -e "s/-$//g" \
-            | tr '[:upper:]' '[:lower:]')
-        # echo "PRODUCT_NAME: $PRODUCT_NAME"
         echo "192.168.1.$i $(ssh \
             -i "$IDENTIFY_FILE" \
             -o PasswordAuthentication=no \
