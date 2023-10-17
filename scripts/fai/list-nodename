@@ -8,13 +8,14 @@ if [ -z "$IDENTIFY_FILE" ]; then
 fi
 chmod 600 "$IDENTIFY_FILE"
 MAX=254
+echo
 for i in `seq 2 $MAX`; do
     timeout .05 ping -c1 "192.168.1.$i" > /dev/null 2>&1 || continue;
-    # echo
+    echo
     # echo "192.168.1.$i is pingable"
-    timeout .05 nc -z "192.168.1.$i" 22 || continue;
+    timeout .5 nc -z "192.168.1.$i" 22 > /dev/null 2>&1 || continue;
     # echo "192.168.1.$i:22 is pingable"
-    timeout 2 ssh \
+    timeout .5 ssh \
         -i "$IDENTIFY_FILE" \
         -o PasswordAuthentication=no \
         -o StrictHostKeyChecking=no \
