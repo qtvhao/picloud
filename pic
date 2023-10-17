@@ -13,11 +13,12 @@ if [ "$arg1" == "update" ]; then
 fi
 if [ "$arg1" == "recommended" ]; then
     set -e
+    GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
+    jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$GITLAB_ROOT_GENERATED_PASSWORD" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json
     echo "Installing recommended packages"
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     ./pic reinstall-k3s
     ./pic redis
-    GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
     ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD"
     ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD"
     ./pic csi-s3
