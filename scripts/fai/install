@@ -21,7 +21,7 @@ if [ -z "$HOSTNAME" ]; then
 fi
 echo "HOSTNAME: $HOSTNAME"
 #
-rm $HOSTNAME-fai-cd.iso || true
+rm ./dvd/$HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
 docker rm -f fai || true
@@ -45,7 +45,7 @@ FAI_CONFIG_IMAGE_ID=$(docker image inspect fai-config | jq -r ".[0].Id" | sed 's
 FAI_SETUP_BASE="fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
 echo "Fai-setup finished"
-docker stop fai-config || true
+# docker stop fai-config || true
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-config $FAI_SETUP_BASE
 docker rm -f fai-config || true
 echo "Fai-setup committed: $FAI_SETUP_BASE"
@@ -63,17 +63,22 @@ FAI_CD_BASE="fai-cd-base-$FAI_MIRROR_IMAGE_ID-$HOSTNAME"
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
     time ( (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log)
 echo "Fai-mirror finished"
-docker stop fai || true
+# docker stop fai || true
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || time docker commit fai $FAI_CD_BASE
 docker rm -f fai || true
 echo "Fai-mirror committed: $FAI_CD_BASE"
 docker tag $FAI_CD_BASE fai-cd-base
+# 
 echo "Copying ssh key to fai container"
-exit 0
+docker run --name fai \
+    -v ./dvd/:/dvd/ \
+    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
+    --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
 echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
 docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
+docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-setup starting"
 
 # Start validate
@@ -86,15 +91,10 @@ docker exec -it fai bash -c "stat /srv/fai/config/files/root-ssh-key"
 # cat fai-setup.log | tail -n50
 # rm fai-setup.log
 
-exit 0
 cat fai-mirror.log | tail -n50
-rm fai-mirror.log
-echo "Fai-mirror started"
-
-docker exec -it fai bash -c "echo \"$HOSTNAME\" > /srv/fai/nfsroot/etc/hostname"
-docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/systemd/sleep.conf.d"
-time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /fai-cd.iso) > fai-cd.log)
-docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
+rm fai-mirror.log || true
+echo "Fai-mirror finished"
+time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso) > fai-cd.log)
 # docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-cd started"
 cat fai-cd.log | tail -n50
@@ -102,12 +102,12 @@ rm  fai-cd.log || true
 
 echo
 echo
-docker cp fai:/fai-cd.iso $HOSTNAME-fai-cd.iso
+# docker cp fai:/$HOSTNAME-fai-cd.iso $HOSTNAME-fai-cd.iso
 echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
 echo "Run the following command to burn the image to a USB stick:"
-echo "    ./pic dd $HOSTNAME /dev/USB_DEVICE_NAME"
+echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"
-lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd '$HOSTNAME' \/dev\//'
+lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd ./dvd/'$HOSTNAME'-fai-cd.iso \/dev\//'
 exit 0
