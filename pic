@@ -169,7 +169,7 @@ if [ "$arg1" == "init-terraform" ]; then
 fi
 if [ "$arg1" == "fai" ]; then
     set -e
-    ./pic exec-local-or-remote "scripts/fai" \
+    time ./pic exec-local-or-remote "scripts/fai" \
     "install" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi

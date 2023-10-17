@@ -31,7 +31,7 @@ docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile ./Dockerfile.fai || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile.fai
 docker build -t fai -f Dockerfile.fai .
 rm Dockerfile.fai
-rm -rf /srv/fai/ || true
+# rm -rf /srv/fai/ || true
 mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/ || true
 mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/ || true
 mkdir -p /srv/fai/nfsroot/usr/share/keyrings/ || true
