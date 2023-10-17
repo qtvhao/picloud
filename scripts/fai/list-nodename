@@ -15,6 +15,8 @@ for i in `seq 2 $MAX`; do
     # echo "192.168.1.$i is pingable"
     timeout .5 nc -z "192.168.1.$i" 22 > /dev/null 2>&1 || continue;
     # echo "192.168.1.$i:22 is pingable"
+    ssh-keygen -R "192.168.1.$i" > /dev/null 2>&1 || true
+    ssh-keyscan "192.168.1.$i" >> ~/.ssh/known_hosts 2>&1 || true
     timeout .5 ssh \
         -i "$IDENTIFY_FILE" \
         -o PasswordAuthentication=no \
