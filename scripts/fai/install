@@ -29,6 +29,9 @@ mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
+docker image inspect debian:bookworm > /dev/null 2>&1 || \
+    docker pull debian:bookworm
+docker tag debian:bookworm debian-bookworm
 time docker build -t fai-config -f Dockerfile.fai-config .
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
@@ -45,18 +48,10 @@ stat ~/.ssh/id_rsa.pub > /dev/null 2>&1 || ssh-keygen
 
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai-config \
-    -v ./fai/basefiles:/srv/fai/config/basefiles \
-    -v ./fai/class:/srv/fai/config/class \
-    -v ./fai/debconf:/srv/fai/config/debconf \
-    -v ./fai/disk_config:/srv/fai/config/disk_config \
-    -v ./fai/files/etc/:/srv/fai/config/files/etc/ \
-    -v ./fai/grub.cfg.install-only:/srv/fai/config/grub.cfg.install-only \
-    -v ./fai/hooks:/srv/fai/config/hooks \
-    -v ./fai/package_config:/srv/fai/config/package_config \
-    -v ./fai/scripts:/srv/fai/config/scripts \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
+exit 0
 echo "Fai-setup finished"
 time docker commit fai-config fai-config
 echo "Fai-setup committed"
@@ -66,15 +61,6 @@ time docker build -t fai-setup -f Dockerfile.fai-setup .
 echo "Dockerfile.fai-setup built"
 rm Dockerfile.fai-setup
 docker run --name fai \
-    -v ./fai/basefiles:/srv/fai/config/basefiles \
-    -v ./fai/class:/srv/fai/config/class \
-    -v ./fai/debconf:/srv/fai/config/debconf \
-    -v ./fai/disk_config:/srv/fai/config/disk_config \
-    -v ./fai/files/etc/:/srv/fai/config/files/etc/ \
-    -v ./fai/grub.cfg.install-only:/srv/fai/config/grub.cfg.install-only \
-    -v ./fai/hooks:/srv/fai/config/hooks \
-    -v ./fai/package_config:/srv/fai/config/package_config \
-    -v ./fai/scripts:/srv/fai/config/scripts \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 
