@@ -23,27 +23,48 @@ echo "HOSTNAME: $HOSTNAME"
 #
 rm $HOSTNAME-fai-cd.iso || true
 
-docker rm -f fai || true
+docker rm -f fai-config || true
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
-cp scripts/fai/Dockerfile ./Dockerfile.fai || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile.fai
-time docker build -t fai -f Dockerfile.fai .
-echo "Dockerfile.fai built"
-rm Dockerfile.fai
+cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
+time docker build -t fai-config -f Dockerfile.fai-config .
+echo "Dockerfile.fai-config built"
+rm Dockerfile.fai-config
 
 stat /var/cache/apt-cacher-ng/debrep/pool/main/ > /dev/null 2>&1 || \
 (docker run --name apt-cacher-ng \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400" && \
-time (docker exec -it apt-cacher-ng bash -c "fai-setup -v" > apt-cacher-ng.log 2>&1) && \
+time (docker exec -it apt-cacher-ng bash -c "fai-config -v" > apt-cacher-ng.log 2>&1) && \
 (docker rm -f apt-cacher-ng > /dev/null 2>&1 || true))
 echo "apt-cacher-ng started"
 rm apt-cacher-ng.log > /dev/null 2>&1 || true
-cat ~/.ssh/id_rsa.pub > /dev/null 2>&1 || ssh-keygen
+stat ~/.ssh/id_rsa.pub > /dev/null 2>&1 || ssh-keygen
 
 # Grab your own configuration from https://fai-project.org/FAIme/
+docker run --name fai-config \
+    -v ./fai/basefiles:/srv/fai/config/basefiles \
+    -v ./fai/class:/srv/fai/config/class \
+    -v ./fai/debconf:/srv/fai/config/debconf \
+    -v ./fai/disk_config:/srv/fai/config/disk_config \
+    -v ./fai/files/etc/:/srv/fai/config/files/etc/ \
+    -v ./fai/grub.cfg.install-only:/srv/fai/config/grub.cfg.install-only \
+    -v ./fai/hooks:/srv/fai/config/hooks \
+    -v ./fai/package_config:/srv/fai/config/package_config \
+    -v ./fai/scripts:/srv/fai/config/scripts \
+    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
+    --privileged --entrypoint /bin/bash -d fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
+echo "Fai-setup finished"
+time docker commit fai-config fai-config
+echo "Fai-setup committed"
+# 
+cp scripts/fai/Dockerfile.fai-setup ./Dockerfile.fai-setup || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-setup -o ./Dockerfile.fai-setup
+time docker build -t fai-setup -f Dockerfile.fai-setup .
+echo "Dockerfile.fai-setup built"
+rm Dockerfile.fai-setup
 docker run --name fai \
     -v ./fai/basefiles:/srv/fai/config/basefiles \
     -v ./fai/class:/srv/fai/config/class \
@@ -55,22 +76,23 @@ docker run --name fai \
     -v ./fai/package_config:/srv/fai/config/package_config \
     -v ./fai/scripts:/srv/fai/config/scripts \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
-    --privileged --entrypoint /bin/bash -d fai -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+    --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+
 echo "Copying ssh key to fai container"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
 echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
 docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
-# addition packages and repositories and keyrings
-#  END
 echo "Fai-setup starting"
-time ( (docker exec -it fai fai-setup -v) > fai-setup.log )
-# Start validate
 
+# Start validate
+docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/resolv.conf-installserver"
+docker exec -it fai bash -c "stat /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg"
+docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf"
 # End validate
-exit 0
-cat fai-setup.log | tail -n50
-rm fai-setup.log
+
+# cat fai-setup.log | tail -n50
+# rm fai-setup.log
 
 (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log
 cat fai-mirror.log | tail -n50
