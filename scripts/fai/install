@@ -24,6 +24,7 @@ echo "HOSTNAME: $HOSTNAME"
 rm $HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
+docker rm -f fai || true
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
@@ -44,13 +45,14 @@ FAI_CONFIG_IMAGE_ID=$(docker image inspect fai-config | jq -r ".[0].Id" | sed 's
 FAI_SETUP_BASE="fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
 echo "Fai-setup finished"
-docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-setup $FAI_SETUP_BASE
+docker stop fai-config || true
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-config $FAI_SETUP_BASE
+docker rm -f fai-config || true
 echo "Fai-setup committed: $FAI_SETUP_BASE"
 docker tag $FAI_SETUP_BASE fai-setup-base
 # 
 cp scripts/fai/Dockerfile.fai-setup ./Dockerfile.fai-setup || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-setup -o ./Dockerfile.fai-setup
 time docker build -t fai-setup -f Dockerfile.fai-setup .
-exit 0
 echo "Dockerfile.fai-setup built"
 rm Dockerfile.fai-setup
 docker run --name fai \
