@@ -21,6 +21,7 @@ if [ -z "$HOSTNAME" ]; then
 fi
 echo "HOSTNAME: $HOSTNAME"
 #
+rm $HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai || true
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
@@ -30,7 +31,10 @@ docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile ./Dockerfile.fai || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile -o ./Dockerfile.fai
 docker build -t fai -f Dockerfile.fai .
 rm Dockerfile.fai
-mkdir -p /srv/fai/nfsroot/etc/systemd/ || true
+rm -rf /srv/fai/ || true
+mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/ || true
+mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/ || true
+mkdir -p /srv/fai/nfsroot/usr/share/keyrings/ || true
 chmod -R 0777 /srv/fai/nfsroot/ || true
 
 stat /var/cache/apt-cacher-ng/debrep/pool/main/z/zile > /dev/null 2>&1 || \
@@ -61,18 +65,21 @@ docker run --name fai \
 echo "Copying ssh key to fai container"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
-# echo "GITHUB_KEYS: $GITHUB_KEYS"
-rm -rf /srv/fai/config/files/root-ssh-key || true
 echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
 docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
-docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/
-docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/
-docker cp fai/files/etc/systemd/sleep.conf.d/ fai:/srv/fai/nfsroot/etc/systemd/sleep.conf.d/
+docker cp fai:/etc/apt/sources.list ./fai/fai-bookworm/apt/sources.list
+docker cp fai:/etc/fai/nfsroot.conf ./fai/fai-bookworm/nfsroot.conf
+docker cp fai/files/etc/systemd/sleep.conf.d/nosuspend.conf fai:/srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf
 docker cp fai/files/etc/resolv.conf fai:/srv/fai/nfsroot/etc/resolv.conf
 curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-docker cp /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg fai:/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+docker cp /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg fai:/srv/fai/nfsroot/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
 sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' ./fai/fai-bookworm/nfsroot.conf
 # 
+sudo mkdir -p --mode=0755 /usr/share/keyrings
+curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+docker cp /usr/share/keyrings/cloudflare-main.gpg fai:/srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
+echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+docker cp /etc/apt/sources.list.d/cloudflared.list fai:/srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
 echo "Fai-setup starting"
 time ((docker exec -it fai fai-setup -vf) > fai-setup.log)
 cat fai-setup.log | tail -n50
@@ -86,7 +93,7 @@ echo "Fai-mirror started"
 docker exec -it fai bash -c "echo \"$HOSTNAME\" > /srv/fai/nfsroot/etc/hostname"
 (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /fai-cd.iso) > fai-cd.log
 docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
-docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
+# docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-cd started"
 cat fai-cd.log | tail -n50
 rm  fai-cd.log || true

@@ -4,6 +4,7 @@ curl
 git
 jq
 cloudflare-warp
+cloudflared
 netcat-traditional
 PACKAGES install
 task-english 
