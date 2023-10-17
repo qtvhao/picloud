@@ -51,6 +51,8 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000 502
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
 ./pic wait deploy       gitlab-webservice-default     gitlab-ns Available
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
 while true; do
     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
 done

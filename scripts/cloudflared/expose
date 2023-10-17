@@ -141,7 +141,7 @@ while true; do
     if [ "$EXPECTED_STATUS_CODE" == "$status_code" ]; then
         break
     fi
-    echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code"
+    echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code. Expected status code: $EXPECTED_STATUS_CODE"
     sleep 5
 done
 echo
