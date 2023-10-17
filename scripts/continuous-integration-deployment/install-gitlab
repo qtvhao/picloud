@@ -20,13 +20,16 @@ kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 # PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
+helm uninstall gitlab --namespace gitlab-ns || true
+# global.hosts.gitlab.name="http-gitlab-webservice-default-8181.$DOMAIN",\
+# global.hosts.gitlab.https=false,\
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.edition=ce,\
-global.hosts.gitlab.name="http-gitlab-webservice-default-8181.$DOMAIN",\
-global.hosts.gitlab.https=true,\
-gitlab-runner.install=true,\
+global.kas.enabled=false,\
+gitlab.toolbox.enabled=false,\
+gitlab-runner.install=false,\
 runners.privileged=true,\
 redis.install=false,\
 global.redis.host=redis-master.default.svc.cluster.local,\
@@ -43,14 +46,16 @@ gitlab-runner.runners.privileged=true &
 # global.kas.tls.enabled=true,\
 # nginx-ingress.enabled=false,\
 #  &
+kubectl delete deployment cloudflared-http-gitlab-registry-5000 -n gitlab-ns || true
+kubectl delete deployment cloudflared-http-gitlab-webservice-default-8181 -n gitlab-ns || true
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181 502
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000 502
 ./pic wait deploy       gitlab-minio                  gitlab-ns Available
 ./pic wait deploy       gitlab-registry               gitlab-ns Available
-./pic wait deploy       gitlab-toolbox                gitlab-ns Available
+# ./pic wait deploy       gitlab-toolbox                gitlab-ns Available
+# ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
 ./pic wait deploy       gitlab-webservice-default     gitlab-ns Available
-./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000
 while true; do

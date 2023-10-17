@@ -46,3 +46,5 @@ for i in `seq 2 $MAX`; do
         "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log")
     echo "192.168.1.$i $BOOT_TIME $PRODUCT_NAME"
 done
+echo
+echo
