@@ -11,7 +11,7 @@ MAX=254
 for i in `seq 2 $MAX`; do
     timeout .05 ping -c1 "192.168.1.$i" > /dev/null 2>&1 || continue;
     # echo
-    echo "192.168.1.$i is pingable"
+    # echo "192.168.1.$i is pingable"
     timeout .05 nc -z "192.168.1.$i" 22 || continue;
     # echo "192.168.1.$i:22 is pingable"
     timeout 2 ssh \
@@ -38,9 +38,10 @@ for i in `seq 2 $MAX`; do
         "192.168.1.$i" \
         "stat /var/log/fai/localhost/last/boot.log" > /dev/null 2>&1 || continue;
     # echo "192.168.1.$i is faiable"
-    echo "192.168.1.$i $(ssh \
+    BOOT_TIME=$(ssh \
         -i "$IDENTIFY_FILE" \
         -o PasswordAuthentication=no \
         -o StrictHostKeyChecking=no \
-        "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log") $PRODUCT_NAME"
+        "192.168.1.$i" "stat -c %W /var/log/fai/localhost/last/boot.log")
+    echo "192.168.1.$i $BOOT_TIME $PRODUCT_NAME"
 done
