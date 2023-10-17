@@ -114,7 +114,7 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
     fi
     chmod +x $scriptFile
     "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
-    rm $scriptFile
+    rm $scriptFile || true
     exit 0
 fi
 if [ "$arg1" == "csi-s3" ]; then
