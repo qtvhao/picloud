@@ -58,8 +58,18 @@ rm Dockerfile.fai-setup
 docker run --name fai \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
-
+FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/^sha256://g')
+FAI_CD_BASE="fai-cd-base-$FAI_MIRROR_IMAGE_ID-$HOSTNAME"
+docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
+    time ( (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log)
+echo "Fai-mirror finished"
+docker stop fai || true
+docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || time docker commit fai $FAI_CD_BASE
+docker rm -f fai || true
+echo "Fai-mirror committed: $FAI_CD_BASE"
+docker tag $FAI_CD_BASE fai-cd-base
 echo "Copying ssh key to fai container"
+exit 0
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
 echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
@@ -70,12 +80,13 @@ echo "Fai-setup starting"
 docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/resolv.conf-installserver"
 docker exec -it fai bash -c "stat /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg"
 docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf"
+docker exec -it fai bash -c "stat /srv/fai/config/files/root-ssh-key"
 # End validate
 
 # cat fai-setup.log | tail -n50
 # rm fai-setup.log
 
-(docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log
+exit 0
 cat fai-mirror.log | tail -n50
 rm fai-mirror.log
 echo "Fai-mirror started"
