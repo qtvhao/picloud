@@ -50,7 +50,15 @@ CONTAINER_TUNNEL_NAME="cloudflared-$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNE
 (docker inspect $CONTAINER_TUNNEL_NAME >/dev/null 2>&1 && docker rm -f $CONTAINER_TUNNEL_NAME) || true
 TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1)
 echo "Tunnel ID: $TUNNEL_ID"
-chmod -R 0777 ~/.cloudflared/$TUNNEL_ID.json
+TUNNEL_FILE="~/.cloudflared/$TUNNEL_ID.json"
+if [ ! -f "$TUNNEL_FILE" ]; then
+    # remove old tunnel
+    cloudflared tunnel delete $TUNNEL_NAME
+    echo "Tunnel $TUNNEL_NAME deleted because it was not found in $TUNNEL_FILE"
+    ./pic expose $TUNNEL_PROTOCOL $TUNNEL_HOSTNAME $TUNNEL_PORT
+    exit 0
+fi
+chmod -R 0777 $TUNNEL_FILE
 
 kubectl get namespace $TUNNEL_NAMESPACE >/dev/null 2>&1 || kubectl create namespace $TUNNEL_NAMESPACE
 kubectl get secret tunnel-credentials -n $TUNNEL_NAMESPACE >/dev/null 2>&1 && kubectl delete secret tunnel-credentials -n $TUNNEL_NAMESPACE || true
