@@ -109,5 +109,5 @@ echo "Ready to burn."
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"
-lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd ./dvd/'$HOSTNAME'-fai-cd.iso \/dev\//'
+lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd .\/dvd\/'$HOSTNAME'-fai-cd.iso \/dev\//'
 exit 0

@@ -2,7 +2,7 @@
 syslinux -h > /dev/null 2>&1 || apt-get install syslinux -y
 pv -h > /dev/null 2>&1 || apt-get install pv -y
 args=("$@")
-HOSTNAME=${args[0]}
+ISO_FILE=${args[0]}
 USB_DEVICE=${args[1]}
 if [ "$HOSTNAME" == "" ]; then
     echo "Please provide hostname"
@@ -12,14 +12,14 @@ if [ "$USB_DEVICE" == "" ]; then
     echo
     echo "Please provide USB device"
     echo "Run the following command to burn the image to a USB stick:"
-    echo "    ./pic dd $HOSTNAME /dev/USB_DEVICE_NAME"
+    echo "    ./pic dd $ISO_FILE /dev/USB_DEVICE_NAME"
     echo "List of USB devices:"
-    lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd '$HOSTNAME' \/dev\//'
+    lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd '$ISO_FILE' \/dev\//'
     exit 1
 fi
-echo "HOSTNAME: $HOSTNAME"
+echo "ISO_FILE: $ISO_FILE"
 echo "USB_DEVICE: $USB_DEVICE"
-FILE_SIZE_IN_MB=$(du -m $HOSTNAME-fai-cd.iso | cut -f1)
+FILE_SIZE_IN_MB=$(du -m $ISO_FILE | cut -f1)
 echo "File size in MB: $FILE_SIZE_IN_MB""Mb"
 echo "Deleting All Partitions From $USB_DEVICE"
 
@@ -47,7 +47,7 @@ parted -s $USB_DEVICE print
 # exit 0
 # Create file system ext4 with label "FAI" on $USB_DEVICE partition 2
 # copy $HOSTNAME-fai-cd.iso to $USB_DEVICE partition 1
-time (dd if=$HOSTNAME-fai-cd.iso of=$USB_DEVICE bs=4M status=progress && sync)
+time (dd if=$ISO_FILE of=$USB_DEVICE bs=4M status=progress && sync)
 eject $USB_DEVICE
 # mkdir -p /mnt/fai-usb
 # mount $USB_DEVICE /mnt/fai-usb
