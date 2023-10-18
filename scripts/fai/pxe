@@ -18,12 +18,15 @@ python3 --version || apt install -y python3
 xorriso -version > /dev/null 2>&1 || apt install -y xorriso
 echo
 apt install python3.11-venv -y
+(cd /root/picloud/metal/roles/pxe_server/files/ && docker compose down) || true;
+rm -rf ./metal/roles/pxe_server/files/data/os/ || true
 stat venv > /dev/null 2>&1 || python3 -m venv venv
 source ./venv/bin/activate
 ansible --version
 echo
 pip install docker
 pip install ansible
+pip install netaddr
 # pip install docker-compose
 cp $ISO_FILE ./metal/roles/pxe_server/files/data/iso/image.iso
 echo
@@ -31,4 +34,4 @@ export env=prod
 (cd ./metal/ && 	ansible-playbook \
 		--inventory inventories/${env}.yml \
 		boot.yml)
-(cd /root/picloud/metal/roles/pxe_server/files/ && docker compose up -d)
+(cd /root/picloud/metal/roles/pxe_server/files/ && docker compose up)
