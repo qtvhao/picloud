@@ -8,7 +8,7 @@ if [ -z "$ISO_FILE" ]; then
 fi
 echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
-make -v > /dev/null 2>&1 ||
+make -v > /dev/null 2>&1 || \
     apt install -y make
 ansible-playbook --version > /dev/null 2>&1 || \
     apt install -y ansible
