@@ -1,4 +1,7 @@
 #!/bin/bash
+curl -fsSL https://get.docker.com -o install-docker.sh
+docker ps > /dev/null 2>&1 || sh install-docker.sh
+stat ~/.ssh/id_rsa.pub || ssh-keygen
 set -e
 rm time.log > /dev/null 2>&1 || true
 rm fai-cd.log > /dev/null 2>&1 || true
@@ -33,6 +36,7 @@ cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw
 docker image inspect debian:bookworm > /dev/null 2>&1 || \
     docker pull debian:bookworm
 docker tag debian:bookworm debian-bookworm
+# 
 time docker build -t fai-config -f Dockerfile.fai-config .
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
@@ -76,6 +80,7 @@ docker run --name fai \
     --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
+mkdir -p /srv/fai/config/files/ || true
 echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
 docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
 docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
@@ -106,6 +111,8 @@ echo
 echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
+echo "Rung "./pic pxe ./dvd/$HOSTNAME-fai-cd.iso" to start PXE server and boot the machine from network."
+echo "    ./pic pxe ./dvd/z440-fai-cd.iso"
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"

@@ -1,8 +1,8 @@
-- name: Start the ephemeral PXE server
-  community.docker.docker_compose:
-    project_src: "{{ role_path }}/files"
-    state: present
-    build: true
+# - name: Start the ephemeral PXE server
+#   community.docker.docker_compose:
+#     project_src: "{{ role_path }}/files"
+#     state: present
+#     build: true
 - name: Get Docker info
   docker_host_info: {}
   register: docker_info_result
@@ -43,8 +43,8 @@
 #     mode: 0644
 #   loop: "{{ groups['metal'] }}"
 
-- name: Start the ephemeral PXE server
-  community.docker.docker_compose:
-    project_src: "{{ role_path }}/files"
-    state: present
-    build: true
+# - name: Start the ephemeral PXE server
+#   community.docker.docker_compose:
+#     project_src: "{{ role_path }}/files"
+#     state: present
+#     build: true

@@ -8,18 +8,27 @@ if [ -z "$ISO_FILE" ]; then
 fi
 echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
-make -v > /dev/null 2>&1 || \
+make -v || \
     apt install -y make
 ansible-playbook --version > /dev/null 2>&1 || \
     apt install -y ansible
-pip3 > /dev/null 2>&1 \
-    || apt install -y python3-pip
-python --version > /dev/null 2>&1 \
-    || apt install -y python
+pip3 --version > /dev/null 2>&1 || \
+    apt install -y python3-pip
 python3 --version || apt install -y python3
 xorriso -version > /dev/null 2>&1 || apt install -y xorriso
-pip install docker==4.4.4
-pip install docker-compose
+echo
+apt install python3.11-venv -y
+stat venv > /dev/null 2>&1 || python3 -m venv venv
+source ./venv/bin/activate
+ansible --version
+echo
+pip install docker
 pip install ansible
+# pip install docker-compose
 cp $ISO_FILE ./metal/roles/pxe_server/files/data/iso/image.iso
-make -C metal
+echo
+export env=prod
+(cd ./metal/ && 	ansible-playbook \
+		--inventory inventories/${env}.yml \
+		boot.yml)
+(cd /root/picloud/metal/roles/pxe_server/files/ && docker compose up -d)
