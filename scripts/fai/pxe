@@ -1,15 +1,24 @@
 #!/bin/bash
 set -e
+args=("$@")
+ISO_FILE=${args[0]}
+if [ -z "$ISO_FILE" ]; then
+    echo "ISO_FILE is empty"
+    exit 1
+fi
+echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
-make > /dev/null 2>&1 ||
+make -v > /dev/null 2>&1 ||
     apt install -y make
-ansible-playbook > /dev/null 2>&1 || \
+ansible-playbook --version > /dev/null 2>&1 || \
     apt install -y ansible
 pip > /dev/null 2>&1 \
     || apt install -y python3-pip
+xorriso -version || apt install -y xorriso
 pip install docker
 pip3 install ansible
 PYTHON_VERSION=$(python3 --version | cut -d' ' -f2 | cut -d'.' -f1-2)
 echo "Python version: $PYTHON_VERSION"
 python3 --version || apt install -y python3
+cp $ISO_FILE ./metal/roles/pxe_server/files/data/iso/image.iso
 make -C metal
