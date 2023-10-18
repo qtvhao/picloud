@@ -17,21 +17,55 @@ pip3 --version > /dev/null 2>&1 || \
 python3 --version || apt install -y python3
 xorriso -version > /dev/null 2>&1 || apt install -y xorriso
 echo
-apt install python3.11-venv -y
+stat venv > /dev/null 2>&1 || apt install python3.11-venv -y
 (cd /root/picloud/metal/roles/pxe_server/files/ && docker compose down) || true;
 rm -rf ./metal/roles/pxe_server/files/data/os/ || true
 stat venv > /dev/null 2>&1 || python3 -m venv venv
 source ./venv/bin/activate
 ansible --version
 echo
-pip install docker
-pip install ansible
-pip install netaddr
+(pip list | grep docker > /dev/null 2>&1) || \
+    pip install docker
+(pip list | grep ansible > /dev/null 2>&1) || \
+    pip install ansible
+(pip list | grep netaddr > /dev/null 2>&1) || \
+    pip install netaddr
 # pip install docker-compose
 cp $ISO_FILE ./metal/roles/pxe_server/files/data/iso/image.iso
+wget -nc http://ftp.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/netboot.tar.gz
+# Unpack netboot.tar.gz to ./tftp
+mkdir -p ./metal/roles/pxe_server/files/data/tftp/ || true
+tar -xzvf netboot.tar.gz -C ./metal/roles/pxe_server/files/data/tftp
+# tar -xzvf netboot.tar.gz > /dev/null 2>&1
+
 echo
 export env=prod
 (cd ./metal/ && 	ansible-playbook \
 		--inventory inventories/${env}.yml \
 		boot.yml)
-(cd /root/picloud/metal/roles/pxe_server/files/ && docker compose up)
+rm ./metal/roles/pxe_server/files/data/os/EFI/boot/grubx64.efi || true
+rm -rf ./metal/roles/pxe_server/files/data/os/EFI/boot/grub || true
+
+#   - 
+#   - ./data/os/EFI/boot/pxelinux.0:/tftp/pxelinux.0
+#   # - ./data/os/EFI/boot/grubx64.efi:/tftp/grubx64.efi
+#   - ./data/os/images/pxeboot/vmlinuz:/tftp/vmlinuz
+    # mv ./os/images/pxeboot/initrd.img ./tftp/initrd.img && \
+    # mv ./os/images/pxeboot/vmlinuz ./tftp/vmlinuz && \
+( cd ./metal/roles/pxe_server/files/data/ && \
+    mv ./tftp/debian-installer/amd64/grubx64.efi ./tftp/grubx64.efi && \
+    mv ./tftp/debian-installer/amd64/pxelinux.0 ./tftp/pxelinux.0 && \
+    mv ./tftp/debian-installer/amd64/grub ./tftp/grub && \
+    mv ./tftp/grub/grub.cfg ./tftp/grub.cfg \
+)
+( cd ./metal/roles/pxe_server/files/data/os/EFI/boot/ && \
+ln -s ../../../tftp/debian-installer/amd64/grubx64.efi . && \
+ln -s ../../../tftp/debian-installer/amd64/pxelinux.0 . && \
+ln -s ../../../tftp/debian-installer/amd64/grub . )
+# ln -s ../../../tftp/debian-installer/amd64/ldlinux.c32 . && \
+# rm netboot.tar.gz
+# mkdir -p ./metal/roles/pxe_server/files/data/os/EFI/BOOT/grub/ || true
+# cp -r   debian-installer/amd64/grub/           ./metal/roles/pxe_server/files/data/os/EFI/BOOT/
+# cp      debian-installer/amd64/grubx64.efi    ./metal/roles/pxe_server/files/data/os/EFI/BOOT/
+echo "Provisioning on metal machine done"
+(cd ./metal/roles/pxe_server/files/ && docker compose up)

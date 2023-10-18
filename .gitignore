@@ -9,3 +9,5 @@ k8s/.docker-registry-data/docker/registry/v2/repositories/
 k8s/.docker-registry-data/scheduler-state.json
 venv/
 metal/roles/pxe_server/files/data/os/
+debian-installer/
+metal/roles/pxe_server/files/data/tftp/
