@@ -8,6 +8,8 @@ if [ -z "$ISO_FILE" ]; then
 fi
 echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
+docker exec -it fai bash
+exit 0
 make -v || \
     apt install -y make
 ansible-playbook --version > /dev/null 2>&1 || \
@@ -19,6 +21,7 @@ xorriso -version > /dev/null 2>&1 || apt install -y xorriso
 echo
 stat venv > /dev/null 2>&1 || apt install python3.11-venv -y
 (cd /root/picloud/metal/roles/pxe_server/files/ && docker compose down) || true;
+rm -rf ./metal/roles/pxe_server/files/data/tftp/ || true
 rm -rf ./metal/roles/pxe_server/files/data/os/ || true
 stat venv > /dev/null 2>&1 || python3 -m venv venv
 source ./venv/bin/activate
@@ -40,11 +43,6 @@ tar -xzvf netboot.tar.gz -C ./metal/roles/pxe_server/files/data/tftp
 
 echo
 export env=prod
-(cd ./metal/ && 	ansible-playbook \
-		--inventory inventories/${env}.yml \
-		boot.yml)
-rm ./metal/roles/pxe_server/files/data/os/EFI/boot/grubx64.efi || true
-rm -rf ./metal/roles/pxe_server/files/data/os/EFI/boot/grub || true
 
 #   - 
 #   - ./data/os/EFI/boot/pxelinux.0:/tftp/pxelinux.0
@@ -55,13 +53,17 @@ rm -rf ./metal/roles/pxe_server/files/data/os/EFI/boot/grub || true
 ( cd ./metal/roles/pxe_server/files/data/ && \
     mv ./tftp/debian-installer/amd64/grubx64.efi ./tftp/grubx64.efi && \
     mv ./tftp/debian-installer/amd64/pxelinux.0 ./tftp/pxelinux.0 && \
-    mv ./tftp/debian-installer/amd64/grub ./tftp/grub && \
+    mv ./tftp/debian-installer/amd64/grub ./tftp/ && \
     mv ./tftp/grub/grub.cfg ./tftp/grub.cfg \
 )
-( cd ./metal/roles/pxe_server/files/data/os/EFI/boot/ && \
-ln -s ../../../tftp/debian-installer/amd64/grubx64.efi . && \
-ln -s ../../../tftp/debian-installer/amd64/pxelinux.0 . && \
-ln -s ../../../tftp/debian-installer/amd64/grub . )
+(cd ./metal/ && 	ansible-playbook \
+		--inventory inventories/${env}.yml \
+		boot.yml)
+
+# ( cd ./metal/roles/pxe_server/files/data/os/EFI/boot/ && \
+# ln -s ../../../tftp/debian-installer/amd64/grubx64.efi . && \
+# ln -s ../../../tftp/debian-installer/amd64/pxelinux.0 . && \
+# ln -s ../../../tftp/debian-installer/amd64/grub . )
 # ln -s ../../../tftp/debian-installer/amd64/ldlinux.c32 . && \
 # rm netboot.tar.gz
 # mkdir -p ./metal/roles/pxe_server/files/data/os/EFI/BOOT/grub/ || true

@@ -74,8 +74,10 @@ echo "Fai-mirror committed: $FAI_CD_BASE"
 docker tag $FAI_CD_BASE fai-cd-base
 # 
 echo "Copying ssh key to fai container"
-docker run --name fai \
+docker run --net host --name fai \
     -v ./dvd/:/dvd/ \
+    --cap-add=NET_ADMIN \
+    -v ./dnsmasq.conf:/etc/dnsmasq.conf \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
