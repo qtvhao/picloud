@@ -26,9 +26,15 @@ while true; do
     break;
 done
 echo "IP_ADDRESS: $IP_ADDRESS"
-ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
-
+# Wait for node to be shutdown
 while true; do
+    echo "Waiting for node to be shutdown"
+    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
+    sleep 2
+done
+docker restart fai || true
+while true; do
+    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo "Waiting for node to be ready"
     sleep 2
     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break || continue;
@@ -41,10 +47,13 @@ done
 while true; do
     echo "SSH is ready. Waiting for private key to be ready"
     sleep 2
+    ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
     ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts > /dev/null 2>&1 || true
     ssh \
         -o PasswordAuthentication=no \
         -o StrictHostKeyChecking=no \
         -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" && break || continue;
 done
+echo "Now you can SSH to the node with this command:"
+echo "  ssh -i $IDENTITY_FILE root@$IP_ADDRESS"
 
