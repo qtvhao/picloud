@@ -75,7 +75,8 @@ RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 	rm -f /tmp/fai-cd.patch /tmp/fai-make-nfsroot.patch /tmp/fai-mirror.patch \
 # 		/usr/sbin/fai-make-nfsroot.orig /usr/bin/fai-mirror.orig /usr/sbin/fai-cd.orig
 
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl dnsmasq
+
     # -v ./fai/basefiles:/srv/fai/config/basefiles \
     # -v ./fai/class:/srv/fai/config/class \
     # -v ./fai/debconf:/srv/fai/config/debconf \
