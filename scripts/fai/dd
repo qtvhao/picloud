@@ -4,17 +4,20 @@ pv -h > /dev/null 2>&1 || apt-get install pv -y
 args=("$@")
 ISO_FILE=${args[0]}
 USB_DEVICE=${args[1]}
-if [ "$HOSTNAME" == "" ]; then
-    echo "Please provide hostname"
+if [ "$ISO_FILE" == "" ]; then
+    echo "Please provide iso file"
+    echo "Run the following command to burn the image to a USB stick:"
+    echo "    ./pic dd \$ISO_FILE /dev/USB_DEVICE_NAME"
     exit 1
 fi
 if [ "$USB_DEVICE" == "" ]; then
     echo
     echo "Please provide USB device"
     echo "Run the following command to burn the image to a USB stick:"
-    echo "    ./pic dd $ISO_FILE /dev/USB_DEVICE_NAME"
+    echo "    ./pic dd \$ISO_FILE /dev/USB_DEVICE_NAME"
     echo "List of USB devices:"
-    lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd '$ISO_FILE' \/dev\//'
+    ISO_FILE_SED=$(echo $ISO_FILE | sed 's/\//\\\//g')
+    lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd '$ISO_FILE_SED' \/dev\//'
     exit 1
 fi
 echo "ISO_FILE: $ISO_FILE"
