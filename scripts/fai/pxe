@@ -8,6 +8,14 @@ if [ -z "$ISO_FILE" ]; then
 fi
 echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
+docker exec -it fai bash -c "rm /etc/exports || true"
+hostnameI=$(hostname -I | awk '{print $1}')
+echo "/srv/fai/config $hostnameI/16(async,ro,no_subtree_check)" > ./exports
+echo "/srv/fai/nfsroot $hostnameI/16(async,ro,no_subtree_check,no_root_squash)" >> ./exports
+docker cp ./exports fai:/etc/exports
+docker restart fai
+# http://192.168.1.226/srv/fai/config
+docker exec -it fai bash -c "service nginx start"
 docker exec -it fai bash -c "dnsmasq -k"
 exit 0
 make -v || \
