@@ -9,7 +9,7 @@ RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
 COPY fai/fai-bookworm /srv/fai/config/fai-bookworm
 RUN mkdir -p /srv/fai/config/fai-bookworm/apt/
 COPY fai/files/etc/systemd/sleep.conf.d/nosuspend.conf /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf
-COPY fai/files/etc/resolv.conf fai:/srv/fai/nfsroot/etc/resolv.conf
+COPY fai/files/etc/resolv.conf /srv/fai/nfsroot/etc/resolv.conf
 RUN cp /etc/apt/sources.list /srv/fai/config/fai-bookworm/apt/sources.list
 RUN cp /etc/fai/nfsroot.conf /srv/fai/config/fai-bookworm/nfsroot.conf
 RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /srv/fai/config/fai-bookworm/nfsroot.conf

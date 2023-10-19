@@ -7,5 +7,5 @@ USERPW='$6$AicjViLEvxJIKVLy$0vfsIUIQ698aA7IMOx1fwK4Y4l8rm9J28Yhz0XjcGHPZOUy0HCVX
 release=bookworm
 secsuite=bookworm-security
 bpo=
-postinst=
-rclocal=
+postinst=mac.sh
+rclocal=1

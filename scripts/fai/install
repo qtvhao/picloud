@@ -28,7 +28,7 @@ rm ./dvd/$HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
 docker rm -f fai || true
-export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
+export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
@@ -91,13 +91,6 @@ docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-
 docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-setup starting"
 
-# Start validate
-docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/resolv.conf-installserver"
-docker exec -it fai bash -c "stat /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg"
-docker exec -it fai bash -c "stat /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf"
-docker exec -it fai bash -c "stat /srv/fai/config/files/root-ssh-key"
-# End validate
-
 # cat fai-setup.log | tail -n50
 # rm fai-setup.log
 
@@ -105,7 +98,14 @@ cat fai-mirror.log | tail -n50
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
 time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso) > fai-cd.log)
-time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME -f -S /var/www/html/squash.img) > fai-cd.log)
+echo "====" >> fai-cd.log
+time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -m /tmp/$HOSTNAME -f -S /var/www/html/squash.img) >> fai-cd.log)
+# Start validate
+docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/etc/resolv.conf-installserver"
+docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg"
+docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf"
+docker exec -it fai bash -c "stat -c '%s' /srv/fai/config/files/root-ssh-key"
+# End validate
 # docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-cd started"
 cat fai-cd.log | tail -n50

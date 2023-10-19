@@ -68,24 +68,10 @@ RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 	# chmod +x /usr/local/bin/*
 RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
 RUN cp /etc/apt/sources.list /etc/fai/apt/
-# Apply some patches
-# RUN	patch /usr/sbin/fai-cd < /tmp/fai-cd.patch && \
-# 	patch /usr/bin/fai-mirror < /tmp/fai-mirror.patch && \
-# 	patch /usr/sbin/fai-make-nfsroot < /tmp/fai-make-nfsroot.patch && \
-# 	rm -f /tmp/fai-cd.patch /tmp/fai-make-nfsroot.patch /tmp/fai-mirror.patch \
-# 		/usr/sbin/fai-make-nfsroot.orig /usr/bin/fai-mirror.orig /usr/sbin/fai-cd.orig
-
+# 
 RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl dnsmasq nginx
-
-    # -v ./fai/basefiles:/srv/fai/config/basefiles \
-    # -v ./fai/class:/srv/fai/config/class \
-    # -v ./fai/debconf:/srv/fai/config/debconf \
-    # -v ./fai/disk_config:/srv/fai/config/disk_config \
-    # -v ./fai/files/etc/:/srv/fai/config/files/etc/ \
-    # -v ./fai/grub.cfg.install-only:/srv/fai/config/grub.cfg.install-only \
-    # -v ./fai/hooks:/srv/fai/config/hooks \
-    # -v ./fai/package_config:/srv/fai/config/package_config \
-    # -v ./fai/scripts:/srv/fai/config/scripts \
+RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
+# 
 COPY fai/basefiles /srv/fai/config/basefiles
 COPY fai/class /srv/fai/config/class
 COPY fai/debconf /srv/fai/config/debconf

@@ -1,0 +1,2 @@
+mkdir /etc/systemd/sleep.conf.d/
+echo "" > /etc/systemd/sleep.conf.d/nosuspend.conf

@@ -1,4 +1,5 @@
-deb http://127.0.0.1:9999/debian/ 			bookworm 				main
-deb http://127.0.0.1:9999/debian/ 			bookworm-updates 		main
-deb http://127.0.0.1:9999/debian-security/ 	bookworm-security 	main
+deb http://127.0.0.1:9999/debian            bookworm            main contrib non-free non-free-firmware
+deb http://127.0.0.1:9999/debian            bookworm-updates    main contrib non-free non-free-firmware
+deb http://127.0.0.1:9999/debian-security   bookworm-security   main contrib non-free non-free-firmware
+#deb http://127.0.0.1:9999/debian           bookworm-backports  main contrib non-free
 deb http://fai-project.org/download bookworm koeln

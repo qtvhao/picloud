@@ -1,10 +1,12 @@
 PACKAGES install-norec
 xrdp
 curl
+wget
 git
 jq
 cloudflare-warp
 cloudflared
 netcat-traditional
+
 PACKAGES install
 task-english 

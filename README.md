@@ -32,9 +32,12 @@ github_username="qtvhao" # set your own github username
 # Boot from USB and wait for installation to complete
 ```
 ## Automated bare metal installation with PXE boot
-Ensure Boot from Network when Wake on LAN is enabled in BIOS.
-Ensure Boot mode is set to Legacy BIOS.
-Ensure Boot order is not set to Network to avoid loop booting.
+
+By default, your machine will reboot after installation.
+
+- Make sure bare metal is Boot from Network when Wake on LAN is enabled in BIOS.
+- Make sure bare metal has Boot mode set to Legacy BIOS.
+- Make sure bare metal has Boot order is not "Network first" (to avoid loop booting).
 
 ## Install/Reinstall Kubernetes cluster with k3s
 
