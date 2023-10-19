@@ -102,7 +102,7 @@ docker exec -it fai bash -c "stat /srv/fai/config/files/root-ssh-key"
 cat fai-mirror.log | tail -n50
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
-# fai-cd -M -S squash.img
+time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso) > fai-cd.log)
 time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -M -S /var/www/html/squash.img) > fai-cd.log)
 # docker exec -it fai cat /srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-cd started"
