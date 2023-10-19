@@ -31,11 +31,20 @@ ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
 while true; do
     echo "Waiting for node to be ready"
     sleep 2
-    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || continue;
+    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break || continue;
+done
+while true; do
     echo "Waiting for SSH to be ready"
-    nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 || continue;
-    echo "SSH is ready"
-    ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts;
-    ssh -o StrictHostKeyChecking=no -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" && break || continue;
+    sleep 2
+    nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;
+done
+while true; do
+    echo "SSH is ready. Waiting for private key to be ready"
+    sleep 2
+    ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts > /dev/null 2>&1 || true
+    ssh \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" && break || continue;
 done
 
