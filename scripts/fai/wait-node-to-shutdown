@@ -13,6 +13,7 @@ if [ -z "$IDENTITY_FILE" ]; then
 fi
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
+    echo
     echo "Make sure your client machine is turned off"
     sleep 3
     DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
