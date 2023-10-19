@@ -32,6 +32,7 @@ export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
+warp-cli connect
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
 docker image inspect debian:bookworm > /dev/null 2>&1 || \
     docker pull debian:bookworm
@@ -42,7 +43,6 @@ echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
 
 # Grab your own configuration from https://fai-project.org/FAIme/
-warp-cli connect
 docker run --name fai-config \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
@@ -64,7 +64,8 @@ docker run --name fai \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/^sha256://g')
-FAI_CD_BASE="fai-cd-base-$FAI_MIRROR_IMAGE_ID-$HOSTNAME"
+FAI_CD_BASE_FULL="$FAI_MIRROR_IMAGE_ID-$HOSTNAME-$cl"
+FAI_CD_BASE="fai-cd-base-"$(echo $FAI_CD_BASE_FULL | md5sum | cut -c1-20)
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
     time ( (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log)
 echo "Fai-mirror finished"
