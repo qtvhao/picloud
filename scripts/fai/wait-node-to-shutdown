@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+args=("$@")
+MAC_ADDRESS=${args[0]}
+if [ -z "$MAC_ADDRESS" ]; then
+    echo "MAC_ADDRESS is empty"
+    exit 1
+fi
+IDENTITY_FILE=${args[1]}
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty"
+    exit 1
+fi
+while true; do
+    wakeonlan $MAC_ADDRESS
+    echo "Make sure your client machine is turned off"
+    sleep 3
+    DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
+    MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
+    MATCH_LINE=$(echo "$DNSMASQ_LOG" | grep "sent /srv/tftp/fai/pxelinux.cfg/01-$MAC_ADDRESS_SED to") || true
+    if [ -z "$MATCH_LINE" ]; then
+        continue
+    fi
+    IP_ADDRESS=$(echo $MATCH_LINE | awk '{print $8}')
+    break;
+done
+echo "IP_ADDRESS: $IP_ADDRESS"
+ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
+
+while true; do
+    echo "Waiting for node to be ready"
+    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || continue;
+    echo "Waiting for SSH to be ready"
+    nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 || continue;
+    echo "SSH is ready"
+    ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts;
+    ssh -o StrictHostKeyChecking=no -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" && break || continue;
+    sleep 2
+done
+

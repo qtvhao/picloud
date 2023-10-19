@@ -189,6 +189,12 @@ if [ "$arg1" == "pxe" ]; then
     exit 0
     # status=progress
 fi
+if [ "$arg1" == "wait-node-to-shutdown" ]; then
+    set -e
+    ./pic exec-local-or-remote "scripts/fai" \
+    "wait-node-to-shutdown" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    exit 0
+fi
 if [ "$arg1" == "list-nodename" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/fai" \

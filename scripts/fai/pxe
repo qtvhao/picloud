@@ -6,6 +6,11 @@ if [ -z "$MAC_ADDRESS" ]; then
     echo "MAC_ADDRESS is empty"
     exit 1
 fi
+IDENTITY_FILE=${args[1]}
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty"
+    exit 1
+fi
 warp-cli disconnect || true
 # echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
@@ -22,25 +27,7 @@ docker exec -it fai bash -c "rm /tmp/dnsmasq.log"
 docker exec -it fai bash -c "dnsmasq"
 # docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
 # docker exec -it fai bash -c "chmod 0777 /tmp/dnsmasq.log"
-while true; do
-    wakeonlan $MAC_ADDRESS
-    sleep 15
-    DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
-    echo "DNSMASQ_LOG: $DNSMASQ_LOG"
-    # sent /srv/tftp/fai/pxelinux.cfg/01-8c-dc-d4-34-0c-f0 to 192.168.1.226
-    MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
-    echo "MAC_ADDRESS_SED: $MAC_ADDRESS_SED"
-    MATCH_LINE=$(echo "$DNSMASQ_LOG" | grep "sent /srv/tftp/fai/pxelinux.cfg/01-$MAC_ADDRESS_SED to") || true
-    echo "MATCH_LINE: $MATCH_LINE"
-    # MATCH_LINE: Oct 19 19:30:42 dnsmasq-tftp[80]: sent /srv/tftp/fai/pxelinux.cfg/01-8c-dc-d4-34-0c-f0 to 192.168.1.226
-    if [ -z "$MATCH_LINE" ]; then
-        echo "MATCH_LINE is empty"
-        continue
-    fi
-    echo "MATCH_LINE is not empty"
-    IP_ADDRESS=$(echo $MATCH_LINE | awk '{print $9}')
-    echo "IP_ADDRESS: $IP_ADDRESS"
-done
+./pic wait-node-to-shutdown $MAC_ADDRESS $IDENTITY_FILE
 
 exit 0
 make -v || \
