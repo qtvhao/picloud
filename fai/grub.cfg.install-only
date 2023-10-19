@@ -46,12 +46,12 @@ menuentry "" {
 }
 menuentry "FAI.me installation" {
     search --set=root --file /FAI-CD
-    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt,reboot" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ip=eth0:on quiet
+    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ip=eth0:on quiet
     initrd  /boot/initrd.img
 }
 menuentry "FAI.me installation (no network during installation)" {
     search --set=root --file /FAI-CD
-    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt,reboot" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD quiet
+    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD quiet
     initrd  /boot/initrd.img
 }
 

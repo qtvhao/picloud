@@ -28,7 +28,7 @@ rm ./dvd/$HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
 docker rm -f fai || true
-export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,REBOOT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
+export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true

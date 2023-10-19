@@ -55,6 +55,7 @@ while true; do
         -o StrictHostKeyChecking=no \
         -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" && break || continue;
 done
+echo
 echo "Now you can SSH to the node with this command:"
 echo "  ssh -i $IDENTITY_FILE root@$IP_ADDRESS"
 
