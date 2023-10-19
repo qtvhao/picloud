@@ -8,7 +8,7 @@ if [ -z "$ISO_FILE" ]; then
 fi
 echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
-docker exec -it fai bash
+docker exec -it fai bash -c "dnsmasq -k"
 exit 0
 make -v || \
     apt install -y make
