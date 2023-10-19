@@ -1,5 +1,6 @@
 # picloud
-- [x] Automated bare metal installation with [FAI](https://fai-project.org/)
+- [x] Automated image creation with [FAI](https://fai-project.org/)
+- [x] Automated bare metal installation with PXE boot
 - [x] Automated Kubernetes installation and management with [k3s](https://k3s.io/)
 - [x] Expose services to the internet securely with [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
 - [x] GitLab CI/CD integration
@@ -30,6 +31,10 @@ github_username="qtvhao" # set your own github username
 ./pic dd $host_name $usb_device
 # Boot from USB and wait for installation to complete
 ```
+## Automated bare metal installation with PXE boot
+Ensure Boot from Network when Wake on LAN is enabled in BIOS.
+Ensure Boot mode is set to Legacy BIOS.
+Ensure Boot order is not set to Network to avoid loop booting.
 
 ## Install/Reinstall Kubernetes cluster with k3s
 
