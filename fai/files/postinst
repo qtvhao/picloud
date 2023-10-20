@@ -4,3 +4,7 @@ echo "AllowSuspend=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
 echo "AllowHibernation=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
 echo "AllowSuspendThenHibernate=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
 echo "AllowHybridSleep=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
+
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+apt update
