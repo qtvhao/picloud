@@ -24,6 +24,7 @@ docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename $IDENTITY_FILE
 ```
 
 ## FAI (Fully Automated Installation)
+[![asciicast](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
 ```bash
 host_name="z440" # set your own hostname
 usb_device="/dev/sdc" # set your own USB device
