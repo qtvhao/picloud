@@ -23,6 +23,8 @@ echo "Provisioning on metal machine"
 # echo "/srv/fai/config $hostnameI/16(async,ro,no_subtree_check)" > ./exports
 # echo "/srv/fai/nfsroot $hostnameI/16(async,ro,no_subtree_check,no_root_squash)" >> ./exports
 # docker cp ./exports fai:/etc/exports
+SQUASH_IMG_FILESIZE_HUMAN=$( docker exec -it fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}' )
+echo "  - squash.img size: $SQUASH_IMG_FILESIZE_HUMAN"
 docker restart fai
 docker exec -it fai bash -c "ln -s /srv/fai/config /var/www/html/" || true
 docker exec -it fai bash -c "service nginx restart"
