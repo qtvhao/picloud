@@ -18,13 +18,18 @@ while true; do
     sleep 3
     DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
     echo "DNSMASQ_LOG: $DNSMASQ_LOG"
-    MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
-    MATCH_LINE=$(echo "$DNSMASQ_LOG" | grep "sent /srv/tftp/fai/pxelinux.cfg/01-$MAC_ADDRESS_SED to") || true
+    MAC_ADDRESS_LOWER=$(echo $MAC_ADDRESS | tr '[:upper:]' '[:lower:]')
+    MATCH_LINE=$(echo "$DNSMASQ_LOG" | grep "PXE(" | grep "$MAC_ADDRESS_LOWER pxelinux.0") || true
     if [ -z "$MATCH_LINE" ]; then
         continue
     fi
-    IP_ADDRESS=$(echo $MATCH_LINE | awk '{print $8}')
-    break;
+    echo "MATCH_LINE: $MATCH_LINE"
+    IP_ADDRESS=$(echo $MATCH_LINE | awk '{print $7}')
+    echo "IP_ADDRESS: $IP_ADDRESS"
+    # validate IP_ADDRESS
+    if [[ $IP_ADDRESS == 192.168.* ]]; then
+        break
+    fi
 done
 echo "IP_ADDRESS: $IP_ADDRESS"
 # Wait for node to be shutdown

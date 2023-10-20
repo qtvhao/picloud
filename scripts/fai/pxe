@@ -27,8 +27,8 @@ SQUASH_IMG_FILESIZE_HUMAN=$( docker exec -it fai bash -c "du -h /var/www/html/sq
 echo "  - squash.img size: $SQUASH_IMG_FILESIZE_HUMAN"
 docker restart fai
 docker exec -it fai bash -c "ln -s /srv/fai/config /var/www/html/" || true
-docker exec -it fai bash -c "service nginx restart"
-docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
+docker rm -f fai-nginx || true
+docker run --name fai-nginx --net host -v /var/www/html/:/usr/share/nginx/html:ro -d nginx
 docker exec -it fai bash -c "rm /tmp/dnsmasq.log"
 docker exec -it fai bash -c "dnsmasq"
 echo "Shutting down node"
@@ -46,6 +46,14 @@ else
         sleep 2
     done
 fi
+# 
+MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
+MAC_ADDRESS_SED_LOWER=$(echo $MAC_ADDRESS_SED | tr '[:upper:]' '[:lower:]')
+# fai/pxelinux.cfg/01-2c-59-e5-04-c4-51
+# replace http://\d+\.\d+\.\d+\.\d+/squash.img with http://$hostnameI/squash.img
+# replace IP ADDRESS with hostnameI
+hostnameI=$(hostname -I | awk '{print $1}')
+sed -i "s/http:\/\/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\/squash.img/http:\/\/$hostnameI\/squash.img/g" ./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER
 wakeonlan $MAC_ADDRESS
 # docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
 # docker exec -it fai bash -c "chmod 0777 /tmp/dnsmasq.log"

@@ -79,6 +79,7 @@ docker tag $FAI_CD_BASE fai-cd-base
 echo "Copying ssh key to fai container"
 docker run --net host --name fai \
     -v ./dvd/:/dvd/ \
+    -v /var/www/html/:/var/www/html/ \
     -v ./fai/pxelinux.cfg/:/srv/tftp/fai/pxelinux.cfg/ \
     --cap-add=NET_ADMIN \
     -v ./dnsmasq.conf:/etc/dnsmasq.conf \

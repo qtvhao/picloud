@@ -69,7 +69,7 @@ RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
 RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl dnsmasq nginx
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl dnsmasq
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
 COPY fai/basefiles /srv/fai/config/basefiles
