@@ -21,11 +21,12 @@ docker run -it -v ~/.ssh/:/root/.ssh/ pic bash
 ```bash
 docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename $IDENTITY_FILE
 ```
-```
 
-## FAI (Fully Automated Installation)
+## Build then burn your ISO with FAI (Fully Automated Installation)
 
-[![asciicast](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
+
+[![asciicast2](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
+
 
 ```bash
 host_name="z440" # set your own hostname
@@ -35,6 +36,7 @@ github_username="qtvhao" # set your own github username
 ./pic dd $host_name $usb_device
 # Boot from USB and wait for installation to complete
 ```
+
 ## Automated bare metal installation with PXE boot
 
 [![asciicast](https://asciinema.org/a/616107.svg)](https://asciinema.org/a/616107)
