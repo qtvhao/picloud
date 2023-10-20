@@ -77,6 +77,7 @@ COPY fai/class /srv/fai/config/class
 COPY fai/debconf /srv/fai/config/debconf
 COPY fai/disk_config /srv/fai/config/disk_config
 COPY fai/files/etc/ /srv/fai/config/files/etc/
+COPY fai/files/postinst /srv/fai/config/files/postinst
 COPY fai/grub.cfg.install-only /srv/fai/config/grub.cfg.install-only
 COPY fai/hooks /srv/fai/config/hooks
 COPY fai/package_config /srv/fai/config/package_config

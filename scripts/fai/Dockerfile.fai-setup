@@ -13,3 +13,4 @@ COPY fai/files/etc/resolv.conf /srv/fai/nfsroot/etc/resolv.conf
 RUN cp /etc/apt/sources.list /srv/fai/config/fai-bookworm/apt/sources.list
 RUN cp /etc/fai/nfsroot.conf /srv/fai/config/fai-bookworm/nfsroot.conf
 RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /srv/fai/config/fai-bookworm/nfsroot.conf
+RUN chmod +x /usr/sbin/policy-rc.d

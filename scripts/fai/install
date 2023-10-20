@@ -48,7 +48,8 @@ docker run --name fai-config \
     --privileged --entrypoint /bin/bash -d fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 FAI_CONFIG_IMAGE_ID=$(docker image inspect fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="fai-setup-base-$FAI_CONFIG_IMAGE_ID"
-docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai-config fai-setup -v) > fai-setup.log )
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
+ time ( (docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") > fai-setup.log )
 echo "Fai-setup finished"
 # docker stop fai-config || true
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-config $FAI_SETUP_BASE

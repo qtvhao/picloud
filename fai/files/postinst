@@ -1,2 +1,6 @@
 mkdir /etc/systemd/sleep.conf.d/
-echo "" > /etc/systemd/sleep.conf.d/nosuspend.conf
+echo "[Sleep]" > /etc/systemd/sleep.conf.d/nosuspend.conf
+echo "AllowSuspend=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
+echo "AllowHibernation=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
+echo "AllowSuspendThenHibernate=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
+echo "AllowHybridSleep=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
