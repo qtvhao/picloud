@@ -19,7 +19,8 @@ docker run -it -v ~/.ssh/:/root/.ssh/ pic bash
 ```
 
 ```bash
-docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename
+docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename $IDENTITY_FILE
+```
 ```
 
 ## FAI (Fully Automated Installation)
@@ -43,12 +44,7 @@ github_username="qtvhao" # set your own github username
 
 The script will automatically install k3s-agent on listed machines.
 ```bash
-./pic reinstall-k3s [NODE_IP_1] [NODE_IP_2] [NODE_IP_3] ...
-```
-
-The script also automatically find machines which installed with FAI in LAN and install k3s-agent on them.
-```bash
-./pic reinstall-k3s $(hostname -I | cut -d' ' -f1)
+./pic reinstall-k3s $IDENTITY_FILE
 ```
 
 # Usage
