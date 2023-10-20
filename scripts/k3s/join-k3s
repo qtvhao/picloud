@@ -13,12 +13,16 @@ if [ ! -f $IDENTIFY_FILE ]; then
     echo "Usage: ./pic join-k3s NODE_IP IDENTIFY_FILE"
     exit 1
 fi
-ssh -i $IDENTIFY_FILE "$NODE_IP" "hostname" || exit 1
+set -e
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "hostname" || exit 1
 echo "Connected to $NODE_IP"
 docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 scp /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
-ssh -i $IDENTIFY_FILE "$NODE_IP" "update-ca-certificates"
-set -e
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "update-ca-certificates"
 K3S_URL=$(jq -r '.k3s_url' k3s.json)
 K3S_TOKEN=$(jq -r '.k3s_token' k3s.json)
 echo "K3S_URL: $K3S_URL"
@@ -27,11 +31,19 @@ export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN K3S_NODE_NAME=$K3S_NODE_NAME sh -"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
-ssh -i $IDENTIFY_FILE "$NODE_IP" "$NODE_COMMAND"
-ssh -i $IDENTIFY_FILE "$NODE_IP" "sudo systemctl restart k3s-agent"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "$NODE_COMMAND"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "sudo systemctl restart k3s-agent"
 echo "Joined worker node to this cluster"
-ssh -i $IDENTIFY_FILE "$NODE_IP" "(iptables -h >/dev/null 2>&1 && iptables -w -P FORWARD ACCEPT) || true"
-NODE_NAME=$(ssh -i $IDENTIFY_FILE "$NODE_IP" "hostname")
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "(iptables -h >/dev/null 2>&1 && iptables -w -P FORWARD ACCEPT) || true"
+NODE_NAME=$(ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "hostname")
 
 kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
 kubectl run test-connectivity --image=rancher/curl \

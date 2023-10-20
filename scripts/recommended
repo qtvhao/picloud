@@ -1,0 +1,16 @@
+set -e
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+echo "IDENTIFY_FILE: $IDENTIFY_FILE"
+stat gitlab.json || \
+jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.json)
+echo "Installing recommended packages"
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+./pic reinstall-k3s $IDENTIFY_FILE
+exit 0
+./pic redis
+./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD"
+./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD"
+./pic csi-s3
+exit 0
