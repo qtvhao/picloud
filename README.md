@@ -34,7 +34,7 @@ github_username="qtvhao" # set your own github username
 ```
 ## Automated bare metal installation with PXE boot
 
-[![asciicast](https://asciinema.org/a/616051.svg)](https://asciinema.org/a/616051)
+[![asciicast](https://asciinema.org/a/616107.svg)](https://asciinema.org/a/616107)
 
 ```bash
 ./pic pxe 8c:dc:d4:34:0c:f0 ./id_rsa 192.168.1.226
