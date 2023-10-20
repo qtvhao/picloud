@@ -34,7 +34,7 @@ github_username="qtvhao" # set your own github username
 ## Automated bare metal installation with PXE boot
 
 ```bash
-./pic pxe 8c:dc:d4:34:0c:f0 ./id_rsa
+./pic pxe 8c:dc:d4:34:0c:f0 ./id_rsa 192.168.1.226
 ```
 
 ## Install/Reinstall Kubernetes cluster with k3s

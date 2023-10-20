@@ -118,9 +118,8 @@ echo
 echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
-echo "Rung "./pic pxe ./dvd/$HOSTNAME-fai-cd.iso" to start PXE server and boot the machine from network."
-# ./pic pxe 8c:dc:d4:34:0c:f0 id_rsa 192.168.1.226
-echo "    ./pic pxe \$MAC_ADDRESS \$IDENTITY_FILE \$IP_ADDRESS"
+echo "Rung following command to start PXE server and boot the machine from network."
+echo "    ./pic pxe \$MAC_ADDRESS \$IDENTITY_FILE [\$IP_ADDRESS]"
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"
