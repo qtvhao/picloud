@@ -8,7 +8,6 @@ RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cl
 RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
 COPY fai/fai-bookworm /srv/fai/config/fai-bookworm
 RUN mkdir -p /srv/fai/config/fai-bookworm/apt/
-COPY fai/files/etc/systemd/sleep.conf.d/nosuspend.conf /srv/fai/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf
 COPY fai/files/etc/resolv.conf /srv/fai/nfsroot/etc/resolv.conf
 RUN cp /etc/apt/sources.list /srv/fai/config/fai-bookworm/apt/sources.list
 RUN cp /etc/fai/nfsroot.conf /srv/fai/config/fai-bookworm/nfsroot.conf

@@ -14,7 +14,7 @@ fi
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo
-    echo "Make sure your client machine is turned off"
+    echo "Make sure your client machine is turned off before running this script"
     sleep 3
     DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
     echo "DNSMASQ_LOG: $DNSMASQ_LOG"
@@ -35,25 +35,25 @@ echo "IP_ADDRESS: $IP_ADDRESS"
 # Wait for node to be shutdown
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
-    echo "Waiting for node installation"
+    echo "Sending installation"
     sleep 2
     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break || continue;
 done
+# while true; do
+#     echo "Waiting for node to be shutdown"
+#     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
+#     sleep 8
+# done
+FILESIZE_IN_MB=$(docker exec fai bash -c "stat -c '%s' /var/www/html/squash.img" | awk '{print $1}')
 while true; do
-    echo "Waiting for node to be shutdown"
-    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
-    sleep 8
-done
-while true; do
-    echo "Waiting for SSH to be ready"
-    sleep 8
+    echo "Downloading squash.img ($FILESIZE_IN_MB, this may take a while)"
+    sleep 16
     nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;
 done
-docker restart fai
+echo "SSH is ready"
 while true; do
-    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
-    echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready. Waiting for private key to be ready"
-    sleep 24
+    echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready."
+    sleep 12
     ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
     ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts > /dev/null 2>&1 > /dev/null 2>&1 || true
     (timeout 10 ssh \
@@ -61,7 +61,26 @@ while true; do
         -o StrictHostKeyChecking=no \
         -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" > /dev/null 2>&1) && break || continue;
 done
+docker restart fai
+while true; do
+    echo "Waiting for finish installation"
+    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
+    sleep 6
+done
+echo "  Node is installed successfully. Rebooting the node"
+while true; do
+    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
+    # echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready. Waiting for private key to be ready"
+    sleep 2
+    (timeout 2 ssh \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        -i $IDENTITY_FILE root@$IP_ADDRESS "echo" > /dev/null 2>&1) && break || continue;
+done
+ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
+ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts > /dev/null 2>&1 > /dev/null 2>&1 || true
 echo
+ssh -i $IDENTITY_FILE root@$IP_ADDRESS "cat /etc/os-release"
 echo "Now you can SSH to the node with this command:"
-echo "  ssh -i $IDENTITY_FILE root@$IP_ADDRESS"
+echo "  ssh -i $IDENTITY_FILE $IP_ADDRESS"
 

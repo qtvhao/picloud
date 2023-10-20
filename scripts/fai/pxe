@@ -29,7 +29,7 @@ docker restart fai
 docker exec -it fai bash -c "ln -s /srv/fai/config /var/www/html/" || true
 docker rm -f fai-nginx || true
 docker run --name fai-nginx --net host -v /var/www/html/:/usr/share/nginx/html:ro -d nginx
-docker exec -it fai bash -c "rm /tmp/dnsmasq.log"
+docker exec -it fai bash -c "rm /tmp/dnsmasq.log || true"
 docker exec -it fai bash -c "dnsmasq"
 echo "Shutting down node"
 if [ -z "$IP_ADDRESS_TO_TURN_OFF" ]; then
