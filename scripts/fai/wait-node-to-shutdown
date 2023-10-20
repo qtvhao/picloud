@@ -14,7 +14,7 @@ fi
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo
-    echo "Make sure your client machine is turned off before running this script"
+    echo "Wake on lan sent. Make sure your client machine is turned off before running this script or you can boot it from Network Boot manually."
     sleep 3
     DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
     echo "DNSMASQ_LOG: $DNSMASQ_LOG"
@@ -32,21 +32,10 @@ while true; do
     fi
 done
 echo "IP_ADDRESS: $IP_ADDRESS"
-# Wait for node to be shutdown
+
+SQUASH_IMG_FILESIZE_HUMAN=$(docker exec fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}')
 while true; do
-    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
-    echo "Sending installation"
-    sleep 2
-    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break || continue;
-done
-# while true; do
-#     echo "Waiting for node to be shutdown"
-#     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
-#     sleep 8
-# done
-FILESIZE_IN_MB=$(docker exec fai bash -c "stat -c '%s' /var/www/html/squash.img" | awk '{print $1}')
-while true; do
-    echo "Downloading squash.img ($FILESIZE_IN_MB, this may take a while)"
+    echo "Downloading squash.img ($SQUASH_IMG_FILESIZE_HUMAN, this may take a while)"
     sleep 16
     nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;
 done
