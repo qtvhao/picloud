@@ -29,6 +29,12 @@ done
 echo "IP_ADDRESS: $IP_ADDRESS"
 # Wait for node to be shutdown
 while true; do
+    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
+    echo "Waiting for node installation"
+    sleep 2
+    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break || continue;
+done
+while true; do
     echo "Waiting for node to be shutdown"
     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
     sleep 2
@@ -36,11 +42,6 @@ done
 docker restart fai || true
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
-    echo "Waiting for node to be ready"
-    sleep 2
-    ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break || continue;
-done
-while true; do
     echo "Waiting for SSH to be ready"
     sleep 2
     nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;

@@ -11,6 +11,10 @@ if [ -z "$IDENTITY_FILE" ]; then
     echo "IDENTITY_FILE is empty"
     exit 1
 fi
+IP_ADDRESS_TO_TURN_OFF=${args[2]}
+if [ -z "$IP_ADDRESS_TO_TURN_OFF" ]; then
+    echo "IP_ADDRESS_TO_TURN_OFF is empty"
+fi
 warp-cli disconnect || true
 # echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
@@ -25,6 +29,23 @@ docker exec -it fai bash -c "service nginx restart"
 docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
 docker exec -it fai bash -c "rm /tmp/dnsmasq.log"
 docker exec -it fai bash -c "dnsmasq"
+echo "Shutting down node"
+if [ -z "$IP_ADDRESS_TO_TURN_OFF" ]; then
+    echo "IP_ADDRESS_TO_TURN_OFF is empty"
+    exit 1
+else
+    echo "IP_ADDRESS_TO_TURN_OFF: $IP_ADDRESS_TO_TURN_OFF"
+    (timeout 10 ssh \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        -i $IDENTITY_FILE root@$IP_ADDRESS_TO_TURN_OFF "poweroff") || true
+    while true; do
+        echo "Waiting for node to be shutdown"
+        ping -c1 "$IP_ADDRESS_TO_TURN_OFF" > /dev/null 2>&1 || break;
+        sleep 2
+    done
+fi
+wakeonlan $MAC_ADDRESS
 # docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
 # docker exec -it fai bash -c "chmod 0777 /tmp/dnsmasq.log"
 ./pic wait-node-to-shutdown $MAC_ADDRESS $IDENTITY_FILE
