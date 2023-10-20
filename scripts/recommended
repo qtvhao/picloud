@@ -13,4 +13,5 @@ exit 0
 ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD"
 ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD"
 ./pic csi-s3
+echo "./pic: Installed recommended packages"
 exit 0
