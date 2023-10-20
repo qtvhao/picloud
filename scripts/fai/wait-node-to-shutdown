@@ -39,14 +39,14 @@ while true; do
     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
     sleep 2
 done
-docker restart fai || true
 while true; do
-    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo "Waiting for SSH to be ready"
     sleep 2
     nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;
 done
+docker restart fai
 while true; do
+    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo "SSH is ready. Waiting for private key to be ready"
     sleep 2
     ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
