@@ -32,14 +32,13 @@ docker exec -it fai bash -c "dnsmasq"
 echo "Shutting down node"
 if [ -z "$IP_ADDRESS_TO_TURN_OFF" ]; then
     echo "IP_ADDRESS_TO_TURN_OFF is empty"
-    exit 1
 else
     echo "IP_ADDRESS_TO_TURN_OFF: $IP_ADDRESS_TO_TURN_OFF"
-    (timeout 10 ssh \
-        -o PasswordAuthentication=no \
-        -o StrictHostKeyChecking=no \
-        -i $IDENTITY_FILE root@$IP_ADDRESS_TO_TURN_OFF "poweroff") || true
     while true; do
+        (timeout 10 ssh \
+            -o PasswordAuthentication=no \
+            -o StrictHostKeyChecking=no \
+            -i $IDENTITY_FILE root@$IP_ADDRESS_TO_TURN_OFF "poweroff") || true
         echo "Waiting for node to be shutdown"
         ping -c1 "$IP_ADDRESS_TO_TURN_OFF" > /dev/null 2>&1 || break;
         sleep 2
