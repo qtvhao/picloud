@@ -8,8 +8,13 @@ if [ -z "$IDENTITY_FILE" ]; then
     exit 1
 fi
 
-ssh \
+LSUSB=$(ssh \
         -o PasswordAuthentication=no \
         -o StrictHostKeyChecking=no \
         -i $IDENTITY_FILE root@$IP_ADDRESS \
-        "lsusb -t" | grep "Mass Storage"
+        "lsusb -t | grep \"Mass Storage\"" 2>&1) || true
+if [ -z "$LSUSB" ]; then
+    exit 1
+fi
+echo $LSUSB
+
