@@ -33,7 +33,7 @@ export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GR
 mkdir -p /var/cache/apt-cacher-ng
 chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
-warp-cli connect
+warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
 docker image inspect debian:bookworm > /dev/null 2>&1 || \
     docker pull debian:bookworm
