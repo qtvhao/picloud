@@ -61,14 +61,9 @@ while true; do
         -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" > /dev/null 2>&1) && break || continue;
 done
 
-MASS_STORAGE_DEVICES=$(./pic list-mass-storage $IP_ADDRESS $IDENTITY_FILE || "")
-echo "MASS_STORAGE_DEVICES: $MASS_STORAGE_DEVICES"
-if [ -z "$MASS_STORAGE_DEVICES" ]; then
-    echo "Mass Storage USB is not found. Continue"
-else
-    echo "Mass Storage USB is found. Installation is failed. Please remove the USB Flash Drive and try again."
-    exit 1
-fi
+./pic list-mass-storage $IP_ADDRESS $IDENTITY_FILE && \
+    echo "Mass Storage USB is found. Installation is failed. Please remove the USB Flash Drive and try again." && exit 1 || true
+echo "Mass Storage USB is not found. Continue"
 docker restart fai
 while true; do
     echo "Waiting for finish installation"
