@@ -60,6 +60,18 @@ while true; do
         -o StrictHostKeyChecking=no \
         -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" > /dev/null 2>&1) && break || continue;
 done
+MASS_STORAGE_DEVICES=$( (ssh \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        -i ../id_rsa root@192.168.1.111 \
+        "lsusb -t" | grep "Mass Storage") || "")
+echo "MASS_STORAGE_DEVICES: $MASS_STORAGE_DEVICES"
+if [ -z "$MASS_STORAGE_DEVICES" ]; then
+    echo "Mass Storage is not found. Continue"
+else
+    echo "Mass Storage is found. Please remove it and reboot the node"
+    exit 1
+fi
 docker restart fai
 while true; do
     echo "Waiting for finish installation"
