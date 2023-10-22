@@ -187,6 +187,12 @@ if [ "$arg1" == "wait-node-to-shutdown" ]; then
     "wait-node-to-shutdown" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
+if [ "$arg1" == "list-mass-storage" ]; then
+    set -e
+    ./pic exec-local-or-remote "scripts/fai" \
+    "list-mass-storage" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    exit 0
+fi
 if [ "$arg1" == "list-nodename" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/fai" \

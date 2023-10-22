@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+args=("$@")
+IP_ADDRESS=${args[0]}
+IDENTITY_FILE=${args[1]}
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty"
+    exit 1
+fi
+
+ssh \
+        -o PasswordAuthentication=no \
+        -o StrictHostKeyChecking=no \
+        -i $IDENTITY_FILE root@$IP_ADDRESS \
+        "lsusb -t" | grep "Mass Storage"
