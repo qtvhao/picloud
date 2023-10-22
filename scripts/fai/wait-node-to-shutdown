@@ -67,9 +67,9 @@ MASS_STORAGE_DEVICES=$( (ssh \
         "lsusb -t" | grep "Mass Storage") || "")
 echo "MASS_STORAGE_DEVICES: $MASS_STORAGE_DEVICES"
 if [ -z "$MASS_STORAGE_DEVICES" ]; then
-    echo "Mass Storage is not found. Continue"
+    echo "Mass Storage USB is not found. Continue"
 else
-    echo "Mass Storage is found. Please remove it and reboot the node"
+    echo "Mass Storage USB is found. Installation is failed. Please remove the USB Flash Drive and try again."
     exit 1
 fi
 docker restart fai
