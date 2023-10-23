@@ -55,6 +55,12 @@ The script will automatically install k3s-agent on the listed machines.
 
 ```bash
 ./pic recommended $IDENTITY_FILE
+# This following steps will be executed/installed:
+# - Install K3s
+# - Redis
+# - Gitlab
+# - Grafana, Promtail and Loki
+# - Network-based mount over CSI plugin and Minio
 ```
 
 # Usage
