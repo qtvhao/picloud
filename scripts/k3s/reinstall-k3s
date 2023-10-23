@@ -40,7 +40,8 @@ done
 k3s-killall.sh
 k3s-agent-uninstall.sh
 k3s-uninstall.sh
-
+systemctl disable k3s-agent
+systemctl disable k3s
 set -e
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
@@ -60,10 +61,10 @@ rm k9s_Linux_amd64.tar.gz || true
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
 systemctl status nm-cloud-setup.service || apt install -y network-manager
 
-curl -sfL https://get.k3s.io | sh -s - --https-listen-port 6448
+curl -sfL https://get.k3s.io | sh -s - server --cluster-init
 # /etc/systemd/system/k3s.service
 systemctl restart k3s
-K3S_URL="https://$K8S_MASTER_NODE_IP:6448"
+K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
 while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
     echo "Waiting for K3S token"
     sleep 5

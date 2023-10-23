@@ -35,9 +35,9 @@ redis.install=false,\
 global.redis.host=redis-master.default.svc.cluster.local,\
 global.redis.auth.secret=redis,\
 global.redis.auth.key=redis-password,\
+nginx-ingress.enabled=false,\
 gitlab-runner.runners.privileged=true &
 #   --set global.ingress.tls.enabled=true,\
-# global.ingress.enabled=false,\
 # 
 # global.appConfig.certmanager.enabled=true,\
 # global.edition=ce,\

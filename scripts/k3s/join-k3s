@@ -7,6 +7,11 @@ if [ -z "$NODE_IP" ]; then
     echo "Usage: ./pic join-k3s NODE_IP IDENTIFY_FILE"
     exit 1
 fi
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
+    echo "Usage: ./pic join-k3s NODE_IP IDENTIFY_FILE"
+    exit 1
+fi
 if [ ! -f $IDENTIFY_FILE ]; then
     echo "$IDENTIFY_FILE does not exist. Please create a ssh key pair in order to connect to the new machine."
     echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload ./id_rsa in your github account into the current directory"
@@ -34,15 +39,22 @@ K3S_TOKEN=$(jq -r '.k3s_token' k3s.json)
 echo "K3S_URL: $K3S_URL"
 echo "K3S_TOKEN: $K3S_TOKEN"
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
-NODE_COMMAND="curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN K3S_NODE_NAME=$K3S_NODE_NAME sh -"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "sudo systemctl restart k3s" || true
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
+# 
+NODE_COMMAND="curl -fL https://get.k3s.io | K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --server $K3S_URL --token $K3S_TOKEN"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "$NODE_COMMAND"
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "sudo systemctl restart k3s-agent"
+# ssh -i $IDENTIFY_FILE \
+#     -o PasswordAuthentication=no \
+#     "$NODE_IP" "sudo systemctl restart k3s-agent"
 echo "Joined worker node to this cluster"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
