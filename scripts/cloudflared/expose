@@ -31,6 +31,11 @@ fi
 if [ -z "$TUNNEL_NAMESPACE" ]; then
     TUNNEL_NAMESPACE="picloud-cloudflared"
 fi
+NODE_NUMBERTH=${args[4]}
+if [ -z "$NODE_NUMBERTH" ]; then
+    NODE_NUMBERTH=$(kubectl get nodes -o json | jq -r '.items | length')
+fi
+echo "NODE_NUMBERTH: $NODE_NUMBERTH"
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 if [ -z "$TUNNEL_NAME" ]; then
     TUNNEL_NAME="picloud-$CNAME_RECORD"
@@ -129,24 +134,15 @@ echo "    metadata:"                                        >>cloudflared-deploy
 echo "      labels:"                                        >>cloudflared-deployment.yaml
 echo "        app: cloudflared-$CONTAINER_TUNNEL_NAME"      >>cloudflared-deployment.yaml
 echo "    spec:"                                            >>cloudflared-deployment.yaml
-#   affinity:
-#     podAntiAffinity:
-#       requiredDuringSchedulingIgnoredDuringExecution:
-#         labelSelector:
-#         - matchExpressions:
-#           - key: added-numberth
-#             operator: NotIn
-#             values:
-#             - "1"
 echo "      affinity:"                                      >>cloudflared-deployment.yaml
 echo "        podAntiAffinity:"                             >>cloudflared-deployment.yaml
 echo "          requiredDuringSchedulingIgnoredDuringExecution:" >>cloudflared-deployment.yaml
 echo "            - labelSelector:"                         >>cloudflared-deployment.yaml
 echo "                matchExpressions:"                    >>cloudflared-deployment.yaml
 echo "                - key: added-numberth"                >>cloudflared-deployment.yaml
-echo "                  operator: NotIn"                    >>cloudflared-deployment.yaml
+echo "                  operator: In"                       >>cloudflared-deployment.yaml
 echo "                  values:"                            >>cloudflared-deployment.yaml
-echo "                  - \"1\""                            >>cloudflared-deployment.yaml
+echo "                  - \"$NODE_NUMBERTH\""               >>cloudflared-deployment.yaml
 echo "              topologyKey: kubernetes.io/hostname"    >>cloudflared-deployment.yaml
 echo "      containers:"                                    >>cloudflared-deployment.yaml
 echo "        - name: cloudflared"                          >>cloudflared-deployment.yaml
