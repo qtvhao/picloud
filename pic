@@ -89,15 +89,8 @@ fi
 if [ "$arg1" == "exec-local-or-remote" ]; then
     set -e
     scriptFile="./$3"
-    remoteUrl="https://raw.githubusercontent.com/qtvhao/picloud/main/$2/$3"
-    # echo "scriptFile: $scriptFile"
-    # echo "scriptFile exists: $(test -f "$scriptFile" && echo "true" || echo "false")"
-    # echo "remoteUrl: $remoteUrl"
-    # echo "arg \$4: $4"
-    # echo "arg \$5: $5"
-    # echo "arg \$6: $6"
-    # echo "arg \$7: $7"
-    # echo "arg \$8: $8"
+    remoteUrl="https://raw.githubusercontent.com/qtvhao/picloud/main/$2/$3?$(date +%s)"
+
     scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")
     if [ "$scriptFileExists" == "true" ]; then
         cp "$2/$3" "$scriptFile"
