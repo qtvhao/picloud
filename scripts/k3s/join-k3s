@@ -68,7 +68,12 @@ kubectl run test-connectivity --image=rancher/curl \
     --restart=OnFailure \
     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
     http://example.com
-kubectl -n kube-system rollout restart deployment coredns
+
+while true; do
+    kubectl -n kube-system rollout restart deployment coredns && break || echo "Retrying to restart coredns"
+    sleep 5
+done
+
 waitPodToSucceeded() {
     kubectl get pod -l run=test-connectivity -o json | jq -r ".items[0].status.containerStatuses[0].state.terminated.reason"
 }
