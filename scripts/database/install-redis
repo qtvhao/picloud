@@ -8,6 +8,9 @@ PASSWORD=$(openssl rand -base64 32)
 echo "{}" > redis.json
 helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
  --set global.storageClass="local-path",global.redis.password="$PASSWORD" --set master.disableCommands="",replica.disableCommands=""
+kubectl get secret/redis -n default
+# copy secret/redis in default namespace to redis-ns namespace
+kubectl get secret/redis -n default -o yaml | sed 's/namespace: default/namespace: gitlab-ns/g' | kubectl apply -f -
 jq --arg password "$PASSWORD" '.redis.password = $password' redis.json > redis.json.tmp && mv redis.json.tmp redis.json
 TUNNEL_NAMESPACE=default ./pic expose tcp redis-master 6379
 jq --arg hostname "tcp-redis-master-6379.$DOMAIN" '.redis.host = $hostname' redis.json > redis.json.tmp && mv redis.json.tmp redis.json

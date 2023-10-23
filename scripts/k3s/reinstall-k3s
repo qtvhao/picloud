@@ -29,18 +29,25 @@ echo "Found nodes: $NODES"
 # loop through nodes and k3s-agent-uninstall
 for NODE in $NODES; do
     match="192.168."
+    echo "NODE: $NODE"
     NODE_IP=$(kubectl get node $NODE -o json | jq -r '.status.addresses[] | select(.type == "InternalIP") | .address' | head -n1)
     if [[ $NODE_IP == $match* ]]; then
         echo "Uninstalling k3s from $NODE"
-        ssh $NODE_IP "k3s-agent-uninstall.sh" > /dev/null 2>&1 || true
+        ssh $NODE_IP "k3s-agent-uninstall.sh" || true
+        ssh $NODE_IP "k3s-uninstall.sh" || true
         kubectl delete node $NODE
     fi
 done
 # k3s server uninstall
+echo "Uninstalling k3s from master node"
 k3s-killall.sh
+echo "k3s-agent-uninstall.sh"
 k3s-agent-uninstall.sh
+echo "k3s-uninstall.sh"
 k3s-uninstall.sh
+echo "systemctl disable k3s-agent"
 systemctl disable k3s-agent
+echo "systemctl disable k3s"
 systemctl disable k3s
 set -e
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
@@ -49,7 +56,7 @@ echo "Installing k3s"
 curl -fsSL https://get.docker.com -o install-docker.sh
 docker ps > /dev/null 2>&1 || sh install-docker.sh
 rm install-docker.sh || true
-kubectl version > /dev/null 2>&1 || \
+kubectl > /dev/null 2>&1 || \
     (curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl)
 helm version > /dev/null 2>&1 || \
     (curl https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz -o helm-v3.13.1-linux-amd64.tar.gz && tar -xvf helm-v3.13.1-linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 linux-amd64/helm)
