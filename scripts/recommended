@@ -17,6 +17,7 @@ stat gitlab.json || \
 jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.json)
 echo "Installing recommended packages"
+cat ~/.ssh/id_rsa.pub || ssh-keygen
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 ./pic reinstall-k3s $IDENTIFY_FILE
 ./pic redis
