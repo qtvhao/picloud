@@ -1,3 +1,29 @@
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "Please provide the identify file"
+    exit 1
+fi
+if [ ! -f $IDENTIFY_FILE ]; then
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload $IDENTIFY_FILE in your github account"
+    exit 1
+fi
+# 
+nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
+for node in $nodesOnLan; do
+    if [ -z "$nodesOnLan" ]; then
+        continue
+    fi
+    ssh -t -i $IDENTIFY_FILE \
+        -o PasswordAuthentication=no \
+        "$node" "warp-cli register"
+    ssh -t -i $IDENTIFY_FILE \
+        -o PasswordAuthentication=no \
+        "$node" "warp-cli connect"
+done
+
+# 
+echo "IDENTIFY_FILE: $IDENTIFY_FILE"
 NODES=$(kubectl get nodes -o json | jq -r '.items[].metadata.name')
 echo "Found nodes: $NODES"
 # loop through nodes and k3s-agent-uninstall
@@ -10,14 +36,12 @@ for NODE in $NODES; do
         kubectl delete node $NODE
     fi
 done
+# k3s server uninstall
+k3s-killall.sh
+k3s-agent-uninstall.sh
+k3s-uninstall.sh
+
 set -e
-args=("$@")
-IDENTIFY_FILE=${args[0]}
-if [ ! -f $IDENTIFY_FILE ]; then
-    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload $IDENTIFY_FILE in your github account"
-    exit 1
-fi
-args=("$@")
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
 echo "Installing k3s"
@@ -34,45 +58,39 @@ cloudflared  version || \
     (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s)
 rm k9s_Linux_amd64.tar.gz || true
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
-docker inspect picloud-k3s-server >/dev/null 2>&1 && docker rm -f picloud-k3s-server || echo "picloud-k3s-server not found"
-docker run -d --restart=unless-stopped \
-    --privileged \
-    --name picloud-k3s-server \
-    --network picloud \
-    -p 6448:6443 \
-    -e INSTALL_K3S_EXEC="--flannel-backend=none --no-flannel" \
-    rancher/k3s:v1.27.6-k3s1 \
-    server --tls-san k3s-server-1 --tls-san $K8S_MASTER_NODE_IP --advertise-address $K8S_MASTER_NODE_IP --advertise-port 6448 \
-    --node-name control-plane-master --disable-network-policy
+systemctl status nm-cloud-setup.service || apt install -y network-manager
 
+curl -sfL https://get.k3s.io | sh -s - --https-listen-port 6448
+# /etc/systemd/system/k3s.service
+systemctl restart k3s
 K3S_URL="https://$K8S_MASTER_NODE_IP:6448"
-while ! docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token" >/dev/null 2>&1; do
+while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
     echo "Waiting for K3S token"
     sleep 5
 done
-K3S_TOKEN=$(docker exec picloud-k3s-server /bin/sh -c "cat /var/lib/rancher/k3s/server/token")
-docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
+K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/token)
+cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 update-ca-certificates
 mkdir -p ~/.kube
-docker cp picloud-k3s-server:/etc/rancher/k3s/k3s.yaml ~/.kube/config
-sed -i "s/127.0.0.1:6443/127.0.0.1:6448/g" ~/.kube/config
+cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+kubectl get node -o wide
 
 ./pic expose
-# kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 echo write json $K3S_URL and $K3S_TOKEN to k3s.json
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >k3s.json
 ./pic status
-# loop through $args
-# for arg in $args; do
-#     ./pic join-k3s $arg $IDENTIFY_FILE
-# done
-nodes=$(./pic list-nodename ./id_rsa | awk '{print $1}' | tr '\n' ' ')
+
+nodes=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
 for node in $nodes; do
+    if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then
+        continue
+    fi
     if [ -z "$node" ]; then
         continue
     fi
     ./pic join-k3s "$node" $IDENTIFY_FILE
 done
+kubectl get node -o wide
 
 echo
 echo "To join a worker node to this cluster, run the following command:"

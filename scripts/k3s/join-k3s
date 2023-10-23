@@ -18,7 +18,7 @@ ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "hostname" || exit 1
 echo "Connected to $NODE_IP"
-docker cp picloud-k3s-server:/var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
+cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
 # ssh -i $IDENTIFY_FILE \
 #     -o PasswordAuthentication=no \
