@@ -31,8 +31,7 @@ for arg in "$@"; do
     ( \
         cd repos && git clone $REPO_URL $REPO_NAME && \
         cd $REPO_NAME && \
-        git push --set-upstream $REMOTE_REPO $HEAD \
+        git push --set-upstream $REMOTE_REPO \
     )
-    # git@gitlab.example.com:root/test.git
     rm -rf repos
 done
