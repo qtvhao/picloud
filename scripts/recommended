@@ -19,6 +19,7 @@ GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.
 echo "Installing recommended packages"
 cat ~/.ssh/id_rsa.pub || ssh-keygen
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+echo "{}" ./expose-items.json
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE
 echo;time ./pic redis
 echo;time ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD"
