@@ -47,9 +47,14 @@ github_username="qtvhao" # set your own github username
 
 ## Install/Reinstall Kubernetes cluster with k3s
 
-The script will automatically install k3s-agent on listed machines.
+The script will automatically install k3s-agent on the listed machines.
 ```bash
 ./pic reinstall-k3s $IDENTITY_FILE
+```
+## Install recommended packages
+
+```bash
+./pic recommended $IDENTITY_FILE
 ```
 
 # Usage
