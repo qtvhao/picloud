@@ -100,7 +100,6 @@ for node in $nodes; do
     if [ -z "$node" ]; then
         continue
     fi
-    scp /etc/resolv.conf $node:/etc/resolv.conf
     ./pic join-k3s "$node" $IDENTIFY_FILE
 done
 kubectl get node -o wide

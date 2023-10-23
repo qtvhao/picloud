@@ -28,6 +28,12 @@ cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificate
 # ssh -i $IDENTIFY_FILE \
 #     -o PasswordAuthentication=no \
 #     "$NODE_IP" "apt update && apt-get install ca-certificates curl -y"
+scp  \
+    -i $IDENTIFY_FILE \
+    /etc/resolv.conf $NODE_IP:/etc/resolv.conf
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "warp-cli connect || true"
 scp \
     -i $IDENTIFY_FILE \
     /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
@@ -52,6 +58,10 @@ echo "NODE_IP: $NODE_IP"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "$NODE_COMMAND"
+echo "K3S_NODE_NAME: $K3S_NODE_NAME"
+COUNT_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
+echo "COUNT_NODES: $COUNT_NODES"
+kubectl label node $K3S_NODE_NAME numberth=$COUNT_NODES
 # ssh -i $IDENTIFY_FILE \
 #     -o PasswordAuthentication=no \
 #     "$NODE_IP" "sudo systemctl restart k3s-agent"
