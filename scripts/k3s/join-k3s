@@ -61,7 +61,7 @@ ssh -i $IDENTIFY_FILE \
 echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 COUNT_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
 echo "COUNT_NODES: $COUNT_NODES"
-kubectl label node $K3S_NODE_NAME numberth=$COUNT_NODES
+kubectl label node $K3S_NODE_NAME added-numberth=$COUNT_NODES
 # ssh -i $IDENTIFY_FILE \
 #     -o PasswordAuthentication=no \
 #     "$NODE_IP" "sudo systemctl restart k3s-agent"

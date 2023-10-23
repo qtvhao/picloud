@@ -67,8 +67,9 @@ cloudflared  version || \
 rm k9s_Linux_amd64.tar.gz || true
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
 systemctl status nm-cloud-setup.service || apt install -y network-manager
-
-curl -sfL https://get.k3s.io | sh -s - server --cluster-init
+export NODE_IP=$(hostname -I | cut -d' ' -f1)
+export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
+curl -sfL https://get.k3s.io | K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init
 # /etc/systemd/system/k3s.service
 systemctl restart k3s
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
@@ -81,13 +82,13 @@ cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificate
 update-ca-certificates
 mkdir -p ~/.kube
 cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-kubectl get node -o wide
 
 while true; do
     kubectl -n kube-system rollout restart deployment coredns && break || echo "Retrying to restart coredns"
     sleep 5
 done
-./pic expose
+kubectl get node -o wide
+kubectl label node $K3S_NODE_NAME added-numberth=1
 # echo write json $K3S_URL and $K3S_TOKEN to k3s.json
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >k3s.json
 ./pic status
@@ -103,6 +104,7 @@ for node in $nodes; do
     ./pic join-k3s "$node" $IDENTIFY_FILE
 done
 kubectl get node -o wide
+./pic expose
 
 echo
 echo "To join a worker node to this cluster, run the following command:"
