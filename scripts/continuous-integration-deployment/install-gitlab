@@ -17,7 +17,11 @@ echo "Setting password to $PASSWORD"
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
 helm repo update
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
-kubectl get secret/redis -n default -o yaml | sed 's/namespace: default/namespace: gitlab-ns/g' | kubectl apply -f -
+kubectl get secret/redis -n default -o yaml > redis-secret.yaml
+sed -i 's/namespace: default/namespace: gitlab-ns/g' redis-secret.yaml
+kubectl delete secret --namespace gitlab-ns redis || true
+kubectl apply -f redis-secret.yaml
+rm redis-secret.yaml
 kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 # PASSWORD=$(kubectl create secret generic gitlab-gitlab-initial-root-password --from-literal=password=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32))
@@ -27,6 +31,8 @@ helm uninstall gitlab --namespace gitlab-ns || true
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
+global.hosts.gitlab.name=http-gitlab-webservice-default-8181."$DOMAIN",\
+global.hosts.registry.name=http-gitlab-registry-5000."$DOMAIN",\
 global.edition=ce,\
 global.kas.enabled=false,\
 gitlab.toolbox.enabled=false,\
@@ -57,8 +63,18 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000 502
 # ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
 ./pic wait deploy       gitlab-webservice-default     gitlab-ns Available
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default 8181
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry           5000 404
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default  8181 404
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry            5000 404
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp gitlab-webservice-default   22
+export FQDN_RECORD="http-gitlab-webservice-default-8181.schnworks.com"
+while true; do
+    status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
+    echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code. Expected status code: 200"
+    if [ "$status_code" == "200" ]; then
+        break
+    fi
+    sleep 5
+done
 while true; do
     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
 done
