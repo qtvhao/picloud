@@ -14,11 +14,11 @@ fi
 echo "Installing Grafana"
 helm repo add grafana https://grafana.github.io/helm-charts
 kubectl get namespace loki || kubectl create namespace loki
-kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
-helm install grafana grafana/grafana --namespace=loki
+kubectl get secret --namespace loki grafana || \
+    kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
+# helm install grafana grafana/grafana --namespace=loki
 helm upgrade --install --namespace loki promtail grafana/promtail
 helm upgrade --install --namespace loki loki grafana/loki
-kubectl get secret --namespace loki grafana && kubectl delete secret --namespace loki grafana
 helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
 PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
 TUNNEL_NAMESPACE=loki ./pic expose http grafana.gitlab-ns 80
