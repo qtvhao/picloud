@@ -3,10 +3,14 @@ set -e
 echo
 source .env
 args=("$@")
-# loop through args and process them
 REPO_URL=${args[0]}
+IDENTITY_FILE=${args[1]}
 if [ -z "$REPO_URL" ]; then
-    echo "REPO_URL is empty. REPO_URL is in format: https://gitlab.com/username/repo.git or git@gitlab.com:username/repo.git"
+    echo "REPO_URL is empty"
+    exit 1
+fi
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty"
     exit 1
 fi
 REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
@@ -27,9 +31,11 @@ REPO_NAME_IN_LOWER_CASE=$(echo $REPO_NAME | tr '[:upper:]' '[:lower:]')
 REMOTE_REPO="https://root:$PASSWORD@http-gitlab-webservice-default-8181-gitlab-ns.$DOMAIN/root/$REPO_NAME_IN_LOWER_CASE.git"
 echo "REMOTE_REPO: $REMOTE_REPO"
 echo "HEAD: $HEAD"
+WORK_DIR=$(pwd)
+IDENTITY_FILE="$WORK_DIR/$IDENTITY_FILE"
 ( \
-    cd repos && git clone $REPO_URL $REPO_NAME && \
-    cd $REPO_NAME && \
+    cd repos && pwd && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && \
+    cd $REPO_NAME && echo "ssh -i" && \
     git push --set-upstream $REMOTE_REPO \
 )
 rm -rf repos
