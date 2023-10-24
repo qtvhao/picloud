@@ -21,14 +21,19 @@ cat ~/.ssh/id_rsa.pub || ssh-keygen
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 echo "{}" > ./expose-items.json
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE > reinstall-k3s.log
+tail -n 100 reinstall-k3s.log
 rm -rf reinstall-k3s.log
 echo;time ./pic redis > redis.log
+tail -n 100 redis.log
 rm -rf redis.log
 echo;time ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD" > gitlab.log
+tail -n 100 gitlab.log
 rm -rf gitlab.log
 echo;time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" > grafana-promtail-loki.log
+tail -n 100 grafana-promtail-loki.log
 rm -rf grafana-promtail-loki.log
 echo;time ./pic csi-s3 > csi-s3.log
+tail -n 100 csi-s3.log
 rm -rf csi-s3.log
 echo "./pic has installed your recommended packages"
 exit 0
