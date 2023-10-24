@@ -19,14 +19,13 @@ if [ ! -f $IDENTITY_FILE ]; then
     exit 1
 fi
 REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
-REPO_URL_ENDS_WITH_GIT=$( (echo $REPO_URL | grep '\.git$' | wc -l) || echo 0)
-if [ "$REPO_URL_ENDS_WITH_GIT" = "0" ]; then
+REPO_URL_ENDS_WITH_GIT="x"$(echo $REPO_URL | grep '\.git$' | wc -l) || true
+if [ "x0" != "$REPO_URL_ENDS_WITH_GIT" ]; then
+    REPO_NAME=$(echo $REPO_URL | sed 's/.*\///' | sed 's/\.git$//')
+else
     echo "REPO_URL does not end with .git"
     exit 1
-else
-    REPO_NAME=$(echo $REPO_URL | sed 's/.*\///' | sed 's/\.git$//')
 fi
-echo "REPO_NAME: $REPO_NAME"
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 rm -rf pic-repos || true
