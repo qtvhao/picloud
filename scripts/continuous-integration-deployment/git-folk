@@ -5,6 +5,7 @@ source .env
 args=("$@")
 REPO_URL=${args[0]}
 IDENTITY_FILE=${args[1]}
+CLONE_DIR=${args[2]}
 if [ -z "$REPO_URL" ]; then
     echo "REPO_URL is empty"
     exit 1
@@ -13,10 +14,15 @@ if [ -z "$IDENTITY_FILE" ]; then
     echo "IDENTITY_FILE is empty"
     exit 1
 fi
+if [ ! -f $IDENTITY_FILE ]; then
+    echo "$IDENTITY_FILE does not exist"
+    exit 1
+fi
 REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
-REPO_URL_ENDS_WITH_GIT=$(echo $REPO_URL | grep -c "\.git$")
-if [ $REPO_URL_ENDS_WITH_GIT -eq 0 ]; then
+REPO_URL_ENDS_WITH_GIT=$( (echo $REPO_URL | grep '\.git$' | wc -l) || echo 0)
+if [ "$REPO_URL_ENDS_WITH_GIT" = "0" ]; then
     echo "REPO_URL does not end with .git"
+    exit 1
 else
     REPO_NAME=$(echo $REPO_URL | sed 's/.*\///' | sed 's/\.git$//')
 fi
@@ -39,4 +45,9 @@ IDENTITY_FILE="$WORK_DIR/$IDENTITY_FILE"
     cd $REPO_NAME && echo "ssh -i" && \
     git push --set-upstream $REMOTE_REPO \
 )
+# if $CLONE_DIR is not empty, then clone the repo in $CLONE_DIR/$REPO_NAME
+if [ ! -z "$CLONE_DIR" ]; then
+    echo "CLONE_DIR: $CLONE_DIR"
+    git clone $REPO_URL $CLONE_DIR/$REPO_NAME || true
+fi
 rm -rf pic-repos
