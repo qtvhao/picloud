@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -o pipefail
 args=("$@")
 IP_ADDRESS=${args[0]}
 IDENTITY_FILE=${args[1]}

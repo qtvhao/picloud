@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -o pipefail
 source .env
 if [ -z "$DOMAIN" ]; then
     echo "Please set DOMAIN in .env"
@@ -9,7 +9,7 @@ if [ -z "$EMAIL" ]; then
     echo "Please set EMAIL in .env"
     exit 1
 fi
-set -e
+set -e -o pipefail
 args=("$@")
 PASSWORD=${args[0]}
 echo "Setting password to $PASSWORD"

@@ -4,7 +4,7 @@ if [ -z "$DOMAIN" ]; then
     echo "Please set DOMAIN in .env"
     exit 1
 fi
-set -e
+set -e -o pipefail
 export TUNNEL_FORCE_PROVISIONING_DNS=true
 cloudflared -v
 args=("$@")

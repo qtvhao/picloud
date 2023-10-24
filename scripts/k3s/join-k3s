@@ -18,7 +18,7 @@ if [ ! -f $IDENTIFY_FILE ]; then
     echo "Usage: ./pic join-k3s NODE_IP IDENTIFY_FILE"
     exit 1
 fi
-set -e
+set -e -o pipefail
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "hostname" || exit 1

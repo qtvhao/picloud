@@ -1,4 +1,4 @@
-set -e
+set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 if [ -z "$IDENTIFY_FILE" ]; then

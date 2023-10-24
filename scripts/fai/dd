@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -o pipefail
 syslinux -h > /dev/null 2>&1 || apt-get install syslinux -y
 pv -h > /dev/null 2>&1 || apt-get install pv -y
 args=("$@")

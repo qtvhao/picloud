@@ -23,7 +23,7 @@ for node in $nodesOnLan; do
 done
 
 ./pic uninstall-k3s $IDENTIFY_FILE
-set -e
+set -e -o pipefail
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
 echo "Installing k3s"
