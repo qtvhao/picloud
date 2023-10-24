@@ -62,7 +62,7 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns          
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns  8181 404
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns            5000 404
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp gitlab-webservice-default   22
-export FQDN_RECORD="http-gitlab-webservice-default-8181-gitlab-ns.schnworks.com"
+export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.schnworks.com"
 while true; do
     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
     echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code. Expected status code: 200"
