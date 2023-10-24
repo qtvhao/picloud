@@ -22,33 +22,7 @@ for node in $nodesOnLan; do
         "$node" "warp-cli connect"
 done
 
-# 
-echo "IDENTIFY_FILE: $IDENTIFY_FILE"
-NODES=$(kubectl get nodes -o json | jq -r '.items[].metadata.name')
-echo "Found nodes: $NODES"
-# loop through nodes and k3s-agent-uninstall
-for NODE in $NODES; do
-    match="192.168."
-    echo "NODE: $NODE"
-    NODE_IP=$(kubectl get node $NODE -o json | jq -r '.status.addresses[] | select(.type == "InternalIP") | .address' | head -n1)
-    if [[ $NODE_IP == $match* ]]; then
-        echo "Uninstalling k3s from $NODE"
-        ssh $NODE_IP "k3s-agent-uninstall.sh" || true
-        ssh $NODE_IP "k3s-uninstall.sh" || true
-        kubectl delete node $NODE
-    fi
-done
-# k3s server uninstall
-echo "Uninstalling k3s from master node"
-k3s-killall.sh
-echo "k3s-agent-uninstall.sh"
-k3s-agent-uninstall.sh
-echo "k3s-uninstall.sh"
-k3s-uninstall.sh
-echo "systemctl disable k3s-agent"
-systemctl disable k3s-agent
-echo "systemctl disable k3s"
-systemctl disable k3s
+./pic uninstall-k3s $IDENTIFY_FILE
 set -e
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"

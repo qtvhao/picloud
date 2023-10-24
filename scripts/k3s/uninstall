@@ -1,0 +1,42 @@
+set -e
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "Please provide the identify file"
+    exit 1
+fi
+if [ ! -f $IDENTIFY_FILE ]; then
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload $IDENTIFY_FILE in your github account"
+    exit 1
+fi
+# 
+echo "IDENTIFY_FILE: $IDENTIFY_FILE"
+NODES=$(kubectl get nodes -o json | jq -r '.items[].metadata.name')
+echo "Found nodes: $NODES"
+# loop through nodes and k3s-agent-uninstall
+for NODE in $NODES; do
+    match="192.168."
+    echo "NODE: $NODE"
+    NODE_IP=$(kubectl get node $NODE -o json | jq -r '.status.addresses[] | select(.type == "InternalIP") | .address' | head -n1)
+    if [[ $NODE_IP == $match* ]]; then
+        echo "Uninstalling k3s from $NODE"
+        ssh $NODE_IP "k3s-agent-uninstall.sh" || true
+        ssh $NODE_IP "k3s-uninstall.sh" > k3s-uninstall.log || true
+        rm k3s-uninstall.log || true
+        kubectl delete node $NODE
+    fi
+done
+# k3s server uninstall
+echo "Uninstalling k3s from master node"
+k3s-killall.sh || true
+echo "k3s-agent-uninstall.sh"
+k3s-agent-uninstall.sh || true
+echo "k3s-uninstall.sh"
+k3s-uninstall.sh > k3s-uninstall.log || true
+rm k3s-uninstall.log || true
+echo "systemctl disable k3s-agent"
+systemctl disable k3s-agent || true
+echo "systemctl disable k3s"
+systemctl disable k3s || true
+echo
+echo "Done uninstalling k3s"
