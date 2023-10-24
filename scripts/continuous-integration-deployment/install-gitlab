@@ -23,8 +23,8 @@ kubectl delete secret --namespace gitlab-ns redis || true
 kubectl apply -f redis-secret.yaml
 rm redis-secret.yaml
 kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
-kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm uninstall gitlab --namespace gitlab-ns || true
+kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
