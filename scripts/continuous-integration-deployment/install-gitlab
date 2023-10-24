@@ -12,6 +12,7 @@ fi
 set -e -o pipefail
 args=("$@")
 PASSWORD=${args[0]}
+IDENTIFY_FILE=${args[1]}
 echo "Setting password to $PASSWORD"
 
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
@@ -24,6 +25,8 @@ kubectl apply -f redis-secret.yaml
 rm redis-secret.yaml
 kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
 helm uninstall gitlab --namespace gitlab-ns || true
+# remove all secrets from gitlab-ns
+kubectl get secrets --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
