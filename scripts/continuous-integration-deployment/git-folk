@@ -28,7 +28,7 @@ echo "Cloning $REPO_NAME from $REPO_URL"
 HEAD=$(git rev-parse --abbrev-ref HEAD)
 # export GIT_SSH_COMMAND="ssh -o ProxyCommand=\"cloudflared access ssh --hostname %h\""
 REPO_NAME_IN_LOWER_CASE=$(echo $REPO_NAME | tr '[:upper:]' '[:lower:]')
-REMOTE_REPO="https://root:$PASSWORD@http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN/root/$REPO_NAME_IN_LOWER_CASE.git"
+REMOTE_REPO="https://root:$PASSWORD@.$DOMAIN/root/$REPO_NAME_IN_LOWER_CASE.git"
 echo "REMOTE_REPO: $REMOTE_REPO"
 echo "HEAD: $HEAD"
 WORK_DIR=$(pwd)

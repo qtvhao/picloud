@@ -28,8 +28,8 @@ helm uninstall gitlab --namespace gitlab-ns || true
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
-global.hosts.gitlab.name=http-gitlab-webservice-default-8181-gitlab-ns."$DOMAIN",\
-global.hosts.registry.name=http-gitlab-registry-5000-gitlab-ns."$DOMAIN",\
+global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
+global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
 global.edition=ce,\
 global.kas.enabled=false,\
 gitlab.toolbox.enabled=false,\
@@ -74,6 +74,23 @@ done
 while true; do
     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
 done
+helm upgrade --install gitlab gitlab/gitlab \
+    --namespace gitlab-ns \
+    --set certmanager-issuer.email="$EMAIL",\
+global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
+global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
+global.edition=ce,\
+global.kas.enabled=false,\
+gitlab.toolbox.enabled=false,\
+gitlab-runner.install=true,\
+runners.privileged=true,\
+redis.install=false,\
+global.redis.host=redis-master.default.svc.cluster.local,\
+global.redis.auth.secret=redis,\
+global.redis.auth.key=redis-password,\
+nginx-ingress.enabled=false,\
+gitlab-runner.runners.privileged=true &
+
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
