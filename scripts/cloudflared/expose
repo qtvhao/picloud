@@ -29,7 +29,7 @@ if [ -z "$EXPECTED_STATUS_CODE" ]; then
     EXPECTED_STATUS_CODE="200"
 fi
 if [ -z "$TUNNEL_NAMESPACE" ]; then
-    TUNNEL_NAMESPACE="picloud-cloudflared"
+    TUNNEL_NAMESPACE="default"
 fi
 NODE_NUMBERTH=${args[4]}
 if [ -z "$NODE_NUMBERTH" ]; then
@@ -99,7 +99,6 @@ echo "Created cloudflared config"
 # cat $CONFIG_YAML_FILE
 echo "Starting cloudflared"
 CONTAINER_TUNNEL_NAME="cloudflared-$TUNNEL_NAMESPACE"
-(docker inspect $CONTAINER_TUNNEL_NAME >/dev/null 2>&1 && docker rm -f $CONTAINER_TUNNEL_NAME) || true
 TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1)
 echo "Tunnel ID: $TUNNEL_ID"
 TUNNEL_FILE="$HOME/.cloudflared/$TUNNEL_ID.json"
@@ -180,8 +179,6 @@ echo "                path: config.yaml"                    >>cloudflared-deploy
 
 kubectl apply -f cloudflared-deployment.yaml -n $TUNNEL_NAMESPACE
 kubectl rollout restart deployment/$CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE
-# cat $CONFIG_YAML_FILE;exit 0
-# rm cloudflared-deployment.yaml
 #
 while true; do
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then

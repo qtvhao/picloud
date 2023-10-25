@@ -30,11 +30,11 @@ rm -rf redis.log
 echo;time ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD" $IDENTIFY_FILE | tee gitlab.log
 rm -rf gitlab.log
 # 
-echo;time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee grafana-promtail-loki.log
-rm -rf grafana-promtail-loki.log
-# 
 echo;time ./pic csi-s3 | tee csi-s3.log
 rm -rf csi-s3.log
+# 
+echo;time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee grafana-promtail-loki.log
+rm -rf grafana-promtail-loki.log
 # 
 echo "./pic has installed your recommended packages"
 exit 0
