@@ -12,8 +12,8 @@ helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,use
 helm get notes minio
 rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
 rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
-TUNNEL_NAMESPACE=default ./pic expose http minio-console.gitlab-ns 9001
-TUNNEL_NAMESPACE=default ./pic expose http minio.gitlab-ns 9000
+TUNNEL_NAMESPACE=default ./pic expose http minio-console 9001
+TUNNEL_NAMESPACE=default ./pic expose http minio 9000
 echo "Minio root username: $rootUsername"
 echo "Minio root password: $rootPassword"
 echo "Minio console: https://http-minio-console-9001.$DOMAIN/login"
