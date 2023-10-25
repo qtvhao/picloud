@@ -4,10 +4,9 @@ source .env
 ./pic s3
 echo "Installing CSI S3"
 ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
-rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
-rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
-# ACCESS_KEY_ID=$(kubectl get secret --namespace default minio -o jsonpath="{.data.accesskey}" | base64 --decode)
-# SECRET_ACCESS_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.secretkey}" | base64 --decode)
+$(kubectl get secret --namespace tenant-ns myminio-env-configuration -o jsonpath="{.data}" | jq -r ".[\"config.env\"]" | base64 --decode)
+rootUsername=$(echo $MINIO_ROOT_USER | jq -r)
+rootPassword=$(echo $MINIO_ROOT_PASSWORD | jq -r)
 echo "apiVersion: v1" > csi-s3-secret.yaml
 echo "kind: Secret" >> csi-s3-secret.yaml
 echo "metadata:" >> csi-s3-secret.yaml
@@ -35,6 +34,7 @@ kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/maste
 kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml
 kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml
 kubectl describe pod csi-s3-test-nginx
+echo "---"
 kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mount | grep fuse" 
 kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mkdir -p /usr/share/nginx/html/s3/"
 kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "date > /usr/share/nginx/html/s3/file"

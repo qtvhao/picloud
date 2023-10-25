@@ -27,10 +27,20 @@ kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.toke
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 # 
 helm uninstall tenant-picloud -n tenant-ns || true
+stat s3.json > /dev/null 2>&1 || \
+    ACCESS_KEY_ID=$(openssl rand -hex 32)
+stat s3.json > /dev/null 2>&1 || \
+    SECRET_ACCESS_KEY=$(openssl rand -hex 32)
+stat s3.json > /dev/null 2>&1 || \
+    jq -n --arg ACCESS_KEY_ID "$ACCESS_KEY_ID" --arg SECRET_ACCESS_KEY "$SECRET_ACCESS_KEY" '{"ACCESS_KEY_ID":$ACCESS_KEY_ID,"SECRET_ACCESS_KEY":$SECRET_ACCESS_KEY}' > s3.json
+ACCESS_KEY_ID=$(jq -r '.ACCESS_KEY_ID' s3.json)
+SECRET_ACCESS_KEY=$(jq -r '.SECRET_ACCESS_KEY' s3.json)
 helm upgrade --install \
     --namespace tenant-ns \
     --create-namespace \
-    --set "tenant.pools[0].storageclassName=local-path,tenant.pools[0].servers=2,tenant.name=tenant-picloud"\
+    --set "tenant.pools[0].storageclassName=local-path,tenant.pools[0].servers=2,tenant.name=tenant-picloud" \
+    --set "secrets.accessKey=$ACCESS_KEY_ID" \
+    --set "secrets.secretKey=$SECRET_ACCESS_KEY" \
     tenant-picloud tenant-5.0.10.tgz
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400
 # exit 0
