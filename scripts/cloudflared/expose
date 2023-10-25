@@ -10,6 +10,8 @@ cloudflared -v
 args=("$@")
 TUNNEL_PROTOCOL=${args[0]}
 if [ -z "$TUNNEL_PROTOCOL" ]; then
+    # echo "TUNNEL_PROTOCOL is empty. Specify a protocol for the tunnel."
+    # exit 1
     TUNNEL_PROTOCOL="tcp"
 fi
 RESERVED_TUNNEL_PROTOCOL=$TUNNEL_PROTOCOL
@@ -180,6 +182,12 @@ echo "                path: config.yaml"                    >>cloudflared-deploy
 kubectl apply -f cloudflared-deployment.yaml -n $TUNNEL_NAMESPACE
 kubectl rollout restart deployment/$CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE
 #
+TUNNEL_PROTOCOL=$RESERVED_TUNNEL_PROTOCOL
+TUNNEL_HOSTNAME=$RESERVED_TUNNEL_HOSTNAME
+TUNNEL_PORT=$RESERVED_TUNNEL_PORT
+TUNNEL_NICE_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
+CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
+FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
 while true; do
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
         break;
@@ -201,12 +209,6 @@ while true; do
     sleep 5
 done
 echo
-TUNNEL_PROTOCOL=$RESERVED_TUNNEL_PROTOCOL
-TUNNEL_HOSTNAME=$RESERVED_TUNNEL_HOSTNAME
-TUNNEL_PORT=$RESERVED_TUNNEL_PORT
-TUNNEL_NICE_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
-CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
-FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
 echo "Tunnel exposed at $FQDN_RECORD"
 if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
     if [ "22" == "$TUNNEL_PORT" ]; then

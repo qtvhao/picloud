@@ -23,14 +23,15 @@ metadata:
     kubernetes.io/service-account.name: console-sa
 type: kubernetes.io/service-account-token
 EOF
-kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode
+kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode;echo
+TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 # 
+exit 0
+helm uninstall tenant-picloud -n tenant-ns || true
 helm upgrade --install \
     --namespace tenant-ns \
     --create-namespace \
-    --set tenant.name=picloud,secrets.name=tenant-picloud-env-configuration,\
-tenant.pools[0].storageclassName=local-path,\
-tenant.pools[0].servers=2 \
+    --set "tenant.pools[0].storageclassName=local-path,tenant.pools[0].servers=2"\
     tenant-picloud tenant-5.0.10.tgz
 exit 0
 helm repo add minio https://charts.min.io/
@@ -39,8 +40,9 @@ helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,use
 helm get notes minio
 rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
 rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
-TUNNEL_NAMESPACE=default ./pic expose http minio-console 9001
+# kubectl --namespace minio-operator port-forward svc/console 9090:9090
 TUNNEL_NAMESPACE=default ./pic expose http minio 9000
+#   kubectl --namespace tenant-ns port-forward svc/myminio-console 9443:9443
 echo "Minio root username: $rootUsername"
 echo "Minio root password: $rootPassword"
 echo "Minio console: https://http-minio-console-9001.$DOMAIN/login"
