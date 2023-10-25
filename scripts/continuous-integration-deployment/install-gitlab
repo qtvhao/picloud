@@ -63,6 +63,8 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns          
 # ./pic wait deploy       gitlab-toolbox                gitlab-ns Available
 ./pic wait deploy       gitlab-sidekiq-all-in-1-v2    gitlab-ns Available
 ./pic wait deploy       gitlab-webservice-default     gitlab-ns Available
+./pic wait jobs gitlab-issuer-1         gitlab-ns complete
+./pic wait jobs gitlab-migrations-1     gitlab-ns complete
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-gitlab-shell.gitlab-ns   22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-webservice-default.gitlab-ns    22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
