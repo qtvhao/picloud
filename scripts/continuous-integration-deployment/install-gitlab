@@ -117,7 +117,7 @@ while true; do
     sleep 5
 done
 echo "GITLAB_OAUTH_URL: $GITLAB_OAUTH_URL"
-TF_VAR_gitlab_token=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
+GITLAB_TOKEN=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "grant_type": "password",
@@ -125,24 +125,25 @@ TF_VAR_gitlab_token=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
     "password": "'$PASSWORD'"
 }' | jq -r '.access_token')
 
-if [ -z "$TF_VAR_gitlab_token" ]; then
-    echo "TF_VAR_gitlab_token is empty. Please check your credentials."
+if [ -z "$GITLAB_TOKEN" ]; then
+    echo "GITLAB_TOKEN is empty. Please check your credentials."
     exit 1
 fi
-echo "TF_VAR_gitlab_token: $TF_VAR_gitlab_token"
+cat gitlab.json | jq -c -n --arg GITLAB_TOKEN "$GITLAB_TOKEN" '{"gitlab_token":$GITLAB_TOKEN}' > gitlab.json.tmp
+mv gitlab.json.tmp gitlab.json
+echo "GITLAB_TOKEN: $GITLAB_TOKEN"
 if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"
 fi
 if [ -f $IDENTIFY_FILE ]; then
     SSH_PUB_KEY=$(ssh-keygen -f $IDENTIFY_FILE -y)
-    curl --request GET --header "Authorization: Bearer $TF_VAR_gitlab_token" \
+    curl --request GET --header "Authorization: Bearer $GITLAB_TOKEN" \
         "https://$FQDN_RECORD/api/v4/user/keys"
         echo "SSH_PUB_KEY: $SSH_PUB_KEY"
-    #  > gitlab-ssh-key.json
     PAYLOAD=$(jq -c -n --arg SSH_PUB_KEY "$SSH_PUB_KEY" '{"title":"gitlab-ssh-key","key":$SSH_PUB_KEY}')
     echo $PAYLOAD > gitlab-ssh-key.json
-    curl --request POST --header "Authorization: Bearer $TF_VAR_gitlab_token" \
+    curl --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
         --header "Content-Type: application/json" \
         --data "@gitlab-ssh-key.json" \
         "https://$FQDN_RECORD/api/v4/user/keys"

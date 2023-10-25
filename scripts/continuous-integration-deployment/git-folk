@@ -27,7 +27,7 @@ else
     exit 1
 fi
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
-echo "GitLab root password: $PASSWORD"
+# echo "GitLab root password: $PASSWORD"
 rm -rf pic-repos || true
 mkdir pic-repos
 echo "Cloning $REPO_NAME from $REPO_URL"
@@ -48,10 +48,9 @@ IDENTITY_FILE="$WORK_DIR/$IDENTITY_FILE"
 # if $CLONE_DIR is not empty, then clone the repo in $CLONE_DIR/$REPO_NAME
 SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
 SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
-echo "SSH_REMOTE_REPO: $SSH_REMOTE_REPO"
 if [ ! -z "$CLONE_DIR" ]; then
     echo "CLONE_DIR: $CLONE_DIR/$REPO_NAME"
-    GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE -o ProxyCommand=\"cloudflared access ssh --hostname %h\"" \
+    GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no" \
         git clone $SSH_REMOTE_REPO $CLONE_DIR/$REPO_NAME
 fi
 rm -rf pic-repos
