@@ -98,3 +98,45 @@ gitlab-runner.runners.privileged=true &
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
+# 
+GITLAB_OAUTH_URL="https://$FQDN_RECORD/oauth/token"
+while true; do
+    status_code=$(curl -s -o /dev/null -w "%{http_code}" $GITLAB_OAUTH_URL || true)
+    echo "Waiting for $GITLAB_OAUTH_URL to be ready. Status code: $status_code. Expected status code: 302"
+    if [ "$status_code" == "302" ]; then
+        break
+    fi
+    sleep 5
+done
+echo "GITLAB_OAUTH_URL: $GITLAB_OAUTH_URL"
+TF_VAR_gitlab_token=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "grant_type": "password",
+    "username": "root",
+    "password": "'$PASSWORD'"
+}' | jq -r '.access_token')
+
+if [ -z "$TF_VAR_gitlab_token" ]; then
+    echo "TF_VAR_gitlab_token is empty. Please check your credentials."
+    exit 1
+fi
+echo "TF_VAR_gitlab_token: $TF_VAR_gitlab_token"
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
+    echo "Usage: ./pic recommended IDENTIFY_FILE"
+fi
+if [ ! -f $IDENTIFY_FILE ]; then
+    SSH_PUB_KEY=$(ssh-keygen -f $IDENTIFY_FILE -y)
+    curl --request GET --header "Authorization: Bearer $TF_VAR_gitlab_token" \
+        "https://$FQDN_RECORD/api/v4/user/keys"
+        echo "SSH_PUB_KEY: $SSH_PUB_KEY"
+    #  > gitlab-ssh-key.json
+    PAYLOAD=$(jq -c -n --arg SSH_PUB_KEY "$SSH_PUB_KEY" '{"title":"gitlab-ssh-key","key":$SSH_PUB_KEY}')
+    echo $PAYLOAD > gitlab-ssh-key.json
+    curl --request POST --header "Authorization: Bearer $TF_VAR_gitlab_token" \
+        --header "Content-Type: application/json" \
+        --data "@gitlab-ssh-key.json" \
+        "https://$FQDN_RECORD/api/v4/user/keys"
+    rm gitlab-ssh-key.json
+fi
