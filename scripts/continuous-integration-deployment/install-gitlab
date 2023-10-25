@@ -132,7 +132,7 @@ if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"
 fi
-if [ ! -f $IDENTIFY_FILE ]; then
+if [ -f $IDENTIFY_FILE ]; then
     SSH_PUB_KEY=$(ssh-keygen -f $IDENTIFY_FILE -y)
     curl --request GET --header "Authorization: Bearer $TF_VAR_gitlab_token" \
         "https://$FQDN_RECORD/api/v4/user/keys"
