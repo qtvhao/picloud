@@ -3,7 +3,7 @@ set -e -o pipefail
 source .env
 ./pic s3
 echo "Installing CSI S3"
-ENDPOINT="http-minio-9000.$DOMAIN"
+ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
 rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
 rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
 # ACCESS_KEY_ID=$(kubectl get secret --namespace default minio -o jsonpath="{.data.accesskey}" | base64 --decode)

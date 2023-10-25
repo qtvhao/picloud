@@ -30,6 +30,7 @@ EXPECTED_STATUS_CODE=${args[3]}
 if [ -z "$EXPECTED_STATUS_CODE" ]; then
     EXPECTED_STATUS_CODE="200"
 fi
+RESERVED_EXPECTED_STATUS_CODE=$EXPECTED_STATUS_CODE
 if [ -z "$TUNNEL_NAMESPACE" ]; then
     TUNNEL_NAMESPACE="default"
 fi
@@ -182,6 +183,7 @@ echo "                path: config.yaml"                    >>cloudflared-deploy
 kubectl apply -f cloudflared-deployment.yaml -n $TUNNEL_NAMESPACE
 kubectl rollout restart deployment/$CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE
 #
+EXPECTED_STATUS_CODE=$RESERVED_EXPECTED_STATUS_CODE
 TUNNEL_PROTOCOL=$RESERVED_TUNNEL_PROTOCOL
 TUNNEL_HOSTNAME=$RESERVED_TUNNEL_HOSTNAME
 TUNNEL_PORT=$RESERVED_TUNNEL_PORT

@@ -8,8 +8,8 @@ fi
 echo "Installing S3"
 curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/operator-5.0.10.tgz
 curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/tenant-5.0.10.tgz
-helm uninstall minio-operator -n minio-operator || true
-helm install \
+# helm uninstall minio-operator -n minio-operator || true
+helm upgrade --install \
     --namespace minio-operator \
     --create-namespace \
     minio-operator operator-5.0.10.tgz
@@ -26,23 +26,23 @@ EOF
 kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode;echo
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 # 
-exit 0
 helm uninstall tenant-picloud -n tenant-ns || true
 helm upgrade --install \
     --namespace tenant-ns \
     --create-namespace \
-    --set "tenant.pools[0].storageclassName=local-path,tenant.pools[0].servers=2"\
+    --set "tenant.pools[0].storageclassName=local-path,tenant.pools[0].servers=2,tenant.name=tenant-picloud"\
     tenant-picloud tenant-5.0.10.tgz
-exit 0
-helm repo add minio https://charts.min.io/
-# ,rootUser=rootuser,rootPassword=$ROOT_PASSWORD
-helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,users[0].policy=readwrite,resources.requests.memory=512Mi minio minio/minio
-helm get notes minio
-rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
-rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
-# kubectl --namespace minio-operator port-forward svc/console 9090:9090
-TUNNEL_NAMESPACE=default ./pic expose http minio 9000
+TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400
+# exit 0
+# helm repo add minio https://charts.min.io/
+# # ,rootUser=rootuser,rootPassword=$ROOT_PASSWORD
+# helm install --set users[0].accessKey=accessKey,users[0].secretKey=secretKey,users[0].policy=readwrite,resources.requests.memory=512Mi minio minio/minio
+# helm get notes minio
+# rootUsername=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootUser}" | base64 --decode)
+# rootPassword=$(kubectl get secret --namespace default minio -o jsonpath="{.data.rootPassword}" | base64 --decode)
+# # kubectl --namespace minio-operator port-forward svc/console 9090:9090
+# TUNNEL_NAMESPACE=default ./pic expose http minio 9000
 #   kubectl --namespace tenant-ns port-forward svc/myminio-console 9443:9443
-echo "Minio root username: $rootUsername"
-echo "Minio root password: $rootPassword"
-echo "Minio console: https://http-minio-console-9001.$DOMAIN/login"
+# echo "Minio root username: $rootUsername"
+# echo "Minio root password: $rootPassword"
+echo "Minio console: https://http-console-minio-operator-9090.$DOMAIN/"
