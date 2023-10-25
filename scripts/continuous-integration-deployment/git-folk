@@ -41,12 +41,12 @@ REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE.
 WORK_DIR=$(pwd)
 IDENTITY_FILE="$WORK_DIR/$IDENTITY_FILE"
 while true; do
-    (cd pic-repos && pwd && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && break) || true
+    (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME) && break || true
     sleep 5
 done
 # 
 while true; do
-    (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO && break) || true
+    (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO) && break || true
     sleep 5
 done
 # if $CLONE_DIR is not empty, then clone the repo in $CLONE_DIR/$REPO_NAME
