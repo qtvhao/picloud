@@ -18,15 +18,16 @@ echo "Setting password to $PASSWORD"
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
 helm repo update
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
+kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
+helm uninstall gitlab --namespace gitlab-ns || true
+kubectl get secrets --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
+# 
 kubectl get secret/redis -n default -o yaml > redis-secret.yaml
 sed -i 's/namespace: default/namespace: gitlab-ns/g' redis-secret.yaml
 kubectl delete secret --namespace gitlab-ns redis || true
 kubectl apply -f redis-secret.yaml
 rm redis-secret.yaml
-kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
-helm uninstall gitlab --namespace gitlab-ns || true
-# remove all secrets from gitlab-ns
-kubectl get secrets --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
+# 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
