@@ -101,7 +101,7 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
     if [ "$scriptFileExists" == "true" ]; then
         cp "$2/$3" "$scriptFile"
     else
-        curl $remoteUrl -o $scriptFile
+        curl -s $remoteUrl -o $scriptFile
     fi
     chmod +x $scriptFile
     "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
