@@ -93,17 +93,20 @@ for RECORD_KEY in $RECORDS_KEYS; do
     TUNNEL_NAMESPACE=$(echo $RECORD | jq -rM '.TUNNEL_NAMESPACE')
     TUNNEL_NICE_HOSTNAME=$(echo $RECORD | jq -rM '.TUNNEL_NICE_HOSTNAME')
     EXPECTED_STATUS_CODE=$(echo $RECORD | jq -rM '.EXPECTED_STATUS_CODE')
-    echo "  - hostname: $TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT.$DOMAIN"    >>$CONFIG_YAML_FILE
-    if [ "tcp-gitlab-kas-gitlab-ns-8150" == "$CNAME_RECORD" ]; then
-        echo "    path: /$"                                                             >>$CONFIG_YAML_FILE
+    if [ "gitlab-kas-gitlab-ns" == "$TUNNEL_NICE_HOSTNAME" ]; then
+        CNAME_RECORD="tcp-gitlab-kas-gitlab-ns-8150"
     fi
-    if [ "http-gitlab-kas-gitlab-ns-8154" == "$CNAME_RECORD" ]; then
-        echo "    path: /k8s-proxy"                                                     >>$CONFIG_YAML_FILE
+    echo "  - hostname: $CNAME_RECORD.$DOMAIN"                          >>$CONFIG_YAML_FILE
+    if [ "gitlab-kas-gitlab-ns" == "$TUNNEL_NICE_HOSTNAME" ]; then
+        if [ "8150" == "$TUNNEL_PORT" ]; then
+            echo "    path: /$"                                         >>$CONFIG_YAML_FILE
+        fi
+        if [ "8154" == "$TUNNEL_PORT" ]; then
+            echo "    path: /k8s-proxy"                                 >>$CONFIG_YAML_FILE
+        fi
     fi
-    echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT"                >>$CONFIG_YAML_FILE
+    echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT">>$CONFIG_YAML_FILE
 done
-echo "  - hostname: $FQDN_RECORD" >>$CONFIG_YAML_FILE
-echo "    service: $TUNNEL_PROTOCOL://$TUNNEL_HOSTNAME:$TUNNEL_PORT" >>$CONFIG_YAML_FILE
 echo "  - service: http_status:404" >>$CONFIG_YAML_FILE
 echo "Created cloudflared config"
 # cat $CONFIG_YAML_FILE

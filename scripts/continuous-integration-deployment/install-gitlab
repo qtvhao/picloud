@@ -11,16 +11,19 @@ if [ -z "$EMAIL" ]; then
 fi
 set -e -o pipefail
 args=("$@")
-PASSWORD=${args[0]}
-IDENTIFY_FILE=${args[1]}
+IDENTIFY_FILE=${args[0]}
+stat gitlab.json || \
+    jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json
+
+PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.json)
 echo "Setting password to $PASSWORD"
 
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
 helm repo update
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
-kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && kubectl delete secret --namespace gitlab-ns gitlab-gitlab-initial-root-password || true
 helm uninstall gitlab --namespace gitlab-ns || true
 kubectl get secrets --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
+kubectl get pvc --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
 # 
 kubectl get secret/redis -n default -o yaml > redis-secret.yaml
 sed -i 's/namespace: default/namespace: gitlab-ns/g' redis-secret.yaml
@@ -75,7 +78,7 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns          
 export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 while true; do
     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
-    echo "Waiting for $FQDN_RECORD to be ready. Status code: $status_code. Expected status code: 200"
+    echo "Waiting for $FQDN_RECORD/users/sign_in to be ready. Status code: $status_code. Expected status code: 200"
     if [ "$status_code" == "200" ]; then
         break
     fi
@@ -133,7 +136,12 @@ if [ -z "$GITLAB_TOKEN" ]; then
     echo "GITLAB_TOKEN is empty. Please check your credentials."
     exit 1
 fi
-cat gitlab.json | jq -c -n --arg GITLAB_TOKEN "$GITLAB_TOKEN" '{"gitlab_token":$GITLAB_TOKEN}' > gitlab.json.tmp
+# 
+cat gitlab.json || echo "{}" > gitlab.json
+cat gitlab.json | jq -c -n \
+    --arg GITLAB_TOKEN "$GITLAB_TOKEN" \
+    --arg GITLAB_ROOT_GENERATED_PASSWORD "$PASSWORD" \
+    '{"gitlab_token":$GITLAB_TOKEN,"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json.tmp
 mv gitlab.json.tmp gitlab.json
 echo "GITLAB_TOKEN: $GITLAB_TOKEN"
 if [ -z "$IDENTIFY_FILE" ]; then

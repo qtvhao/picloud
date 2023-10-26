@@ -36,7 +36,7 @@ rm -rf reinstall-k3s.log
 echo;time ./pic redis | tee redis.log
 rm -rf redis.log
 # 
-echo;time ./pic gitlab "$GITLAB_ROOT_GENERATED_PASSWORD" $IDENTIFY_FILE | tee gitlab.log
+echo;time ./pic gitlab $IDENTIFY_FILE | tee gitlab.log
 rm -rf gitlab.log
 # 
 echo;time ./pic csi-s3 | tee csi-s3.log
