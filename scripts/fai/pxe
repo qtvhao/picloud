@@ -58,6 +58,7 @@ else
     done
 fi
 # 
+wakeonlan || apt install wakeonlan -y
 wakeonlan $MAC_ADDRESS
 # docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
 # docker exec -it fai bash -c "chmod 0777 /tmp/dnsmasq.log"
