@@ -50,7 +50,8 @@ docker run --name fai-config \
 FAI_CONFIG_IMAGE_ID=$(docker image inspect fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
- time ( (docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") > fai-setup.log )
+ time ( (docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
+ # 2055 lines
 echo "Fai-setup finished"
 # exit 0
 # docker stop fai-config || true
@@ -70,7 +71,8 @@ FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/
 FAI_CD_BASE_FULL="$FAI_MIRROR_IMAGE_ID-$HOSTNAME-$cl"
 FAI_CD_BASE="fai-cd-base-"$(echo $FAI_CD_BASE_FULL | md5sum | cut -c1-20)
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
-    time ( (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) > fai-mirror.log)
+    time ( (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) | tee fai-mirror.log)
+# 8907 lines
 echo "Fai-mirror finished"
 # docker stop fai || true
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || time docker commit fai $FAI_CD_BASE
@@ -99,7 +101,6 @@ echo "Fai-setup starting"
 # cat fai-setup.log | tail -n50
 # rm fai-setup.log
 
-cat fai-mirror.log | tail -n50
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
 time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso))
