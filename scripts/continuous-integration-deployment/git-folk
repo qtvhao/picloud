@@ -46,7 +46,7 @@ while true; do
 done
 # 
 while true; do
-    (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO) && break || true
+    (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO --all) && break || true
     sleep 5
 done
 # if $CLONE_DIR is not empty, then clone the repo in $CLONE_DIR/$REPO_NAME
