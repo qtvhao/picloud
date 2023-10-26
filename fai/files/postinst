@@ -6,7 +6,7 @@ echo "AllowSuspendThenHibernate=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
 echo "AllowHybridSleep=no" >> /etc/systemd/sleep.conf.d/nosuspend.conf
 
 mkdir -p /etc/resolvconf/resolv.conf.d/
-echo "nameserver 8.8.8.8" >     /etc/resolvconf/resolv.conf.d/tail
-echo "nameserver 8.8.4.4" >>    /etc/resolvconf/resolv.conf.d/tail
+echo "nameserver 8.8.8.8" >     /etc/resolvconf/resolv.conf.d/head
+echo "nameserver 8.8.4.4" >>    /etc/resolvconf/resolv.conf.d/head
 resolvconf --enable-updates
 resolvconf -u
