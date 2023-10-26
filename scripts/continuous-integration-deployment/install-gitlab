@@ -32,6 +32,7 @@ kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-p
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
+global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
 global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
 global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
@@ -86,6 +87,7 @@ done
 helm upgrade --install gitlab gitlab/gitlab \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
+global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
 global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
 global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
