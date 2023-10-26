@@ -51,6 +51,8 @@ while true; do
 done
 echo "SSH is ready"
 docker restart fai
+# protect $IDENTITY_FILE
+chmod 600 $IDENTITY_FILE
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready."
@@ -60,7 +62,7 @@ while true; do
     (timeout 10 ssh \
         -o PasswordAuthentication=no \
         -o StrictHostKeyChecking=no \
-        -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'" > /dev/null 2>&1) && break || continue;
+        -i $IDENTITY_FILE root@$IP_ADDRESS "echo 'The node is ready'") && break || echo "Connecting failed. Retry"
 done
 
 ./pic list-mass-storage $IP_ADDRESS $IDENTITY_FILE && \
