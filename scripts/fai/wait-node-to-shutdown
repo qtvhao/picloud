@@ -50,7 +50,9 @@ while true; do
     nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;
 done
 echo "SSH is ready"
+docker restart fai
 while true; do
+    wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready."
     sleep 12
     ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
@@ -64,7 +66,6 @@ done
 ./pic list-mass-storage $IP_ADDRESS $IDENTITY_FILE && \
     echo "Mass Storage USB is found. Installation is failed. Please remove the USB Flash Drive and try again." && exit 1 || true
 echo "Mass Storage USB is not found. Continue"
-docker restart fai
 while true; do
     echo "Waiting for finish installation"
     ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 || break;
@@ -75,7 +76,6 @@ ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
 ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts > /dev/null 2>&1 || true
 while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
-    # echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready. Waiting for private key to be ready"
     sleep 2
     (timeout 2 ssh \
         -o PasswordAuthentication=no \
