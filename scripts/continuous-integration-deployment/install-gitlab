@@ -102,6 +102,8 @@ nginx-ingress.enabled=false,\
 gitlab-runner.runners.privileged=true &
 ./pic wait jobs gitlab-migrations-2     gitlab-ns complete
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
+TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150
+TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 404
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
