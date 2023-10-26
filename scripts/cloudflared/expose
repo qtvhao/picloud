@@ -70,6 +70,7 @@ cat "$EXPOSE_ITEMS_JSON" | \
 mv "$EXPOSE_ITEMS_JSON".tmp "$EXPOSE_ITEMS_JSON"
 cloudflared tunnel login
 cloudflared tunnel create $TUNNEL_NAME || true
+stat "$HOME/.picloud/" > /dev/null 2>&1 || mkdir -p "$HOME/.picloud/"
 CONFIG_YAML_FILE="$HOME/.picloud/cloudflared-$TUNNEL_NAMESPACE.yml"
 echo "" >$CONFIG_YAML_FILE
 echo "tunnel: $TUNNEL_NAME" >>$CONFIG_YAML_FILE
