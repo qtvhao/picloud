@@ -160,4 +160,5 @@ if [ -f $IDENTIFY_FILE ]; then
         --data "@gitlab-ssh-key.json" \
         "https://$FQDN_RECORD/api/v4/user/keys"
     rm gitlab-ssh-key.json
+    echo
 fi

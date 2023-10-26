@@ -66,7 +66,8 @@ cat "$EXPOSE_ITEMS_JSON" | \
             "TUNNEL_NAMESPACE": $TUNNEL_NAMESPACE,
             "TUNNEL_NICE_HOSTNAME": $TUNNEL_NICE_HOSTNAME,
             "EXPECTED_STATUS_CODE": $EXPECTED_STATUS_CODE
-        }' >"$EXPOSE_ITEMS_JSON".tmp
+        }' > "$EXPOSE_ITEMS_JSON".tmp
+echo "Moving $EXPOSE_ITEMS_JSON.tmp to $EXPOSE_ITEMS_JSON"
 mv "$EXPOSE_ITEMS_JSON".tmp "$EXPOSE_ITEMS_JSON"
 cloudflared tunnel login
 cloudflared tunnel create $TUNNEL_NAME || true
