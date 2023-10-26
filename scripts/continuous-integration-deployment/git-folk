@@ -41,7 +41,7 @@ REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE.
 WORK_DIR=$(pwd)
 IDENTITY_FILE="$WORK_DIR/$IDENTITY_FILE"
 while true; do
-    (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME) && break || true
+    (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone --bare $REPO_URL $REPO_NAME) && break || true
     sleep 5
 done
 # 
@@ -49,7 +49,7 @@ while true; do
     (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO --all) && break || true
     sleep 5
 done
-# if $CLONE_DIR is not empty, then clone the repo in $CLONE_DIR/$REPO_NAME
+rm -rf pic-repos
 SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
 SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
 if [ ! -z "$CLONE_DIR" ]; then
@@ -57,4 +57,3 @@ if [ ! -z "$CLONE_DIR" ]; then
     GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no" \
         git clone $SSH_REMOTE_REPO $CLONE_DIR/$REPO_NAME
 fi
-rm -rf pic-repos
