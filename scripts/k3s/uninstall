@@ -20,8 +20,10 @@ for NODE in $NODES; do
     NODE_IP=$(kubectl get node $NODE -o json | jq -r '.status.addresses[] | select(.type == "InternalIP") | .address' | head -n1)
     if [[ $NODE_IP == $match* ]]; then
         echo "Uninstalling k3s from $NODE"
-        ssh $NODE_IP "k3s-agent-uninstall.sh" || true
-        ssh $NODE_IP "k3s-uninstall.sh" > k3s-uninstall.log || true
+        ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no \
+            $NODE_IP "k3s-agent-uninstall.sh" || true
+        (ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no \
+            $NODE_IP "k3s-uninstall.sh" | tee k3s-uninstall.log) || true
         rm k3s-uninstall.log || true
         kubectl delete node $NODE
     fi
