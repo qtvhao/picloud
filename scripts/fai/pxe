@@ -31,7 +31,7 @@ MAC_ADDRESS_SED_LOWER=$(echo $MAC_ADDRESS_SED | tr '[:upper:]' '[:lower:]')
 # replace http://\d+\.\d+\.\d+\.\d+/squash.img with http://$hostnameI/squash.img
 # replace IP ADDRESS with hostnameI
 hostnameI=$(hostname -I | awk '{print $1}')
-sed -i "s/http:\/\/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\/squash.img/http:\/\/$hostnameI\/squash.img/g" ./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER
+sed -i "s/http:\/\/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+:8085\/squash.img/http:\/\/$hostnameI:8085\/squash.img/g" ./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER
 sed -i "s/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+,proxy/$hostnameI,proxy/g" ./dnsmasq.conf
 sed -i "s/pxeserver,[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/pxeserver,$hostnameI/g" ./dnsmasq.conf
 
