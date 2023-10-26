@@ -34,16 +34,6 @@ done
 echo "IP_ADDRESS: $IP_ADDRESS"
 
 SQUASH_IMG_FILESIZE_HUMAN=$(docker exec fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}')
-PXE_SERVER_IP_ADDRESS=$(hostname -I | awk '{print $1}')
-echo "PXE_SERVER_IP_ADDRESS: $PXE_SERVER_IP_ADDRESS"
-CURL_HEAD_SQUASH_IMG=$(curl -s -I "http://$PXE_SERVER_IP_ADDRESS/squash.img" -X HEAD -w '%{http_code}' -o /dev/null)
-echo "CURL_HEAD_SQUASH_IMG: $CURL_HEAD_SQUASH_IMG"
-if [ "$CURL_HEAD_SQUASH_IMG" == "200" ]; then
-    echo "Squash.img is ready"
-else
-    echo "Squash.img is not ready. Waiting for it to be ready"
-    exit 1
-fi
 while true; do
     echo "Downloading squash.img ($SQUASH_IMG_FILESIZE_HUMAN, this may take a while)"
     sleep 16

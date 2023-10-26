@@ -39,7 +39,20 @@ docker restart fai
 docker exec -it fai bash -c "ln -s /srv/fai/config /var/www/html/" || true
 docker rm -f fai-nginx || true
 (lsof -i:80 && echo "Port 80 is in use" && exit 1) || true
-docker run --name fai-nginx --net host -v /var/www/html/:/usr/share/nginx/html:ro -d nginx
+docker run --name fai-nginx -p 8085:80 -v /var/www/html/:/usr/share/nginx/html:ro -d nginx
+# 
+docker exec fai-nginx bash -c "du -h /usr/share/nginx/html/squash.img"
+PXE_SERVER_IP_ADDRESS=$(hostname -I | awk '{print $1}')
+echo "PXE_SERVER_IP_ADDRESS: $PXE_SERVER_IP_ADDRESS"
+SQUASH_IMG_URL="http://$PXE_SERVER_IP_ADDRESS:8085/squash.img"
+CURL_HEAD_SQUASH_IMG=$(curl -s -I $SQUASH_IMG_URL -X HEAD -w '%{http_code}' -o /dev/null)
+echo "CURL_HEAD_SQUASH_IMG: $CURL_HEAD_SQUASH_IMG"
+if [ "$CURL_HEAD_SQUASH_IMG" == "200" ]; then
+    echo "Squash.img is ready. Starting to boot node: $SQUASH_IMG_URL"
+else
+    echo "Squash.img is not ready. Waiting for it to be ready: $SQUASH_IMG_URL"
+    exit 1
+fi
 docker exec -it fai bash -c "rm /tmp/dnsmasq.log || true"
 docker exec -it fai bash -c "dnsmasq"
 echo "Shutting down node"

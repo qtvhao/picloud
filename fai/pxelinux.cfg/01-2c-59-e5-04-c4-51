@@ -2,4 +2,4 @@ default fai-generated
 
 label fai-generated
 kernel vmlinuz-6.1.0-13-amd64
-append initrd=initrd.img-6.1.0-13-amd64 ip=dhcp root=live:http://192.168.1.209/squash.img rootovl FAI_FLAGS=verbose,sshd FAI_CONFIG_SRC=file:///var/lib/fai/config FAI_ACTION=install
+append initrd=initrd.img-6.1.0-13-amd64 ip=dhcp root=live:http://192.168.1.210:8085/squash.img rootovl FAI_FLAGS=verbose,sshd FAI_CONFIG_SRC=file:///var/lib/fai/config FAI_ACTION=install
