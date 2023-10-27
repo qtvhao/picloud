@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e -o pipefail
+echo
+source .env
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+args=("$@")
+./pic refresh-token-gitlab
+GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+PROJECT_NAME=${args[0]}
+PROJECT="root%2F"$PROJECT_NAME
+# POST /projects/:id/cluster_agents
+CLUSTER_AGENT=$(curl -s --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
+    --header "Content-Type: application/json" \
+    --data '{"name":"gitlab-agent"}' \
+    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents")
+CLUSTER_AGENT_MESSAGE=$(echo $CLUSTER_AGENT | jq -r '.message')
+if [ "400 Bad request - [\"Name has already been taken\"]" == "$CLUSTER_AGENT_MESSAGE" ]; then
+    echo "Cluster agent already exists"
+else
+    echo $CLUSTER_AGENT_MESSAGE
+    exit 1
+fi
+# GET /projects/:id/cluster_agents/:agent_id/tokens
+
+EXISTS_TOKENS=$(curl -s --request GET --header "Authorization: Bearer $GITLAB_TOKEN" \
+    --header "Content-Type: application/json" \
+    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens")
+echo "EXISTS_TOKENS: $EXISTS_TOKENS"
+# DELETE /projects/:id/cluster_agents/:agent_id/tokens/:token_id
+TOKEN_IDS=$(echo $EXISTS_TOKENS | jq -r '.[].id')
+for TOKEN_ID in $TOKEN_IDS; do
+    echo "TOKEN_ID: $TOKEN_ID"
+    curl -s --request DELETE --header "Authorization: Bearer $GITLAB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data '{"name":"gitlab-agent-token-'$(date +%s)'"}' \
+        "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens/$TOKEN_ID"
+done
+TOKEN_CREATED=$(curl -s --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
+    --header "Content-Type: application/json" \
+    --data '{"name":"gitlab-agent-token-'$(date +%s)'"}' \
+    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens" | jq -r '.token')
+helm repo add gitlab https://charts.gitlab.io && helm repo update || echo ""
+helm upgrade --install gitlab-agent gitlab/gitlab-agent \
+    --namespace gitlab-agent-gitlab-agent \
+    --create-namespace \
+    --set image.tag=v16.5.0 \
+    --set config.token=$TOKEN_CREATED \
+    --set config.kasAddress=wss://tcp-gitlab-kas-gitlab-ns-8150.$DOMAIN
