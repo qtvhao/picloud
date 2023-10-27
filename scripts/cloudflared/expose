@@ -241,4 +241,6 @@ if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
         echo "  ProxyCommand cloudflared access ssh --hostname %h"
         echo
     fi
+else
+    echo "https://$FQDN_RECORD/"
 fi
