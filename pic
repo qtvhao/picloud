@@ -6,6 +6,12 @@ if [ "$isRoot" != "root" ]; then
 fi
 args=("$@")
 arg1=${args[0]}
+PIC_DIR="$HOME/.pic"
+LOGS_DIR="$PIC_DIR/logs/"
+SCRIPTS_DIR="$PIC_DIR/scripts"
+mkdir -p $LOGS_DIR
+mkdir -p $SCRIPTS_DIR
+
 if [ "$arg1" == "update" ]; then
     echo "Updating PiCloud"
     curl "https://raw.githubusercontent.com/qtvhao/picloud/main/pic?$(date +%s)" -o pic && chmod +x pic

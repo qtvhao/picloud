@@ -30,11 +30,6 @@ jq -n \
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.json)
 echo "Installing recommended packages"
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-PIC_DIR="$HOME/.pic"
-LOGS_DIR="$PIC_DIR/logs/"
-SCRIPTS_DIR="$PIC_DIR/scripts"
-mkdir -p $LOGS_DIR
-mkdir -p $SCRIPTS_DIR
 echo "{}" > "$HOME/.pic/expose-items.json"
 # 
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
