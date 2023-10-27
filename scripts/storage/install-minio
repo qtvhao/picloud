@@ -46,7 +46,7 @@ helm upgrade --install \
 while true; do
     kubectl -n tenant-ns get svc tenant-picloud-hl && break || sleep 5
 done
-TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400
+TUNNEL_NAMESPACE=default ./pic expose https tenant-picloud-hl.tenant-ns 9000 400
 # exit 0
 # helm repo add minio https://charts.min.io/
 # # ,rootUser=rootuser,rootPassword=$ROOT_PASSWORD
