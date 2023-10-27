@@ -5,6 +5,6 @@ source .env
 
 ./pic refresh-token-gitlab > /dev/null 2>&1
 
-GITLAB_TOKEN=$(./pic get-refresh-token-gitlab) > /dev/null 2>&1
+GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token') > /dev/null 2>&1
 
 echo $GITLAB_TOKEN
