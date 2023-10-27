@@ -15,10 +15,12 @@ CLUSTER_AGENT=$(curl -s --request POST --header "Authorization: Bearer $GITLAB_T
     --data '{"name":"gitlab-agent"}' \
     "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents")
 echo "CLUSTER_AGENT: $CLUSTER_AGENT"
-CLUSTER_AGENT_MESSAGE=$(echo $CLUSTER_AGENT | jq -r '.message')
-if [ ! -z "$CLUSTER_AGENT_MESSAGE" ]; then
+ID=$(echo $CLUSTER_AGENT | jq -r '.id')
+if [ -z "$ID" ]; then
+    echo "ID is empty"
+    CLUSTER_AGENT_MESSAGE=$(echo $CLUSTER_AGENT | jq -r '.message')
     if [ "400 Bad request - [\"Name has already been taken\"]" == "$CLUSTER_AGENT_MESSAGE" ]; then
-    echo "Cluster agent already exists"
+        echo "Cluster agent already exists"
     else
         echo $CLUSTER_AGENT_MESSAGE
         exit 1
