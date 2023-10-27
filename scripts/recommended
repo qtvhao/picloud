@@ -23,11 +23,12 @@ if [ ! -f $IDENTIFY_FILE ]; then
     echo "Usage: ./pic recommended IDENTIFY_FILE"
     exit 1
 fi
-stat gitlab.json || \
+PIC_DIR="$HOME/.pic"
+stat "$PIC_DIR"/gitlab.json || \
 jq -n \
     --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" \
-    '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json
-GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.json)
+    '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > "$PIC_DIR"/gitlab.json
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Installing recommended packages"
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 echo "{}" > "$HOME/.pic/expose-items.json"

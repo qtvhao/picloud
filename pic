@@ -148,6 +148,12 @@ if [ "$arg1" == "refresh-token-gitlab" ]; then
     "refresh-token-gitlab" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
+if [ "$arg1" == "get-refresh-token-gitlab" ]; then
+    set -e
+    ./pic exec-local-or-remote "scripts/continuous-integration-deployment" \
+    "get-refresh-token-gitlab" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    exit 0
+fi
 if [ "$arg1" == "force-connect-gitlab-agent" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/continuous-integration-deployment" \

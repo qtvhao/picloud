@@ -12,10 +12,11 @@ fi
 set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
-stat gitlab.json || \
-    jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json
+PIC_DIR="$HOME/.pic"
+stat "$PIC_DIR"/gitlab.json || \
+    jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > "$PIC_DIR"/gitlab.json
 
-PASSWORD=$(jq -r '.gitlab_root_generated_password' gitlab.json)
+PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Setting password to $PASSWORD"
 
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
@@ -212,8 +213,8 @@ while true; do
     sleep 5
 done
 echo "GITLAB_OAUTH_URL: $GITLAB_OAUTH_URL"
-./pic refresh-token-gitlab
-GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"

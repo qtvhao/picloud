@@ -15,8 +15,8 @@ else
 fi
 echo "REPO_NAME: $REPO_NAME"
 echo "REPO_URL: $REPO_URL"
-./pic refresh-token-gitlab
-GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 PROJECT="root%2F"$REPO_NAME
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/remote_mirrors"
 echo "URL: $URL"

@@ -4,8 +4,7 @@ echo
 source .env
 FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 args=("$@")
-./pic refresh-token-gitlab
-GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 echo "GITLAB_TOKEN: $GITLAB_TOKEN"
 PROJECT_NAME=${args[0]}
 PROJECT="root%2F"$PROJECT_NAME

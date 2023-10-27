@@ -6,7 +6,7 @@ FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 args=("$@")
 SSH_PUB_KEY=${args[0]}
 # 
-GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 curl --request GET --header "Authorization: Bearer $GITLAB_TOKEN" \
     "https://$FQDN_RECORD/api/v4/user/keys"
