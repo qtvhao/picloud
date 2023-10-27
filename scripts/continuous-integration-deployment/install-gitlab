@@ -124,26 +124,8 @@ while true; do
     sleep 5
 done
 echo "GITLAB_OAUTH_URL: $GITLAB_OAUTH_URL"
-GITLAB_TOKEN=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
---header 'Content-Type: application/json' \
---data-raw '{
-    "grant_type": "password",
-    "username": "root",
-    "password": "'$PASSWORD'"
-}' | jq -r '.access_token')
-
-if [ -z "$GITLAB_TOKEN" ]; then
-    echo "GITLAB_TOKEN is empty. Please check your credentials."
-    exit 1
-fi
-# 
-cat gitlab.json || echo "{}" > gitlab.json
-cat gitlab.json | jq -c -n \
-    --arg GITLAB_TOKEN "$GITLAB_TOKEN" \
-    --arg GITLAB_ROOT_GENERATED_PASSWORD "$PASSWORD" \
-    '{"gitlab_token":$GITLAB_TOKEN,"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json.tmp
-mv gitlab.json.tmp gitlab.json
-echo "GITLAB_TOKEN: $GITLAB_TOKEN"
+./pic refresh-token-gitlab
+GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
 if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"
