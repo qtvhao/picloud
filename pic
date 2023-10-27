@@ -94,7 +94,7 @@ if [ "$arg1" == "redis" ]; then
 fi
 if [ "$arg1" == "exec-local-or-remote" ]; then
     set -e
-    scriptFile="./$3"
+    scriptFile="$HOME/.pic/scripts/$3"
     remoteUrl="https://raw.githubusercontent.com/qtvhao/picloud/main/$2/$3?$(date +%s)"
 
     scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")

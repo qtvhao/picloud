@@ -13,6 +13,7 @@ helm upgrade --install \
     --namespace minio-operator \
     --create-namespace \
     minio-operator operator-5.0.10.tgz
+rm operator-5.0.10.tgz
 kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Secret
@@ -43,6 +44,7 @@ helm upgrade --install \
     --set "secrets.accessKey=$ACCESS_KEY_ID" \
     --set "secrets.secretKey=$SECRET_ACCESS_KEY" \
     tenant-picloud tenant-5.0.10.tgz
+rm tenant-5.0.10.tgz
 while true; do
     kubectl -n tenant-ns get svc tenant-picloud-hl && break || sleep 5
 done
