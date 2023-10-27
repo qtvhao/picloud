@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e -o pipefail
+echo
+source .env
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+args=("$@")
+PROJECT_NAME=${args[0]}
+KEY=${args[1]}
+VALUE=${args[2]}
+URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/variables"
+echo "URL: $URL"
+./pic refresh-token-gitlab
+GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+MIRROR=$(curl -s --request POST \
+    --data "value=$VALUE" \
+    --data "key=$KEY" \
+    --header "Authorization: Bearer $GITLAB_TOKEN" \
+    $URL)
+
+echo "MIRROR: $MIRROR"
