@@ -222,3 +222,4 @@ if [ -f $IDENTIFY_FILE ]; then
     ./pic add-ssh-key-gitlab "$SSH_PUB_KEY"
 fi
 ./pic add-ssh-key-gitlab "$(cat ~/.ssh/id_rsa.pub)"
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
