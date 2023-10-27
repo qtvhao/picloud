@@ -38,6 +38,7 @@ helm upgrade --install gitlab gitlab/gitlab \
 global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
 global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
 global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
+global.hosts.https=false,\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
 global.edition=ce,\
 global.kas.enabled=false,\
@@ -93,6 +94,7 @@ helm upgrade --install gitlab gitlab/gitlab \
 global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
 global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
 global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
+global.hosts.https=false,\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
 global.edition=ce,\
 global.kas.enabled=true,\
