@@ -31,8 +31,56 @@ kubectl delete secret --namespace gitlab-ns redis || true
 kubectl apply -f redis-secret.yaml
 rm redis-secret.yaml
 # 
+RAILS_MINIO_YAML="$HOME/rails_minio.yaml"
+echo "provider: AWS"                                                        >  $RAILS_MINIO_YAML
+echo "region: minio"                                                        >> $RAILS_MINIO_YAML
+ACCESS_KEY_ID=$(cat s3.json | jq -r '.ACCESS_KEY_ID')
+SECRET_ACCESS_KEY=$(cat s3.json | jq -r '.SECRET_ACCESS_KEY')
+echo "aws_access_key_id: $ACCESS_KEY_ID"                                    >> $RAILS_MINIO_YAML
+echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $RAILS_MINIO_YAML
+echo "endpoint: https://https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
+echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
+kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
+
+REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
+echo "s3:"                                                                  >  $REGISTRY_MINIO_YAML
+echo "  v4auth: true"                                                       >> $REGISTRY_MINIO_YAML
+echo "  regionendpoint: https://https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN" >> $REGISTRY_MINIO_YAML
+echo "  pathstyle: true"                                                    >> $REGISTRY_MINIO_YAML
+echo "  region: minio"                                                      >> $REGISTRY_MINIO_YAML
+echo "  bucket: gitlab-registry"                                            >> $REGISTRY_MINIO_YAML
+echo "  accesskey: $ACCESS_KEY_ID"                                          >> $REGISTRY_MINIO_YAML
+echo "  secretkey: $SECRET_ACCESS_KEY"                                      >> $REGISTRY_MINIO_YAML
+# 
+kubectl create secret generic gitlab-registry-storage --from-file=connection=$REGISTRY_MINIO_YAML --namespace gitlab-ns
+
+
+kubectl create secret generic gitlab-minioaccess \
+    --from-literal=accesskey="$ACCESS_KEY_ID" \
+    --from-literal=secretkey="$SECRET_ACCESS_KEY" \
+    --namespace gitlab-ns
+
+RUNNER_CACHE_YAML="$HOME/runner_cache.yaml"
+echo "gitlab-runner:"                                                       >  $RUNNER_CACHE_YAML
+echo "  runners:"                                                           >> $RUNNER_CACHE_YAML
+echo "    config: |"                                                        >> $RUNNER_CACHE_YAML
+echo "      [[runners]]"                                                     >> $RUNNER_CACHE_YAML
+echo "        [runners.kubernetes]"                                          >> $RUNNER_CACHE_YAML
+echo "          image = \"ubuntu:18.04\""                                    >> $RUNNER_CACHE_YAML
+echo "          [runners.cache]"                                             >> $RUNNER_CACHE_YAML
+echo "            Type = \"s3\""                                             >> $RUNNER_CACHE_YAML
+echo "            Path = \"gitlab-runner\""                                  >> $RUNNER_CACHE_YAML
+echo "            Shared = true"                                             >> $RUNNER_CACHE_YAML
+echo "            [runners.cache.s3]"                                        >> $RUNNER_CACHE_YAML
+echo "              ServerAddress = \"https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN\"" >> $RUNNER_CACHE_YAML
+echo "              BucketName = \"gitlab-cache\""                           >> $RUNNER_CACHE_YAML
+# echo "              Insecure = true"                                         >> $RUNNER_CACHE_YAML
+echo "    cache:"                                                            >> $RUNNER_CACHE_YAML
+echo "      secretName: gitlab-minioaccess"                                  >> $RUNNER_CACHE_YAML
+
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm upgrade --install gitlab gitlab/gitlab \
+    -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
@@ -50,20 +98,32 @@ global.redis.host=redis-master.default.svc.cluster.local,\
 global.redis.auth.secret=redis,\
 global.redis.auth.key=redis-password,\
 nginx-ingress.enabled=false,\
-gitlab-runner.runners.privileged=true &
-#   --set global.ingress.tls.enabled=true,\
-# 
-# global.appConfig.certmanager.enabled=true,\
-# global.edition=ce,\
-# certmanager.install=true,\
-# global.ingress.configureCertmanager=false,\
-# global.kas.tls.enabled=true,\
-# nginx-ingress.enabled=false,\
-#  &
+gitlab-runner.runners.privileged=true \
+    --set global.minio.enabled=false \
+    --set global.registry.bucket=gitlab-registry \
+    --set global.appConfig.object_store.enabled=true \
+    --set global.appConfig.object_store.proxy_download=true \
+    --set global.appConfig.object_store.connection.secret=gitlab-storage \
+    --set global.appConfig.object_store.connection.key=connection \
+    --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+    --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+    --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+    --set global.appConfig.packages.bucket=gitlab-packages-storage \
+    --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+    --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+    --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+    --set global.appConfig.backups.bucket=gitlab-backup-upload \
+    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+    --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
+    --set gitlab.toolbox.backups.objectStorage.config.key=connection \
+    --set registry.storage.secret=gitlab-registry-storage \
+    --set registry.storage.key=connection \
+    &
+
 kubectl delete deployment cloudflared-default -n gitlab-ns || true
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns 8181   502
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns           5000   502
-./pic wait deploy       gitlab-minio                    gitlab-ns Available
+# ./pic wait deploy       gitlab-minio                    gitlab-ns Available
 ./pic wait deploy       gitlab-registry                 gitlab-ns Available
 # ./pic wait deploy     gitlab-toolbox                  gitlab-ns Available
 ./pic wait jobs         gitlab-issuer-1                 gitlab-ns complete
@@ -97,6 +157,7 @@ global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
 global.hosts.https=false,\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
 global.edition=ce,\
+global.minio.enabled=false,\
 global.kas.enabled=true,\
 gitlab.toolbox.enabled=true,\
 gitlab-runner.install=true,\
@@ -106,6 +167,7 @@ global.redis.host=redis-master.default.svc.cluster.local,\
 global.redis.auth.secret=redis,\
 global.redis.auth.key=redis-password,\
 nginx-ingress.enabled=false,\
+global.registry.bucket=gitlab-registry-storage,\
 gitlab-runner.runners.privileged=true &
 ./pic wait jobs gitlab-migrations-2     gitlab-ns complete
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
