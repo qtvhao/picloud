@@ -24,4 +24,3 @@ cat gitlab.json | jq -c -n \
     --arg GITLAB_ROOT_GENERATED_PASSWORD "$PASSWORD" \
     '{"gitlab_token":$GITLAB_TOKEN,"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > gitlab.json.tmp
 mv gitlab.json.tmp gitlab.json
-echo "GITLAB_TOKEN: $GITLAB_TOKEN"
