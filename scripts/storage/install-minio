@@ -27,6 +27,7 @@ kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.toke
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 # 
 helm uninstall tenant-picloud -n tenant-ns || true
+kubectl get pvc --namespace tenant-ns -o name | xargs kubectl delete --namespace tenant-ns || true
 stat s3.json > /dev/null 2>&1 || \
     ACCESS_KEY_ID=$(openssl rand -hex 32)
 stat s3.json > /dev/null 2>&1 || \
@@ -42,6 +43,9 @@ helm upgrade --install \
     --set "secrets.accessKey=$ACCESS_KEY_ID" \
     --set "secrets.secretKey=$SECRET_ACCESS_KEY" \
     tenant-picloud tenant-5.0.10.tgz
+while true; do
+    kubectl -n tenant-ns get svc tenant-picloud-hl && break || sleep 5
+done
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400
 # exit 0
 # helm repo add minio https://charts.min.io/
