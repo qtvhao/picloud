@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e -o pipefail
+echo
+source .env
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+args=("$@")
+REPO_URL=${args[0]}
+REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
+REPO_URL_ENDS_WITH_GIT="x"$(echo $REPO_URL | grep '\.git$' | wc -l) || true
+if [ "x0" != "$REPO_URL_ENDS_WITH_GIT" ]; then
+    REPO_NAME=$(echo $REPO_URL | sed 's/.*\///' | sed 's/\.git$//')
+else
+    echo "REPO_URL does not end with .git"
+    exit 1
+fi
+echo "REPO_NAME: $REPO_NAME"
+echo "REPO_URL: $REPO_URL"
+./pic refresh-token-gitlab
+GITLAB_TOKEN=$(cat gitlab.json | jq -r '.gitlab_token')
+PROJECT="root%2F"$REPO_NAME
+URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/remote_mirrors"
+echo "URL: $URL"
+MIRROR=$(curl -s --request POST \
+    --data "url=$REPO_URL" \
+    --data "enabled=true" \
+    --header "Authorization: Bearer $GITLAB_TOKEN" \
+    $URL)
+
+echo "MIRROR: $MIRROR"
