@@ -50,6 +50,10 @@ while true; do
     (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO --all) && break || true
     sleep 5
 done
+CI_REGISTRY="gitlab-registry.gitlab-ns:5000"
+CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY           "$CI_REGISTRY"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_IMAGE     "$CI_REGISTRY_IMAGE"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_PASSWORD  "$PASSWORD"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root"
 rm -rf pic-repos
