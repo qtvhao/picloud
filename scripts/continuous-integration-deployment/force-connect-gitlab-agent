@@ -26,8 +26,7 @@ EXISTS_TOKENS=$(curl -s --request GET --header "Authorization: Bearer $GITLAB_TO
     --header "Content-Type: application/json" \
     "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens")
 echo "EXISTS_TOKENS: $EXISTS_TOKENS"
-# DELETE /projects/:id/cluster_agents/:agent_id/tokens/:token_id
-TOKEN_IDS=$(echo $EXISTS_TOKENS | jq -r '.[].id')
+TOKEN_IDS=$(echo $EXISTS_TOKENS | jq -r '.[].id' || echo "")
 for TOKEN_ID in $TOKEN_IDS; do
     echo "TOKEN_ID: $TOKEN_ID"
     curl -s --request DELETE --header "Authorization: Bearer $GITLAB_TOKEN" \
