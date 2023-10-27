@@ -149,6 +149,7 @@ while true; do
     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
 done
 helm upgrade --install gitlab gitlab/gitlab \
+    -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
@@ -168,7 +169,28 @@ global.redis.auth.secret=redis,\
 global.redis.auth.key=redis-password,\
 nginx-ingress.enabled=false,\
 global.registry.bucket=gitlab-registry-storage,\
-gitlab-runner.runners.privileged=true &
+gitlab-runner.runners.privileged=true \
+    --set global.minio.enabled=false \
+    --set global.registry.bucket=gitlab-registry \
+    --set global.appConfig.object_store.enabled=true \
+    --set global.appConfig.object_store.proxy_download=true \
+    --set global.appConfig.object_store.connection.secret=gitlab-storage \
+    --set global.appConfig.object_store.connection.key=connection \
+    --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+    --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+    --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+    --set global.appConfig.packages.bucket=gitlab-packages-storage \
+    --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+    --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+    --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+    --set global.appConfig.backups.bucket=gitlab-backup-upload \
+    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+    --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
+    --set gitlab.toolbox.backups.objectStorage.config.key=connection \
+    --set registry.storage.secret=gitlab-registry-storage \
+    --set registry.storage.key=connection \
+    &
+
 ./pic wait jobs gitlab-migrations-2     gitlab-ns complete
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150
