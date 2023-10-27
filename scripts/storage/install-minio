@@ -27,16 +27,17 @@ EOF
 kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode;echo
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 # 
+PIC_DIR="$HOME/.pic"
 helm uninstall tenant-picloud -n tenant-ns || true
 kubectl get pvc --namespace tenant-ns -o name | xargs kubectl delete --namespace tenant-ns || true
-stat s3.json > /dev/null 2>&1 || \
+stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     ACCESS_KEY_ID=$(openssl rand -hex 32)
-stat s3.json > /dev/null 2>&1 || \
+stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     SECRET_ACCESS_KEY=$(openssl rand -hex 32)
-stat s3.json > /dev/null 2>&1 || \
-    jq -n --arg ACCESS_KEY_ID "$ACCESS_KEY_ID" --arg SECRET_ACCESS_KEY "$SECRET_ACCESS_KEY" '{"ACCESS_KEY_ID":$ACCESS_KEY_ID,"SECRET_ACCESS_KEY":$SECRET_ACCESS_KEY}' > s3.json
-ACCESS_KEY_ID=$(jq -r '.ACCESS_KEY_ID' s3.json)
-SECRET_ACCESS_KEY=$(jq -r '.SECRET_ACCESS_KEY' s3.json)
+stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
+    jq -n --arg ACCESS_KEY_ID "$ACCESS_KEY_ID" --arg SECRET_ACCESS_KEY "$SECRET_ACCESS_KEY" '{"ACCESS_KEY_ID":$ACCESS_KEY_ID,"SECRET_ACCESS_KEY":$SECRET_ACCESS_KEY}' > $PIC_DIR/s3.json
+ACCESS_KEY_ID=$(jq -r '.ACCESS_KEY_ID' $PIC_DIR/s3.json)
+SECRET_ACCESS_KEY=$(jq -r '.SECRET_ACCESS_KEY' $PIC_DIR/s3.json)
 helm upgrade --install \
     --namespace tenant-ns \
     --create-namespace \

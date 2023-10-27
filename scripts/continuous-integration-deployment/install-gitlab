@@ -31,11 +31,13 @@ kubectl delete secret --namespace gitlab-ns redis || true
 kubectl apply -f redis-secret.yaml
 rm redis-secret.yaml
 # 
+PIC_DIR="$HOME/.pic"
+# 
 RAILS_MINIO_YAML="$HOME/rails_minio.yaml"
 echo "provider: AWS"                                                        >  $RAILS_MINIO_YAML
 echo "region: minio"                                                        >> $RAILS_MINIO_YAML
-ACCESS_KEY_ID=$(cat s3.json | jq -r '.ACCESS_KEY_ID')
-SECRET_ACCESS_KEY=$(cat s3.json | jq -r '.SECRET_ACCESS_KEY')
+ACCESS_KEY_ID=$(cat $PIC_DIR/s3.json | jq -r '.ACCESS_KEY_ID')
+SECRET_ACCESS_KEY=$(cat $PIC_DIR/s3.json | jq -r '.SECRET_ACCESS_KEY')
 echo "aws_access_key_id: $ACCESS_KEY_ID"                                    >> $RAILS_MINIO_YAML
 echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $RAILS_MINIO_YAML
 echo "endpoint: https://https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
