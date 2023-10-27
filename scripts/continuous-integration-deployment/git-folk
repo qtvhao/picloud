@@ -47,6 +47,7 @@ while true; do
 done
 # 
 while true; do
+    (cd pic-repos && cd $REPO_NAME && git pull) || true
     (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO --all) && break || true
     sleep 5
 done
