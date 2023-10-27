@@ -171,7 +171,6 @@ global.redis.host=redis-master.default.svc.cluster.local,\
 global.redis.auth.secret=redis,\
 global.redis.auth.key=redis-password,\
 nginx-ingress.enabled=false,\
-global.registry.bucket=gitlab-registry-storage,\
 gitlab-runner.runners.privileged=true \
     --set global.minio.enabled=false \
     --set global.registry.bucket=gitlab-registry \

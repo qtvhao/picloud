@@ -38,9 +38,28 @@ stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     jq -n --arg ACCESS_KEY_ID "$ACCESS_KEY_ID" --arg SECRET_ACCESS_KEY "$SECRET_ACCESS_KEY" '{"ACCESS_KEY_ID":$ACCESS_KEY_ID,"SECRET_ACCESS_KEY":$SECRET_ACCESS_KEY}' > $PIC_DIR/s3.json
 ACCESS_KEY_ID=$(jq -r '.ACCESS_KEY_ID' $PIC_DIR/s3.json)
 SECRET_ACCESS_KEY=$(jq -r '.SECRET_ACCESS_KEY' $PIC_DIR/s3.json)
+    # --set global.registry.bucket=gitlab-registry \
+    # --set global.appConfig.object_store.enabled=true \
+    # --set global.appConfig.object_store.proxy_download=true \
+    # --set global.appConfig.object_store.connection.secret=gitlab-storage \
+    # --set global.appConfig.object_store.connection.key=connection \
+    # --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+    # --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+    # --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+    # --set global.appConfig.packages.bucket=gitlab-packages-storage \
+    # --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+    # --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+    # --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+    # --set global.appConfig.backups.bucket=gitlab-backup-upload \
+    # --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+    # --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
+    # --set gitlab.toolbox.backups.objectStorage.config.key=connection \
+    # --set registry.storage.secret=gitlab-registry-storage \
+    # --set registry.storage.key=connection \
 helm upgrade --install \
     --namespace tenant-ns \
     --create-namespace \
+    --set 'tenant.buckets[0].name=gitlab-registry,tenant.buckets[1].name=gitlab-lfs-storage,tenant.buckets[2].name=gitlab-artifacts-storage,tenant.buckets[3].name=gitlab-uploads-storage,tenant.buckets[4].name=gitlab-packages-storage,tenant.buckets[5].name=gitlab-external-diffs,tenant.buckets[6].name=gitlab-terraform-state,tenant.buckets[7].name=gitlab-dependency-proxy,tenant.buckets[8].name=gitlab-backup-upload,tenant.buckets[9].name=gitlab-tmp-storage' \
     --set "tenant.pools[0].storageclassName=local-path,tenant.pools[0].servers=2,tenant.name=tenant-picloud" \
     --set "secrets.accessKey=$ACCESS_KEY_ID" \
     --set "secrets.secretKey=$SECRET_ACCESS_KEY" \
