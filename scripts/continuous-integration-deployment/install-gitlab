@@ -130,17 +130,9 @@ if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"
 fi
+
 if [ -f $IDENTIFY_FILE ]; then
     SSH_PUB_KEY=$(ssh-keygen -f $IDENTIFY_FILE -y)
-    curl --request GET --header "Authorization: Bearer $GITLAB_TOKEN" \
-        "https://$FQDN_RECORD/api/v4/user/keys"
-        echo "SSH_PUB_KEY: $SSH_PUB_KEY"
-    PAYLOAD=$(jq -c -n --arg SSH_PUB_KEY "$SSH_PUB_KEY" '{"title":"gitlab-ssh-key","key":$SSH_PUB_KEY}')
-    echo $PAYLOAD > gitlab-ssh-key.json
-    curl --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
-        --header "Content-Type: application/json" \
-        --data "@gitlab-ssh-key.json" \
-        "https://$FQDN_RECORD/api/v4/user/keys"
-    rm gitlab-ssh-key.json
-    echo
+    ./pic add-ssh-key-gitlab "$SSH_PUB_KEY"
 fi
+./pic add-ssh-key-gitlab "$(cat ~/.ssh/id_rsa.pub)"
