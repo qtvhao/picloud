@@ -4,6 +4,7 @@ echo
 source .env
 
 ./pic refresh-token-gitlab > /dev/null 2>&1
+PIC_DIR="$HOME/.pic"
 
 GITLAB_TOKEN=$(cat "$PIC_DIR"/gitlab.json | jq -r '.gitlab_token') > /dev/null 2>&1
 
