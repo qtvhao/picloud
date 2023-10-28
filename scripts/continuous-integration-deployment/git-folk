@@ -69,5 +69,5 @@ if [ ! -z "$CLONE_DIR" ]; then
     echo "CLONE_DIR: $CLONE_DIR/$REPO_NAME"
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$SSH_FQDN_ADDRESS"
     git clone $SSH_REMOTE_REPO $CLONE_DIR/$REPO_NAME || \
-        (cd $CLONE_DIR/$REPO_NAME && echo "Updating $CLONE_DIR/$REPO_NAME" && git pull)
+        (cd $CLONE_DIR/$REPO_NAME && echo "Updating $CLONE_DIR/$REPO_NAME" && git config pull.rebase false && git pull)
 fi
