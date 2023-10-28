@@ -76,9 +76,9 @@ echo "            Type = \"s3\""                                                
 echo "            Path = \"gitlab-runner\""                                     >> $RUNNER_CACHE_YAML
 echo "            Shared = true"                                                >> $RUNNER_CACHE_YAML
 echo "            [runners.cache.s3]"                                           >> $RUNNER_CACHE_YAML
-echo "              ServerAddress = \"tenant-picloud-hl.tenant-ns:9000\""       >> $RUNNER_CACHE_YAML
+echo "              ServerAddress = \"https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN\""       >> $RUNNER_CACHE_YAML
 echo "              BucketName = \"gitlab-cache\""                              >> $RUNNER_CACHE_YAML
-echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
+# echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
 echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
 echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
 
