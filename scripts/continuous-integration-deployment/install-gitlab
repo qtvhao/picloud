@@ -41,14 +41,14 @@ ACCESS_KEY_ID=$(cat $PIC_DIR/s3.json | jq -r '.ACCESS_KEY_ID')
 SECRET_ACCESS_KEY=$(cat $PIC_DIR/s3.json | jq -r '.SECRET_ACCESS_KEY')
 echo "aws_access_key_id: $ACCESS_KEY_ID"                                    >> $RAILS_MINIO_YAML
 echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $RAILS_MINIO_YAML
-echo "endpoint: https://https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
+echo "endpoint: https://tenant-picloud-hl.tenant-ns:9000"                   >> $RAILS_MINIO_YAML
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
 kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
 
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
 echo "s3:"                                                                  >  $REGISTRY_MINIO_YAML
 echo "  v4auth: true"                                                       >> $REGISTRY_MINIO_YAML
-echo "  regionendpoint: https://https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN" >> $REGISTRY_MINIO_YAML
+echo "  regionendpoint: https://tenant-picloud-hl.tenant-ns:9000"           >> $REGISTRY_MINIO_YAML
 echo "  pathstyle: true"                                                    >> $REGISTRY_MINIO_YAML
 echo "  region: minio"                                                      >> $REGISTRY_MINIO_YAML
 echo "  bucket: gitlab-registry"                                            >> $REGISTRY_MINIO_YAML
@@ -64,22 +64,22 @@ kubectl create secret generic gitlab-minioaccess \
     --namespace gitlab-ns
 
 RUNNER_CACHE_YAML="$HOME/runner_cache.yaml"
-echo "gitlab-runner:"                                                       >  $RUNNER_CACHE_YAML
-echo "  runners:"                                                           >> $RUNNER_CACHE_YAML
-echo "    config: |"                                                        >> $RUNNER_CACHE_YAML
-echo "      [[runners]]"                                                     >> $RUNNER_CACHE_YAML
-echo "        [runners.kubernetes]"                                          >> $RUNNER_CACHE_YAML
-echo "          image = \"ubuntu:18.04\""                                    >> $RUNNER_CACHE_YAML
-echo "          [runners.cache]"                                             >> $RUNNER_CACHE_YAML
-echo "            Type = \"s3\""                                             >> $RUNNER_CACHE_YAML
-echo "            Path = \"gitlab-runner\""                                  >> $RUNNER_CACHE_YAML
-echo "            Shared = true"                                             >> $RUNNER_CACHE_YAML
-echo "            [runners.cache.s3]"                                        >> $RUNNER_CACHE_YAML
-echo "              ServerAddress = \"https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN\"" >> $RUNNER_CACHE_YAML
-echo "              BucketName = \"gitlab-cache\""                           >> $RUNNER_CACHE_YAML
-# echo "              Insecure = true"                                         >> $RUNNER_CACHE_YAML
-echo "    cache:"                                                            >> $RUNNER_CACHE_YAML
-echo "      secretName: gitlab-minioaccess"                                  >> $RUNNER_CACHE_YAML
+echo "gitlab-runner:"                                                           >  $RUNNER_CACHE_YAML
+echo "  runners:"                                                               >> $RUNNER_CACHE_YAML
+echo "    config: |"                                                            >> $RUNNER_CACHE_YAML
+echo "      [[runners]]"                                                        >> $RUNNER_CACHE_YAML
+echo "        [runners.kubernetes]"                                             >> $RUNNER_CACHE_YAML
+echo "          image = \"ubuntu:18.04\""                                       >> $RUNNER_CACHE_YAML
+echo "          [runners.cache]"                                                >> $RUNNER_CACHE_YAML
+echo "            Type = \"s3\""                                                >> $RUNNER_CACHE_YAML
+echo "            Path = \"gitlab-runner\""                                     >> $RUNNER_CACHE_YAML
+echo "            Shared = true"                                                >> $RUNNER_CACHE_YAML
+echo "            [runners.cache.s3]"                                           >> $RUNNER_CACHE_YAML
+echo "              ServerAddress = \"tenant-picloud-hl.tenant-ns:9000\""       >> $RUNNER_CACHE_YAML
+echo "              BucketName = \"gitlab-cache\""                              >> $RUNNER_CACHE_YAML
+echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
+echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
+echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm upgrade --install gitlab gitlab/gitlab \
