@@ -38,8 +38,7 @@ FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE.git"
 echo "REMOTE_REPO: $REMOTE_REPO"
 # echo "HEAD: $HEAD"
-WORK_DIR=$(pwd)
-IDENTITY_FILE="$WORK_DIR/$IDENTITY_FILE"
+IDENTITY_FILE=$(realpath $IDENTITY_FILE)
 SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
