@@ -48,7 +48,7 @@ done
 # 
 while true; do
     echo "Pulling $REPO_NAME from $REMOTE_REPO"
-    (cd pic-repos && cd $REPO_NAME && git pull --set-upstream $REMOTE_REPO)
+    (cd pic-repos && cd $REPO_NAME && git config pull.rebase false && git pull --set-upstream $REMOTE_REPO)
     echo "Pushing $REPO_NAME to $REMOTE_REPO"
     (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO --all) && break || true
     sleep 5
