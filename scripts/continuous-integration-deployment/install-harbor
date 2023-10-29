@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e -o pipefail
+source .env
+if [ -z "$DOMAIN" ]; then
+    echo "Please set DOMAIN in .env"
+    exit 1
+fi
+if [ -z "$EMAIL" ]; then
+    echo "Please set EMAIL in .env"
+    exit 1
+fi
+set -e -o pipefail
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+helm repo add harbor https://helm.goharbor.io
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
+helm upgrade --install harbor harbor/harbor  -n harbor-ns --create-namespace \
+    --set registry.credentials.username=root \
+    --set registry.credentials.password=$GITLAB_ROOT_GENERATED_PASSWORD
+
+echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin
+
+./pic wait deployment harbor-registry harbor-ns Available
+./pic expose http harbor-registry.harbor-ns 5000
+
+docker buildx imagetools create busybox --tag http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox
