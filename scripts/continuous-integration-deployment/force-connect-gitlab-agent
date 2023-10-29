@@ -43,7 +43,7 @@ TOKEN_CREATED=$(curl -s --request POST --header "Authorization: Bearer $GITLAB_T
     --data '{"name":"gitlab-agent-token-'$(date +%s)'"}' \
     "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens" | jq -r '.token')
 helm repo add gitlab https://charts.gitlab.io && helm repo update || echo ""
-helm upgrade --install gitlab-agent gitlab/gitlab-agent \
+helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
     --namespace gitlab-agent-gitlab-agent \
     --create-namespace \
     --set image.tag=v16.5.0 \
