@@ -40,7 +40,7 @@ cloudflared  version || \
     (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s && mv k9s /usr/local/bin/ && chmod +x /usr/local/bin/k9s)
 rm k9s_Linux_amd64.tar.gz || true
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
-systemctl status nm-cloud-setup.service || apt install -y network-manager
+# systemctl status nm-cloud-setup.service || apt install -y network-manager
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 curl -sfL https://get.k3s.io | K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init
