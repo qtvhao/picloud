@@ -196,7 +196,10 @@ gitlab-runner.runners.privileged=true \
     --set registry.storage.key=connection \
     &
 
+./pic wait deploy       gitlab-kas          gitlab-ns Available
+./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 ./pic wait jobs gitlab-migrations-2     gitlab-ns complete
+./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150
 TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 404
