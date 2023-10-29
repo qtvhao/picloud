@@ -116,8 +116,11 @@ echo "Created cloudflared config"
 # cat $CONFIG_YAML_FILE
 echo "Starting cloudflared"
 CONTAINER_TUNNEL_NAME="cloudflared-$TUNNEL_NAMESPACE"
-TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1)
-echo "Tunnel ID: $TUNNEL_ID"
+while true; do
+    TUNNEL_ID=$(cloudflared tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1) && break || true
+    echo "Tunnel ID: $TUNNEL_ID"
+    sleep 12
+done
 TUNNEL_FILE="$HOME/.cloudflared/$TUNNEL_ID.json"
 if [ ! -f "$TUNNEL_FILE" ]; then
     # remove old tunnel
