@@ -3,7 +3,7 @@ set -e -o pipefail
 source .env
 ./pic s3
 echo "Installing CSI S3"
-ENDPOINT="https-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
+ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
 $(kubectl get secret --namespace tenant-ns myminio-env-configuration -o jsonpath="{.data}" | jq -r ".[\"config.env\"]" | base64 --decode)
 rootUsername=$(echo $MINIO_ROOT_USER | jq -r)
 rootPassword=$(echo $MINIO_ROOT_PASSWORD | jq -r)
