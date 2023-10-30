@@ -46,14 +46,21 @@ while true; do
     sleep 5
 done
 # 
+current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
+(cd pic-repos/$REPO_NAME && git fetch --all)
+for branch in `cd pic-repos/$REPO_NAME && git branch -r | grep -vE "HEAD|main"`; do
+    echo "Checkout $branch"
+    # Create Local Branches for Each Remote Branch
+    branch=$(echo $branch | sed 's/origin\///')
+    (cd pic-repos/$REPO_NAME && git checkout -b $branch origin/$branch) || true
+done
+echo "current_branch: $current_branch"
+(cd pic-repos/$REPO_NAME && git checkout $current_branch)
 while true; do
-    echo "Pulling $REPO_NAME from $REMOTE_REPO"
-    (cd pic-repos && cd $REPO_NAME && git config pull.rebase false && git pull --set-upstream $REMOTE_REPO) || true
-    # 
     max=$(cd pic-repos && cd $REPO_NAME && git log --oneline|wc -l);
     for i in $(seq $max -100 1); do
         echo $i;
-        (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO HEAD~$i:refs/heads/pic-base-$i) || true
+        (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO HEAD~$i:refs/heads/pic-base) > /dev/null 2>&1 || true
     done;
     # 
     echo "Pushing $REPO_NAME to $REMOTE_REPO"
