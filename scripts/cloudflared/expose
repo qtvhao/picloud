@@ -39,10 +39,15 @@ if [ -z "$NODE_NUMBERTH" ]; then
     NODE_NUMBERTH=$(kubectl get nodes -o json | jq -r '.items | length')
 fi
 echo "NODE_NUMBERTH: $NODE_NUMBERTH"
+RE_ROUTE_ALL=${args[5]}
+if [ -z "$RE_ROUTE_ALL" ]; then
+    RE_ROUTE_ALL="false"
+fi
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 if [ -z "$TUNNEL_NAME" ]; then
     TUNNEL_NAME="picloud-$CNAME_RECORD"
 fi
+echo "TUNNEL_NAME: $TUNNEL_NAME"
 EXPOSE_ITEMS_JSON="$HOME/.pic/expose-items.json"
 stat $EXPOSE_ITEMS_JSON > /dev/null 2>&1 || \
     echo "{}" >"$EXPOSE_ITEMS_JSON"
@@ -82,12 +87,15 @@ echo "ingress:" >>$CONFIG_YAML_FILE
 mkdir -p ~/.picloud/cloudflared
 RECORDS_KEYS=$(cat "$EXPOSE_ITEMS_JSON" | jq -rM 'keys[]')
 for RECORD_KEY in $RECORDS_KEYS; do
-    echo "RECORD_KEY: $RECORD_KEY"
+    # echo "RECORD_KEY: $RECORD_KEY"
     RECORD=$(cat "$EXPOSE_ITEMS_JSON" | jq -rM ".[\"$RECORD_KEY\"]")
     # echo "RECORD: $RECORD"
     CNAME_RECORD=$(echo $RECORD | jq -rM '.CNAME_RECORD')
     FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
+    # 
+    if [ "true" == "$RE_ROUTE_ALL" ]; then
     cloudflared tunnel route dns $TUNNEL_NAME $FQDN_RECORD
+    fi
     TUNNEL_PROTOCOL=$(echo $RECORD | jq -rM '.TUNNEL_PROTOCOL')
     TUNNEL_HOSTNAME=$(echo $RECORD | jq -rM '.TUNNEL_HOSTNAME')
     TUNNEL_PORT=$(echo $RECORD | jq -rM '.TUNNEL_PORT')
@@ -207,11 +215,13 @@ TUNNEL_PORT=$RESERVED_TUNNEL_PORT
 TUNNEL_NICE_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
+cloudflared tunnel route dns $TUNNEL_NAME $FQDN_RECORD
 while true; do
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
         break;
     fi
     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/ || true)
+    echo "Status code: $status_code"
     if [ "$status_code" == "200" ]; then
         break
     fi

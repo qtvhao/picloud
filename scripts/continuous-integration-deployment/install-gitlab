@@ -104,7 +104,7 @@ global.redis.auth.key=redis-password,\
 nginx-ingress.enabled=false,\
 gitlab-runner.runners.privileged=true \
     --set rbac.create=true \
-    --set global.minio.enabled=false \
+    --set global.minio.enabled=true \
     --set global.registry.bucket=gitlab-registry \
     --set global.appConfig.terraformState.enabled=true \
     --set global.appConfig.object_store.enabled=true \
@@ -140,7 +140,7 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns          
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-gitlab-shell.gitlab-ns   22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-webservice-default.gitlab-ns    22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns              5000    404
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-registry.gitlab-ns              5000    404 "" "true"
 # 
 export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 while true; do
@@ -175,7 +175,7 @@ global.redis.auth.key=redis-password,\
 nginx-ingress.enabled=false,\
 gitlab-runner.runners.privileged=true \
     --set rbac.create=true \
-    --set global.minio.enabled=false \
+    --set global.minio.enabled=true \
     --set global.registry.bucket=gitlab-registry \
     --set global.appConfig.terraformState.enabled=true \
     --set global.appConfig.object_store.enabled=true \
@@ -203,8 +203,9 @@ gitlab-runner.runners.privileged=true \
 ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150
-TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 404
-kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
+TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 404 "" "true"
+kubectl auth can-i -A '*' '*' || \
+    kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
