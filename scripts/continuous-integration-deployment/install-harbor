@@ -24,3 +24,6 @@ helm upgrade --install harbor harbor/harbor  -n harbor-ns --create-namespace \
 
 echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin
 docker buildx imagetools create busybox --tag http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox
+kubectl get secret regcred --namespace default || \
+    kubectl create secret docker-registry regcred \
+    --docker-server=http-harbor-registry-harbor-ns-5000.$DOMAIN --docker-username=root --docker-password=$GITLAB_ROOT_GENERATED_PASSWORD --namespace default
