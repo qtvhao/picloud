@@ -47,12 +47,12 @@ while true; do
 done
 # 
 current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
-(cd pic-repos/$REPO_NAME && git fetch --all)
-for branch in `cd pic-repos/$REPO_NAME && git branch -r | grep -vE "HEAD|main"`; do
+(cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
+for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD|main"`; do
     echo "Checkout $branch"
     # Create Local Branches for Each Remote Branch
     branch=$(echo $branch | sed 's/origin\///')
-    (cd pic-repos/$REPO_NAME && git checkout -b $branch origin/$branch) || true
+    (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git checkout -b $branch origin/$branch) || true
 done
 echo "current_branch: $current_branch"
 (cd pic-repos/$REPO_NAME && git checkout $current_branch)
