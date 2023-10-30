@@ -53,7 +53,7 @@ while true; do
     max=$(cd pic-repos && cd $REPO_NAME && git log --oneline|wc -l);
     for i in $(seq $max -100 1); do
         echo $i;
-        (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO HEAD~$i:refs/heads/pic-base) || true;
+        (cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO HEAD~$i:refs/heads/pic-base-$i) || true
     done;
     # 
     echo "Pushing $REPO_NAME to $REMOTE_REPO"
