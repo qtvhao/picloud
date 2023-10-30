@@ -45,8 +45,8 @@ rm -rf $LOGS_DIR/csi-s3.log
 echo;time ./pic gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/gitlab.log
 # 
-time ./pic harbor | tee $LOGS_DIR/harbor.log 
-rm -rf $LOGS_DIR/harbor.log
+# time ./pic harbor | tee $LOGS_DIR/harbor.log 
+# rm -rf $LOGS_DIR/harbor.log
 # echo;time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log
 # rm -rf $LOGS_DIR/grafana-promtail-loki.log
 # 

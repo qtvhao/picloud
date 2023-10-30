@@ -41,14 +41,15 @@ ACCESS_KEY_ID=$(cat $PIC_DIR/s3.json | jq -r '.ACCESS_KEY_ID')
 SECRET_ACCESS_KEY=$(cat $PIC_DIR/s3.json | jq -r '.SECRET_ACCESS_KEY')
 echo "aws_access_key_id: $ACCESS_KEY_ID"                                    >> $RAILS_MINIO_YAML
 echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $RAILS_MINIO_YAML
-echo "endpoint: https://http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
+# echo "endpoint: https://http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
+echo "endpoint: http://tenant-picloud-hl.tenant-ns:9000"     >> $RAILS_MINIO_YAML
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
 kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
 
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
 echo "s3:"                                                                          >  $REGISTRY_MINIO_YAML
 echo "  v4auth: true"                                                               >> $REGISTRY_MINIO_YAML
-echo "  regionendpoint: https://http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $REGISTRY_MINIO_YAML
+echo "  regionendpoint: http://tenant-picloud-hl.tenant-ns:9000"                    >> $REGISTRY_MINIO_YAML
 echo "  secure: false"                                                              >> $REGISTRY_MINIO_YAML
 echo "  pathstyle: true"                                                            >> $REGISTRY_MINIO_YAML
 echo "  region: minio"                                                              >> $REGISTRY_MINIO_YAML
