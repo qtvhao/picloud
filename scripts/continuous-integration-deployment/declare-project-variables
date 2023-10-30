@@ -7,6 +7,22 @@ args=("$@")
 PROJECT_NAME=${args[0]}
 KEY=${args[1]}
 VALUE=${args[2]}
+ENVIRONMENT_SCOPE=${args[3]}
+if [ -z "$PROJECT_NAME" ]; then
+    echo "PROJECT_NAME is empty"
+    exit 1
+fi
+if [ -z "$KEY" ]; then
+    echo "KEY is empty"
+    exit 1
+fi
+if [ -z "$VALUE" ]; then
+    echo "VALUE is empty"
+    exit 1
+fi
+if [ -z "$ENVIRONMENT_SCOPE" ]; then
+    ENVIRONMENT_SCOPE="*"
+fi
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/variables"
 echo "URL: $URL"
 
@@ -14,6 +30,7 @@ GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 MIRROR=$(curl -s --request POST \
     --data "value=$VALUE" \
     --data "key=$KEY" \
+    --data "environment_scope=$ENVIRONMENT_SCOPE" \
     --header "Authorization: Bearer $GITLAB_TOKEN" \
     $URL)
 
