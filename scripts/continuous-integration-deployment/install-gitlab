@@ -206,7 +206,7 @@ gitlab-runner.runners.privileged=true \
 ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150
 TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 404 "" "true"
-kubectl auth can-i -A '*' '*' || \
+kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
     kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
