@@ -65,15 +65,28 @@ echo "max: $max"
 # max=$((max-1))
 for i in $(seq 1 +10 $max); do
     echo "Checking out $i"
-    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i) || break;
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i) > /dev/null 2>&1 || true
 done;
 i=$((i-10))
-for i in $(seq $i -10 1); do
-    echo "Checking out $i"
-    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch)
+echo
+for i in $(seq $i -100 1); do
+    if [ $i -gt 101 ]; then
+        echo "Skipping CI for $i"
+        OPTIONS="-o ci.skip"
+    else
+        echo "Checking out $i"
+        OPTIONS=""
+    fi
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch $OPTIONS) || continue
+    echo "Checking out $i in order to avoid HTTP 429 Too Many Requests"
 done;
+(cd pic-repos/$REPO_NAME && git checkout $current_branch    && git push --set-upstream origin HEAD:refs/heads/$current_branch)
+(cd pic-repos/$REPO_NAME && git checkout master             && git push --set-upstream origin HEAD:refs/heads/master) || true
+(cd pic-repos/$REPO_NAME && git checkout main               && git push --set-upstream origin HEAD:refs/heads/main) || true
+(cd pic-repos/$REPO_NAME && git checkout develop            && git push --set-upstream origin HEAD:refs/heads/develop) || true
 while true; do
-    (cd pic-repos && cd $REPO_NAME && git push --set-upstream origin --all) && break || true
+    echo "Pushing $REPO_NAME to $REMOTE_REPO"
+    (cd pic-repos && cd $REPO_NAME && git push --set-upstream origin --all -o ci.skip) && break || true
     sleep 5
 done
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
