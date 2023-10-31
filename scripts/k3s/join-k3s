@@ -48,7 +48,7 @@ K3S_TOKEN=$(jq -r '.k3s_token' "$PIC_DIR/k3s.json")
 echo "K3S_URL: $K3S_URL"
 echo "K3S_TOKEN: $K3S_TOKEN"
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
-ssh -i $IDENTIFY_FILE \
+timeout 20 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "sudo systemctl restart k3s" || true
 ssh -i $IDENTIFY_FILE \
