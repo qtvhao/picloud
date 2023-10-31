@@ -30,7 +30,6 @@ GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 PAYLOAD=$(jq --null-input \
     --arg value "$VALUE" \
     --arg key "$KEY" \
-    --argjson raw true \
     --argjson masked true \
     --argjson protected true \
     --arg environment_scope "$ENVIRONMENT_SCOPE" \
