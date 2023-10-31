@@ -27,13 +27,18 @@ URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/variables"
 echo "URL: $URL"
 
 GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+PAYLOAD=$(jq --null-input \
+    --arg value "$VALUE" \
+    --arg key "$KEY" \
+    --argjson raw true \
+    --argjson masked true \
+    --argjson protected true \
+    --arg environment_scope "$ENVIRONMENT_SCOPE" \
+    '{value: $value, key: $key, raw: $raw, masked: $masked, protected: $protected, environment_scope: $environment_scope}')
+# echo "PAYLOAD: $PAYLOAD"
 MIRROR=$(curl -s --request POST \
-    --data "value=$VALUE" \
-    --data "key=$KEY" \
-    --data "raw=true" \
-    --data "masked=true" \
-    --data "protected=true" \
-    --data "environment_scope=$ENVIRONMENT_SCOPE" \
+    --header "Content-Type: application/json" \
+    --data "$PAYLOAD" \
     --header "Authorization: Bearer $GITLAB_TOKEN" \
     $URL)
 
