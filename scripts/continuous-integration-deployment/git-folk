@@ -42,11 +42,12 @@ IDENTITY_FILE=$(realpath $IDENTITY_FILE)
 SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
-    (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME) && break || true
+    (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone --bare $REPO_URL $REPO_NAME) && break || true
     sleep 5
 done
 # 
-(cd pic-repos && cd $REPO_NAME && git push --set-upstream $REMOTE_REPO) || true
+(cd pic-repos/$REPO_NAME && git push --set-upstream $REMOTE_REPO)
+exit 1
 current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
 (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
 for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD|main"`; do
@@ -56,6 +57,7 @@ for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE
     (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git checkout -b $branch origin/$branch) || true
 done
 echo "current_branch: $current_branch"
+exit 0
 (cd pic-repos/$REPO_NAME && git checkout $current_branch)
 while true; do
     echo "Pushing $REPO_NAME to $REMOTE_REPO"

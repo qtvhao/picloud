@@ -84,6 +84,9 @@ echo "    cache:"                                                               
 echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+helm list -n gitlab-agent-gitlab-agent -o json | jq -r '.[].name' | grep gitlab | xargs helm uninstall -n gitlab-agent-gitlab-agent || true
+kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete pod -n gitlab-ns || true
+kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
 helm upgrade --install gitlab gitlab/gitlab \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
