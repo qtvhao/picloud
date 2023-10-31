@@ -23,7 +23,10 @@ helm upgrade --install harbor harbor/harbor  -n harbor-ns --create-namespace \
 ./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
 
 echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin
-docker buildx imagetools create busybox --tag http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox
+while ! docker buildx imagetools create busybox --tag http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
+    echo "Retrying to push to harbor"
+    sleep 5
+done
 kubectl get secret regcred --namespace default || \
     kubectl create secret docker-registry regcred \
     --docker-server=http-harbor-registry-harbor-ns-5000.$DOMAIN --docker-username=root --docker-password=$GITLAB_ROOT_GENERATED_PASSWORD --namespace default
