@@ -73,7 +73,7 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY           "$CI_REGISTRY"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_IMAGE     "$CI_REGISTRY_IMAGE"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_PASSWORD  "$PASSWORD"
-./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root" "*" false
 rm -rf pic-repos
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
 SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
