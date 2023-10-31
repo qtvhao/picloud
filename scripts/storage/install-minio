@@ -30,6 +30,10 @@ TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 PIC_DIR="$HOME/.pic"
 helm uninstall tenant-picloud -n tenant-ns || true
 kubectl get pvc --namespace tenant-ns -o name | xargs kubectl delete --namespace tenant-ns || true
+kubectl get pods -n tenant-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete pod -n tenant-ns || true
+kubectl get jobs -n tenant-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n tenant-ns || true
+kubectl get secrets --namespace tenant-ns -o name | xargs kubectl delete --namespace tenant-ns || true
+
 stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     ACCESS_KEY_ID=$(openssl rand -hex 32)
 stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
