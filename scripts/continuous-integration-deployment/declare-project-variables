@@ -30,6 +30,7 @@ GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 MIRROR=$(curl -s --request POST \
     --data "value=$VALUE" \
     --data "key=$KEY" \
+    --data "raw=true" \
     --data "masked=true" \
     --data "protected=true" \
     --data "environment_scope=$ENVIRONMENT_SCOPE" \
