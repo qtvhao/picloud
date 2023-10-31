@@ -47,6 +47,7 @@ while true; do
 done
 # 
 current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
+max=$(cd "pic-repos/$REPO_NAME" && git rev-list --count HEAD)
 (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
 for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD|main"`; do
     echo "Checkout $branch"
@@ -60,19 +61,18 @@ done
 )
 
 echo "current_branch: $current_branch"
-(cd pic-repos/$REPO_NAME && git checkout $current_branch)
-max=$(cd "pic-repos/$REPO_NAME" && git log --oneline|wc -l);
 echo "max: $max"
-max=$((max-1))
-(cd pic-repos && cd $REPO_NAME && git push --set-upstream origin HEAD~$max:refs/heads/$current_branch) > /dev/null 2>&1 || true
-exit 0
+# max=$((max-1))
+for i in $(seq 1 +10 $max); do
+    echo "Checking out $i"
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i) || break;
+done;
+i=$((i-10))
+for i in $(seq $i -10 1); do
+    echo "Checking out $i"
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch)
+done;
 while true; do
-    echo "Pushing $REPO_NAME to $REMOTE_REPO"
-    for i in $(seq $max -100 1); do
-        echo $i;
-        (cd pic-repos && cd $REPO_NAME && git push --set-upstream origin HEAD~$i:refs/heads/pic-base) > /dev/null 2>&1 || true
-    done;
-    # 
     (cd pic-repos && cd $REPO_NAME && git push --set-upstream origin --all) && break || true
     sleep 5
 done

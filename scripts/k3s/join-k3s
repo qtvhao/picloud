@@ -20,6 +20,8 @@ if [ ! -f $IDENTIFY_FILE ]; then
     exit 1
 fi
 set -e -o pipefail
+ssh-keygen -f "/root/.ssh/known_hosts" -R "$NODE_IP" || true
+ssh-keyscan -H "$NODE_IP" >> ~/.ssh/known_hosts
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "hostname" || exit 1
