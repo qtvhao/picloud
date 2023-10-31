@@ -1,0 +1,17 @@
+set -e -o pipefail
+source .env
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+args=("$@")
+PROJECT_NAME=${args[0]}
+URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/pipelines"
+MIRROR=$(curl -s --request GET \
+    --data "$PIPELINES" \
+    --header "Content-Type: application/json" \
+    --header "Authorization: Bearer $GITLAB_TOKEN" \
+    $URL)
+# filter status in list: created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
+FILTERED_PIPELINES=$(echo $MIRROR | jq '[.[] | select(.status == ("created", "waiting_for_resource", "preparing", "pending", "running", "success", "failed", "canceled", "manual", "scheduled"))]')
+# status and id
+echo $FILTERED_PIPELINES | jq '[.[] | {status: .status, id: .id}]'
+
