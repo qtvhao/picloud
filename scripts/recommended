@@ -42,7 +42,7 @@ rm -rf $LOGS_DIR/redis.log
 echo;time ./pic csi-s3 | tee $LOGS_DIR/csi-s3.log
 rm -rf $LOGS_DIR/csi-s3.log
 # 
-echo;time ./pic gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log
+echo;time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/gitlab.log
 # 
 time ./pic harbor | tee $LOGS_DIR/harbor.log 
