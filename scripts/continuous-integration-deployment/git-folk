@@ -86,10 +86,10 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root" "*" false
 rm -rf pic-repos
 
-./pic create-pipeline $REPO_NAME $current_branch
-./pic create-pipeline $REPO_NAME master
-./pic create-pipeline $REPO_NAME main
-./pic create-pipeline $REPO_NAME develop
+./pic create-pipeline root%2F$REPO_NAME $current_branch
+./pic create-pipeline root%2F$REPO_NAME master
+./pic create-pipeline root%2F$REPO_NAME main
+./pic create-pipeline root%2F$REPO_NAME develop
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
 SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
