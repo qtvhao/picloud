@@ -172,6 +172,13 @@ if [ "$arg1" == "create-remote-mirrors" ]; then
     "create-remote-mirrors" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
+# 
+if [ "$arg1" == "create-pipeline" ]; then
+    set -e
+    ./pic exec-local-or-remote "scripts/continuous-integration-deployment" \
+    "create-pipeline" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+    exit 0
+fi
 if [ "$arg1" == "get-pipelines" ]; then
     set -e
     ./pic exec-local-or-remote "scripts/continuous-integration-deployment" \
