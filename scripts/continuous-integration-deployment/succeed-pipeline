@@ -15,5 +15,5 @@ if [ -z "$REF" ]; then
 fi
 
 PIPELINES=$(./pic get-pipelines $PROJECT_NAME)
-FILTERED_PIPELINES=$(echo $PIPELINES | jq '[.[] | select(.ref == "'$REF'") | select(.status == ("running", "success"))]')
+FILTERED_PIPELINES=$(echo $PIPELINES | jq '[.[] | select(.ref == "'$REF'") | select(.status == ("success"))]')
 echo $FILTERED_PIPELINES | jq --exit-status '.[0].id'
