@@ -214,7 +214,7 @@ kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
-kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
+# kubectl create secret docker-registry regcred --docker-server=http-gitlab-registry-5000.$DOMAIN --docker-username=root --docker-password=$PASSWORD --docker-email=$EMAIL || echo ""
 # 
 GITLAB_OAUTH_URL="https://$FQDN_RECORD/oauth/token"
 while true; do
