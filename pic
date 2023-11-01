@@ -138,7 +138,7 @@ if [ "$arg1" == "registry-as-a-pull-through-cache" ]; then
 fi
 SCRIPTS_SUBFOLDER=""
 case "$arg1" in
-    "succeed-pipeline"|"create-pipeline"|"get-pipelines"|"add-ssh-key-gitlab"|"declare-project-variables"|"git-folk"|"create-remote-mirrors"|"force-connect-gitlab-agent"|"refresh-token-gitlab"|"get-refresh-token-gitlab"|"gitlab"|"harbor")
+    "succeed-pipeline"|"create-pipeline"|"get-pipelines"|"add-ssh-key-gitlab"|"declare-project-variables"|"git-folk"|"create-remote-mirrors"|"force-connect-gitlab-agent"|"refresh-token-gitlab"|"get-refresh-token-gitlab"|"install-gitlab"|"install-harbor")
         SCRIPTS_SUBFOLDER="scripts/continuous-integration-deployment"
         ;;
 esac
