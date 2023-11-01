@@ -36,7 +36,7 @@ PAYLOAD=$(jq --null-input \
     --arg key "$KEY" \
     --argjson raw true \
     --argjson masked $MASKED \
-    --argjson protected true \
+    --argjson protected false \
     --arg environment_scope "$ENVIRONMENT_SCOPE" \
     '{value: $value, key: $key, raw: $raw, masked: $masked, protected: $protected, environment_scope: $environment_scope}')
 # echo "PAYLOAD: $PAYLOAD"
