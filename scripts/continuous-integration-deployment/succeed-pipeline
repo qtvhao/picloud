@@ -1,0 +1,19 @@
+set -e -o pipefail
+source .env
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+args=("$@")
+PROJECT_NAME=${args[0]}
+REF=${args[1]}
+if [ -z "$PROJECT_NAME" ]; then
+    echo "PROJECT_NAME is empty"
+    exit 1
+fi
+if [ -z "$REF" ]; then
+    echo "REF is empty"
+    exit 1
+fi
+
+PIPELINES=$(./pic get-pipelines $PROJECT_NAME)
+FILTERED_PIPELINES=$(echo $PIPELINES | jq '[.[] | select(.ref == "'$REF'") | select(.status == ("running", "success"))]')
+echo $FILTERED_PIPELINES | jq --exit-status '.[0].id'

@@ -13,5 +13,5 @@ MIRROR=$(curl -s --request GET \
 # filter status in list: created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
 FILTERED_PIPELINES=$(echo $MIRROR | jq '[.[] | select(.status == ("created", "waiting_for_resource", "preparing", "pending", "running", "success", "failed", "canceled", "manual", "scheduled"))]')
 # status and id
-echo $FILTERED_PIPELINES | jq '[.[] | {status: .status, id: .id}]'
+echo $FILTERED_PIPELINES | jq '[.[] | {status: .status, id: .id, ref: .ref}]'
 
