@@ -70,20 +70,9 @@ done;
 i=$((i-10))
 echo
 for i in $(seq $i -100 1); do
-    if [ $i -gt 101 ]; then
-        echo "Skipping CI for $i"
-        OPTIONS="-o ci.skip"
-    else
-        echo "Checking out $i"
-        OPTIONS=""
-    fi
-    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch $OPTIONS) || continue
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || continue
     echo "Checking out $i in order to avoid HTTP 429 Too Many Requests"
 done;
-(cd pic-repos/$REPO_NAME && git checkout $current_branch    && git push --set-upstream origin HEAD:refs/heads/$current_branch)
-(cd pic-repos/$REPO_NAME && git checkout master             && git push --set-upstream origin HEAD:refs/heads/master) || true
-(cd pic-repos/$REPO_NAME && git checkout main               && git push --set-upstream origin HEAD:refs/heads/main) || true
-(cd pic-repos/$REPO_NAME && git checkout develop            && git push --set-upstream origin HEAD:refs/heads/develop) || true
 while true; do
     echo "Pushing $REPO_NAME to $REMOTE_REPO"
     (cd pic-repos && cd $REPO_NAME && git push --set-upstream origin --all -o ci.skip) && break || true
@@ -96,6 +85,12 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_PASSWORD  "$PASSWORD"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root" "*" false
 rm -rf pic-repos
+
+./pic create-pipeline $REPO_NAME $current_branch
+./pic create-pipeline $REPO_NAME master
+./pic create-pipeline $REPO_NAME main
+./pic create-pipeline $REPO_NAME develop
+
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
 SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
 export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
