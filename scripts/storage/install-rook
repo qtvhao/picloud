@@ -7,10 +7,59 @@ source .env
 # fi
 helm repo add rook-release https://charts.rook.io/release
 helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph # -f values.yaml
-# kubectl --namespace rook-ceph get pods -l "app=rook-ceph-operator"
 # 
-# helm repo add rook-release https://charts.rook.io/release
+
+# cephBlockPools:
+echo "cephBlockPools:" > values-rook-ceph-cluster.yaml
+# - name: ceph-blockpool
+echo "  - name: ceph-blockpool" >> values-rook-ceph-cluster.yaml
+#   spec:
+echo "    spec:" >> values-rook-ceph-cluster.yaml
+#     failureDomain: host
+echo "      failureDomain: host" >> values-rook-ceph-cluster.yaml
+#     replicated:
+echo "      replicated:" >> values-rook-ceph-cluster.yaml
+#       size: 3
+echo "        size: 3" >> values-rook-ceph-cluster.yaml
+#   storageClass:
+echo "    storageClass:" >> values-rook-ceph-cluster.yaml
+#     allowVolumeExpansion: true
+echo "      allowVolumeExpansion: true" >> values-rook-ceph-cluster.yaml
+#     allowedTopologies: []
+echo "      allowedTopologies: []" >> values-rook-ceph-cluster.yaml
+#     enabled: true
+echo "      enabled: true" >> values-rook-ceph-cluster.yaml
+#     isDefault: true
+echo "      isDefault: true" >> values-rook-ceph-cluster.yaml
+#     mountOptions: []
+echo "      mountOptions: []" >> values-rook-ceph-cluster.yaml
+#     name: ceph-block
+echo "      name: ceph-block" >> values-rook-ceph-cluster.yaml
+#     parameters:
+echo "      parameters:" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+echo "        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/controller-expand-secret-namespace: '{{ .Release.Namespace         }}'
+echo "        csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/fstype: ext4
+echo "        csi.storage.k8s.io/fstype: ext4" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+echo "        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/node-stage-secret-namespace: '{{ .Release.Namespace }}'
+echo "        csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+echo "        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner" >> values-rook-ceph-cluster.yaml
+#       csi.storage.k8s.io/provisioner-secret-namespace: '{{ .Release.Namespace }}'
+echo "        csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph" >> values-rook-ceph-cluster.yaml
+#       imageFeatures: layering
+echo "        imageFeatures: layering" >> values-rook-ceph-cluster.yaml
+#       imageFormat: "2"
+echo "        imageFormat: \"2\"" >> values-rook-ceph-cluster.yaml
+#     reclaimPolicy: Delete
+echo "      reclaimPolicy: Delete" >> values-rook-ceph-cluster.yaml
+#     volumeBindingMode: Immediate
+echo "      volumeBindingMode: Immediate" >> values-rook-ceph-cluster.yaml
+
 helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph-cluster \
-   --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster \
-   --set cephFileSystems.storageClass.isDefault=false
+   --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster -f values-rook-ceph-cluster.yaml
 kubectl -n rook-ceph get pod
