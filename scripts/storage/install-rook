@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e -o pipefail
+source .env
+# if [ -z "$DOMAIN" ]; then
+#     echo "Please set DOMAIN in .env"
+#     exit 1
+# fi
+helm repo add rook-release https://charts.rook.io/release
+helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph # -f values.yaml
+# kubectl --namespace rook-ceph get pods -l "app=rook-ceph-operator"
+# 
+# helm repo add rook-release https://charts.rook.io/release
+helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph-cluster \
+   --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster # -f values.yaml
+kubectl -n rook-ceph get pod

@@ -39,8 +39,11 @@ rm -rf $LOGS_DIR/reinstall-k3s.log
 echo;time ./pic redis | tee $LOGS_DIR/redis.log
 rm -rf $LOGS_DIR/redis.log
 # 
-echo;time ./pic csi-s3 | tee $LOGS_DIR/csi-s3.log
-rm -rf $LOGS_DIR/csi-s3.log
+echo;time ./pic install-rook | tee $LOGS_DIR/install-rook.log
+rm -rf $LOGS_DIR/install-rook.log
+#
+# echo;time ./pic csi-s3 | tee $LOGS_DIR/csi-s3.log
+# rm -rf $LOGS_DIR/csi-s3.log
 # 
 echo;time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/gitlab.log
