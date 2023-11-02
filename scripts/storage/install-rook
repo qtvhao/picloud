@@ -12,5 +12,5 @@ helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph rook-r
 # helm repo add rook-release https://charts.rook.io/release
 helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph-cluster \
    --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster \
-   --set storageClass.isDefault=false
+   --set cephFileSystems.storageClass.isDefault=false
 kubectl -n rook-ceph get pod
