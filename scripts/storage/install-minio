@@ -38,6 +38,7 @@ stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     ACCESS_KEY_ID=$(openssl rand -hex 32)
 stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     SECRET_ACCESS_KEY=$(openssl rand -hex 32)
+
 stat $PIC_DIR/s3.json > /dev/null 2>&1 || \
     jq -n --arg ACCESS_KEY_ID "$ACCESS_KEY_ID" --arg SECRET_ACCESS_KEY "$SECRET_ACCESS_KEY" '{"ACCESS_KEY_ID":$ACCESS_KEY_ID,"SECRET_ACCESS_KEY":$SECRET_ACCESS_KEY}' > $PIC_DIR/s3.json
 ACCESS_KEY_ID=$(jq -r '.ACCESS_KEY_ID' $PIC_DIR/s3.json)

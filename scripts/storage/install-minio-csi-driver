@@ -1,23 +1,37 @@
 #!/bin/bash
-set -e -o pipefail
-source .env
-# ./pic s3
-echo "Installing CSI S3"
-# ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
-# $(kubectl get secret --namespace tenant-ns myminio-env-configuration -o jsonpath="{.data}" | jq -r ".[\"config.env\"]" | base64 --decode)
-# rootUsername=$(echo $MINIO_ROOT_USER | jq -r)
-# rootPassword=$(echo $MINIO_ROOT_PASSWORD | jq -r)
-# 
 helm repo add yandex-s3 https://yandex-cloud.github.io/k8s-csi-s3/charts
 
-ENDPOINT="play.minio.io:9000"
-rootUsername="Q3AM3UQ867SPQQA43P2F"
-rootPassword="zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+echo
+set -e -o pipefail
+source .env
+./pic s3
+echo "Installing CSI S3"
+# 
+ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
+PIC_DIR="$HOME/.pic"
+ACCESS_KEY_ID=$(jq -r '.ACCESS_KEY_ID' $PIC_DIR/s3.json)
+SECRET_ACCESS_KEY=$(jq -r '.SECRET_ACCESS_KEY' $PIC_DIR/s3.json)
+echo "ACCESS_KEY_ID=$ACCESS_KEY_ID"
+echo "SECRET_ACCESS_KEY=$SECRET_ACCESS_KEY"
+echo
+echo "apiVersion: v1"                                               >  csi-s3-secret.yaml
+echo "type: Opaque"                                                 >> csi-s3-secret.yaml
+echo "data:"                                                        >> csi-s3-secret.yaml
+echo "  accessKeyID: $(echo -n $ACCESS_KEY_ID | base64 -w 0)"          >> csi-s3-secret.yaml
+echo "  endpoint: $(echo -n $ENDPOINT | base64 -w 0)"                  >> csi-s3-secret.yaml
+echo "  secretAccessKey: $(echo -n $SECRET_ACCESS_KEY | base64 -w 0)"  >> csi-s3-secret.yaml
+echo "kind: Secret"                                                 >> csi-s3-secret.yaml
+echo "metadata:"                                                    >> csi-s3-secret.yaml
+echo "  name: csi-s3-secret"                                        >> csi-s3-secret.yaml
+echo "  namespace: kube-system"                                     >> csi-s3-secret.yaml
+kubectl apply -f csi-s3-secret.yaml
+rm csi-s3-secret.yaml
+# 
 helm install csi-s3 yandex-s3/csi-s3 \
     --set storageClass.mountOptions="--memory-limit 1000 --dir-mode 0777 --file-mode 0666 --list-type 1" \
-    --set secret.endpoint="https://$ENDPOINT" \
-    --set secret.secretKey="$rootPassword" \
-    --set secret.accessKey="$rootUsername" --namespace kube-system
+    --set secret.create=false \
+    --namespace kube-system
+exit 0
 # 
 kubectl apply -f https://raw.githubusercontent.com/qtvhao/csi-s3/master/deploy/kubernetes/examples/pvc.yaml
 kubectl apply -f https://raw.githubusercontent.com/qtvhao/csi-s3/master/deploy/kubernetes/examples/pod.yaml
