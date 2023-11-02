@@ -68,6 +68,17 @@ kubectl label node $K3S_NODE_NAME added-numberth=1
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' > "$PIC_DIR/k3s.json"
 ./pic status
 
+
+if [ -f "NODES" ]; then
+    echo "NODES file exists. Removing NODES file"
+    NODES=$(cat NODES)
+    for node in $NODES; do
+        if [ -z "$node" ]; then
+            continue
+        fi
+         ./pic join-k3s "$node" $IDENTIFY_FILE
+    done
+fi
 nodes=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
 for node in $nodes; do
     if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then

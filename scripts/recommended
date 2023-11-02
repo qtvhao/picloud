@@ -42,7 +42,7 @@ rm -rf $LOGS_DIR/redis.log
 echo;time ./pic install-rook | tee $LOGS_DIR/install-rook.log
 rm -rf $LOGS_DIR/install-rook.log
 #
-echo;time ./pic s3 | tee $LOGS_DIR/s3.log
+echo;time ./pic install-minio | tee $LOGS_DIR/s3.log
 rm -rf $LOGS_DIR/s3.log
 
 # echo;time ./pic csi-s3 | tee $LOGS_DIR/csi-s3.log
