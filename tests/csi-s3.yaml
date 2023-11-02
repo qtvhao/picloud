@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pic-test-csi-s3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pic-test-csi-s3
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: pic-test-csi-s3
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - |
+          for i in 1 2 3 4 5 6 7 8 9 10 ; do
+            echo $i
+            wget "https://raw.githubusercontent.com/qtvhao/picloud/main/tests/1M" -O /tmp/dir/1M
+          done
+        image: busybox
+        imagePullPolicy: Always
+        name: pic-test-csi-s3
+        volumeMounts:
+        - mountPath: /tmp/dir/
+          mountPropagation: None
+          name: tmp-data
+      volumes:
+      - name: tmp-data
+        persistentVolumeClaim:
+          claimName: pic-test-pvc
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pic-test-pvc
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: csi-s3
+  volumeMode: Filesystem
+  # volumeName: pvc-dbf11732-5d95-4b9e-8be3-b9c1d637f3a9
+status:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 1Gi
+  phase: Bound

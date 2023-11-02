@@ -1,0 +1,6 @@
+#!/bin/bash
+
+kubectl apply -f ./tests/csi-s3.yaml
+sleep 10
+kubectl logs deployment/pic-test-csi-s3
+kubectl delete -f ./tests/csi-s3.yaml
