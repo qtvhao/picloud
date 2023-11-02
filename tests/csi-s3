@@ -1,6 +1,8 @@
 #!/bin/bash
 
 kubectl apply -f ./tests/csi-s3.yaml
-sleep 10
+sleep 20
 kubectl logs deployment/pic-test-csi-s3
+kubectl describe pvc pic-test-pvc
+# kubectl describe deploy pic-test-csi-s3
 kubectl delete deploy pic-test-csi-s3

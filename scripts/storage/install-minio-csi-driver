@@ -1,43 +1,34 @@
 #!/bin/bash
 set -e -o pipefail
 source .env
-./pic s3
+# ./pic s3
 echo "Installing CSI S3"
-ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
-$(kubectl get secret --namespace tenant-ns myminio-env-configuration -o jsonpath="{.data}" | jq -r ".[\"config.env\"]" | base64 --decode)
-rootUsername=$(echo $MINIO_ROOT_USER | jq -r)
-rootPassword=$(echo $MINIO_ROOT_PASSWORD | jq -r)
-echo "apiVersion: v1" > csi-s3-secret.yaml
-echo "kind: Secret" >> csi-s3-secret.yaml
-echo "metadata:" >> csi-s3-secret.yaml
-echo "  namespace: kube-system" >> csi-s3-secret.yaml
-echo "  name: csi-s3-secret" >> csi-s3-secret.yaml
-echo "stringData:" >> csi-s3-secret.yaml
-echo "  accessKeyID: \"$rootUsername\"" >> csi-s3-secret.yaml
-echo "  secretAccessKey: \"$rootPassword\"" >> csi-s3-secret.yaml
-echo "  endpoint: \"https://$ENDPOINT\"" >> csi-s3-secret.yaml
-echo "  region: \"\"" >> csi-s3-secret.yaml
+# ENDPOINT="http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"
+# $(kubectl get secret --namespace tenant-ns myminio-env-configuration -o jsonpath="{.data}" | jq -r ".[\"config.env\"]" | base64 --decode)
+# rootUsername=$(echo $MINIO_ROOT_USER | jq -r)
+# rootPassword=$(echo $MINIO_ROOT_PASSWORD | jq -r)
 # 
-kubectl delete -f csi-s3-secret.yaml || true
-kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml || true
-kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml || true
-kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml || true
-kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml || true
-kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml || true
-kubectl delete -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml || true
+helm repo add yandex-s3 https://yandex-cloud.github.io/k8s-csi-s3/charts
+
+ENDPOINT="play.minio.io:9000"
+rootUsername="Q3AM3UQ867SPQQA43P2F"
+rootPassword="zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+helm install csi-s3 yandex-s3/csi-s3 \
+    --set storageClass.mountOptions="--memory-limit 1000 --dir-mode 0777 --file-mode 0666 --list-type 1" \
+    --set secret.endpoint="https://$ENDPOINT" \
+    --set secret.secretKey="$rootPassword" \
+    --set secret.accessKey="$rootUsername" --namespace kube-system
 # 
-kubectl apply -f csi-s3-secret.yaml
-kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/provisioner.yaml
-kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/driver.yaml
-kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/csi-s3.yaml
-kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/storageclass.yaml
-kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pvc.yaml
-kubectl apply -f https://raw.githubusercontent.com/yandex-cloud/k8s-csi-s3/master/deploy/kubernetes/examples/pod.yaml
+kubectl apply -f https://raw.githubusercontent.com/qtvhao/csi-s3/master/deploy/kubernetes/examples/pvc.yaml
+kubectl apply -f https://raw.githubusercontent.com/qtvhao/csi-s3/master/deploy/kubernetes/examples/pod.yaml
 kubectl describe pod csi-s3-test-nginx
 ./pic wait pod csi-s3-test-nginx default Ready
 echo "---"
-kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mount | grep fuse" 
-kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mkdir -p /usr/share/nginx/html/s3/"
-kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "date > /usr/share/nginx/html/s3/file"
-kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "cat /usr/share/nginx/html/s3/file"
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mount | grep fuse"
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "mkdir -p /var/lib/www/html/s3/"
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "date > /var/lib/www/html/s3/file.jpg"
+kubectl describe pod csi-s3-test-nginx
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "cat /var/lib/www/html/s3/file.jpg"
+kubectl exec -ti csi-s3-test-nginx -c csi-s3-test-nginx -- bash -c "ls /var/lib/www/html/s3"
 echo "CSI S3 installed"
+stat ./tests/csi-s3 && ./tests/csi-s3 || true
