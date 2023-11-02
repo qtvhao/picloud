@@ -9,6 +9,7 @@ cloudflared
 netcat-traditional
 ca-certificates
 resolvconf
+open-iscsi
 
 PACKAGES install
 task-english 

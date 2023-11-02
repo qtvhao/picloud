@@ -28,9 +28,8 @@ ssh -i $IDENTIFY_FILE \
 echo "Connected to $NODE_IP"
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
-# ssh -i $IDENTIFY_FILE \
-#     -o PasswordAuthentication=no \
-#     "$NODE_IP" "apt update && apt-get install ca-certificates curl -y"
+ssh -i $IDENTIFY_FILE \
+    "$NODE_IP" "apt update && apt-get install open-iscsi -y"
 scp  \
     -i $IDENTIFY_FILE \
     /etc/resolv.conf $NODE_IP:/etc/resolv.conf
