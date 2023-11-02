@@ -12,3 +12,5 @@ metal/roles/pxe_server/files/data/os/
 debian-installer/
 metal/roles/pxe_server/files/data/tftp/
 dvd/
+NODES
+awscliv2.zip
