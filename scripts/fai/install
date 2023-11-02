@@ -39,6 +39,18 @@ docker image inspect debian:bookworm > /dev/null 2>&1 || \
     docker pull debian:bookworm
 docker tag debian:bookworm debian-bookworm
 # 
+if [ -f "$HOME/.pic/fai-rootpw.json" ]; then
+    FAI_ROOTPW=$(cat $HOME/.pic/fai-rootpw.json | jq -r ".FAI_ROOTPW")
+else
+    FAI_ROOTPW=$(openssl rand -hex 32)
+    jq -n --arg FAI_ROOTPW "$FAI_ROOTPW" '{"FAI_ROOTPW":$FAI_ROOTPW}' > $HOME/.pic/fai-rootpw.json
+fi
+ENCRYPTED_FAI_ROOTPW=$(echo $FAI_ROOTPW | openssl passwd -stdin -6)
+# replace FAI_ROOTPW with the encrypted password in nfsroot.conf file to avoid error
+SANITIZED_FAI_ROOTPW=$(echo $ENCRYPTED_FAI_ROOTPW | sed 's/\//\\\//g')
+sed -i "s/FAI_ROOTPW=.*/FAI_ROOTPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/fai-bookworm/nfsroot.conf
+cat $HOME/.pic/fai-rootpw.json
+cat ./fai/fai-bookworm/nfsroot.conf
 time docker build -t fai-config -f Dockerfile.fai-config .
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
