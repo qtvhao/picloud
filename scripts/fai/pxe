@@ -4,6 +4,14 @@ args=("$@")
 MAC_ADDRESS=${args[0]}
 if [ -z "$MAC_ADDRESS" ]; then
     echo "MAC_ADDRESS is empty"
+    docker rm -f fai-nginx || true
+    docker run -d -p 8080:80 --name fai-nginx -v ./dvd/:/usr/share/nginx/html:ro nginx
+    hostnameI=$(hostname -I | awk '{print $1}')
+    ISO_FILES=$(ls ./dvd/)
+    echo
+    for ISO_FILE in $ISO_FILES; do
+        echo "You can download the iso file at http://$hostnameI:8080/$ISO_FILE"
+    done
     exit 1
 fi
 IDENTITY_FILE=${args[1]}
