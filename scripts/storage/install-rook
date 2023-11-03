@@ -3,12 +3,17 @@ set -e -o pipefail
 source .env
 args=("$@")
 IDENTIFY_FILE=${args[0]}
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "Please provide the identify file"
+    exit 1
+fi
 NODES=$(kubectl get nodes -o json | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
 NODES_IP=$(echo $NODES | jq -r '.[]')
 for node in $NODES_IP; do
    if [ -z "$node" ]; then
       continue
    fi
+   echo "node: $node"
    DISKS=$(ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "lsblk -f | grep ceph_bluestore | awk '{print \$1}'")
    if [ -z "$DISKS" ]; then
       continue

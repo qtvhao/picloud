@@ -41,7 +41,7 @@ helm version > /dev/null 2>&1 || \
 rm helm-v3.13.1-linux-amd64.tar.gz || true
 cloudflared  version || \
     (curl https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared-linux-amd64.deb && dpkg -i cloudflared-linux-amd64.deb)
-./k9s info > /dev/null 2>&1 || \
+k9s info > /dev/null 2>&1 || \
     (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s && mv k9s /usr/local/bin/ && chmod +x /usr/local/bin/k9s)
 rm k9s_Linux_amd64.tar.gz || true
 docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
