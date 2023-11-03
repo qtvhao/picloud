@@ -11,20 +11,8 @@ fi
 # 
 PIC_DIR="$HOME/.pic"
 
-nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
-for node in $nodesOnLan; do
-    if [ -z "$nodesOnLan" ]; then
-        continue
-    fi
-    ssh -t -i $IDENTIFY_FILE \
-        -o PasswordAuthentication=no \
-        "$node" "warp-cli register"
-    ssh -t -i $IDENTIFY_FILE \
-        -o PasswordAuthentication=no \
-        "$node" "warp-cli connect"
-done
-
-./pic uninstall-k3s $IDENTIFY_FILE
+# ./pic uninstall-k3s $IDENTIFY_FILE
+which k3s-uninstall.sh && k3s-uninstall.sh || true
 rm -rf /var/lib/rook/
 # 
 set -e -o pipefail
@@ -44,11 +32,10 @@ cloudflared  version || \
 k9s info > /dev/null 2>&1 || \
     (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s && mv k9s /usr/local/bin/ && chmod +x /usr/local/bin/k9s)
 rm k9s_Linux_amd64.tar.gz || true
-docker network inspect picloud >/dev/null 2>&1 || docker network create picloud
 # systemctl status nm-cloud-setup.service || apt install -y network-manager
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
-curl -sfL https://get.k3s.io | K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init
+time (curl -sfL https://get.k3s.io | K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init)
 # /etc/systemd/system/k3s.service
 systemctl restart k3s
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
@@ -64,7 +51,7 @@ cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 
 while true; do
     kubectl -n kube-system rollout restart deployment coredns && break || echo "Retrying to restart coredns"
-    sleep 5
+    sleep 2
 done
 kubectl get node -o wide
 kubectl label node $K3S_NODE_NAME added-numberth=1
@@ -73,24 +60,30 @@ jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url
 
 
 if [ -f "NODES" ]; then
-    echo "NODES file exists. Removing NODES file"
     NODES=$(cat NODES)
     for node in $NODES; do
         if [ -z "$node" ]; then
             continue
         fi
-         ./pic join-k3s "$node" $IDENTIFY_FILE
+        time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log
+        rm -rf $LOGS_DIR/join-k3s.log
     done
 fi
-nodes=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
-for node in $nodes; do
-    if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then
-        continue
-    fi
-    if [ -z "$node" ]; then
-        continue
-    fi
-    ./pic join-k3s "$node" $IDENTIFY_FILE
+exit 0
+
+if [ ! -f "NODES" ]; then
+    echo "NODES file does not exist. Creating NODES file"
+    nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
+    for node in $nodesOnLan; do
+        if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then
+            continue
+        fi
+        if [ -z "$node" ]; then
+            continue
+        fi
+        time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log
+        rm -rf $LOGS_DIR/join-k3s.log
+    done
 done
 kubectl get node -o wide
 ./pic expose

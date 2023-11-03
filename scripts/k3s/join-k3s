@@ -65,12 +65,10 @@ echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 COUNT_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
 echo "COUNT_NODES: $COUNT_NODES"
 while true; do
-    kubectl label node $K3S_NODE_NAME added-numberth=$COUNT_NODES && break || echo "Retrying to label node"
-    sleep 5
+    sleep 2
+    kubectl label node $K3S_NODE_NAME --overwrite added-numberth=$COUNT_NODES && break || echo "Retrying to label node"
 done
-# ssh -i $IDENTIFY_FILE \
-#     -o PasswordAuthentication=no \
-#     "$NODE_IP" "sudo systemctl restart k3s-agent"
+
 echo "Joined worker node to this cluster"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
@@ -79,25 +77,25 @@ NODE_NAME=$(ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "hostname")
 
-kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo "" ; \
-kubectl run test-connectivity --image=rancher/curl \
-    --restart=OnFailure \
-    --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
-    http://example.com
+# kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo ""
+# kubectl run test-connectivity --image=busybox \
+#     --restart=OnFailure \
+#     --overrides='{"spec": { "nodeSelector": {"kubernetes.io/hostname": "'$NODE_NAME'"}}}' \
+#     -- wget http://example.com
 
-while true; do
-    kubectl -n kube-system rollout restart deployment coredns && break || echo "Retrying to restart coredns"
-    sleep 5
-done
+# while true; do
+#     kubectl -n kube-system rollout restart deployment coredns && break || echo "Retrying to restart coredns"
+#     sleep 5
+# done
 
-waitPodToSucceeded() {
-    kubectl get pod -l run=test-connectivity -o json | jq -r ".items[0].status.containerStatuses[0].state.terminated.reason"
-}
-while [ "$(waitPodToSucceeded)" != "Completed" ]; do
-    echo "Waiting for test-connectivity pod to complete. Status: ""$(waitPodToSucceeded)"
-    if [ "Error" == "$(waitPodToSucceeded)" ]; then
-        echo "Error running test-connectivity pod"
-    fi
-    sleep 5
-done
+# waitPodToSucceeded() {
+#     kubectl get pod -l run=test-connectivity -o json | jq -r ".items[0].status.containerStatuses[0].state.terminated.reason"
+# }
+# while [ "$(waitPodToSucceeded)" != "Completed" ]; do
+#     echo "Waiting for test-connectivity pod to complete. Status: ""$(waitPodToSucceeded)"
+#     if [ "Error" == "$(waitPodToSucceeded)" ]; then
+#         echo "Error running test-connectivity pod"
+#     fi
+#     sleep 5
+# done
 echo "Node $NODE_NAME is ready"
