@@ -45,11 +45,8 @@ cp $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
 # systemctl status nm-cloud-setup.service || apt install -y network-manager
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
-echo "mirrors:"                             >  $HOME/registries.yaml
 # 
 ( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
-mkdir -p /etc/rancher/k3s/
-cp $HOME/registries.yaml /etc/rancher/k3s/registries.yaml
 #
 echo "Installing k3s"
 echo "K3S_NODE_NAME: $K3S_NODE_NAME"
