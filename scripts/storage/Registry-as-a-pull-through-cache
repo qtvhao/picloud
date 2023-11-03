@@ -10,6 +10,12 @@ MIRROR_NAME=${args[5]}
 # create a new bridge network with your subnet and gateway for your ip block
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
+    "$NODE_IP" "curl -fsSL https://get.docker.com -o install-docker.sh"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "docker ps >/dev/null 2>&1 || sh install-docker.sh"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
     "$NODE_IP" "docker network create --subnet 203.0.113.0/24 --gateway 203.0.113.254 iptastic"
 
 # run a container with a specific ip in that block

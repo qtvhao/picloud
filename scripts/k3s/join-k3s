@@ -53,16 +53,16 @@ timeout 20 ssh -i $IDENTIFY_FILE \
     "$NODE_IP" "sudo systemctl restart k3s" || true
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
+    "$NODE_IP" "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl stop k3s;systemctl disable k3s" || true
+kubectl delete node $K3S_NODE_NAME || true
 # 
-# ( stat $HOME/k3s || wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O $HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "( stat \$HOME/k3s )" || \
+    "$NODE_IP" "stat \$HOME/k3s" || \
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "(wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O \$HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)" || exit 1
-# mv $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
+
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "cp \$HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s"
@@ -70,6 +70,9 @@ ssh -i $IDENTIFY_FILE \
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "mkdir -p /etc/rancher/k3s/"
+time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry-1.docker.io"      "registry-1-docker-io"      "203.0.113.2" "docker.io"       | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://quay.io"                   "quay-io"                   "203.0.113.3" "quay.io"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"           "registry-k8s-io"           "203.0.113.4" "registry.k8s.io" | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
 scp -i $IDENTIFY_FILE \
     $HOME/registries.yaml "$NODE_IP:/etc/rancher/k3s/registries.yaml"
 
