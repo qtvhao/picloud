@@ -1,1 +1,3 @@
-./pic recommended ../id_rsa
+#!/bin/bash
+
+time ./pic recommended ../id_rsa
