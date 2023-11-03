@@ -7,7 +7,7 @@ if [ -z $EMAIL ]; then
     echo "EMAIL is empty. Please specify in .env file"
     exit 1
 fi
-cat ~/.ssh/id_rsa.pub || ssh-keygen
+stat ~/.ssh/id_rsa.pub || ssh-keygen
 set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
