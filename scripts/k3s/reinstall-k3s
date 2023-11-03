@@ -13,6 +13,14 @@ PIC_DIR="$HOME/.pic"
 
 # ./pic uninstall-k3s $IDENTIFY_FILE
 which k3s-uninstall.sh && k3s-uninstall.sh || true
+NODES=$(kubectl get nodes -o json | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
+NODES_IP=$(echo $NODES | jq -r '.[]')
+for node in $NODES_IP; do
+   if [ -z "$node" ]; then
+      continue
+   fi
+   ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
+done
 rm -rf /var/lib/rook/
 # 
 set -e -o pipefail

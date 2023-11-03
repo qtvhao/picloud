@@ -40,6 +40,15 @@ echo "REMOTE_REPO: $REMOTE_REPO"
 # echo "HEAD: $HEAD"
 IDENTITY_FILE=$(realpath $IDENTITY_FILE)
 SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
+IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT="x"$(echo $REPO_URL | grep -E "github|bitbucket|codecommit" | wc -l) || true
+if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
+    echo "IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT: $IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT"
+    # REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//') # which return github.com:qtvhao
+    REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//' | sed 's/:.*//') # which return github.com
+    echo "REMOTE_DOMAIN: $REMOTE_DOMAIN"
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
+    ssh-keyscan -H "$REMOTE_DOMAIN" >> ~/.ssh/known_hosts
+fi
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
     (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME) && break || true
