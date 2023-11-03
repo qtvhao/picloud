@@ -37,6 +37,8 @@ scp  \
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "warp-cli connect || true"
+scp -i $IDENTIFY_FILE \
+    "/etc/rancher/k3s/registries.yaml" "$NODE_IP:/etc/rancher/k3s/registries.yaml"
 scp \
     -i $IDENTIFY_FILE \
     /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt

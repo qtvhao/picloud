@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# create a new bridge network with your subnet and gateway for your ip block
+docker network create --subnet 203.0.113.0/24 --gateway 203.0.113.254 iptastic
+
+# run a container with a specific ip in that block
+docker rm -f registry-1-docker-io || true
+docker run -d \
+    -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+    -v /var/lib/registry:/var/lib/registry \
+    --name registry-1-docker-io \
+    --net iptastic --ip 203.0.113.2 registry:2
+
+# curl the ip from any other place (assuming this is a public ip block duh)
+while true; do
+    nc -z 203.0.113.2 5000 && break
+    sleep 1
+done
+echo "mirrors:"                             >  $HOME/registries.yaml
+echo "  docker.io:"                         >> $HOME/registries.yaml
+echo "    endpoint:"                        >> $HOME/registries.yaml
+echo "      - \"http://203.0.113.2:5000\""  >> $HOME/registries.yaml
+
+echo "Exposed successfully. Use 203.0.113.2:5000 to access the registry"
