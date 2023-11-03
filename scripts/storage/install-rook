@@ -93,10 +93,10 @@ kubectl -n rook-ceph get pod
 ./pic wait deploy rook-ceph-operator rook-ceph Available
 ./pic wait deploy rook-ceph-tools rook-ceph Available
 ./pic wait deploy rook-ceph-mon-a rook-ceph Available
-./pic wait deploy rook-ceph-mgr-a rook-ceph Available
 ./pic wait deploy csi-rbdplugin-provisioner rook-ceph Available
 ./pic wait deploy csi-cephfsplugin-provisioner rook-ceph Available
+./pic wait deploy rook-ceph-mgr-a rook-ceph Available
 # ./pic wait deploy rook-ceph-osd-0 rook-ceph Available
-./pic wait deploy rook-ceph-mds-ceph-filesystem-a rook-ceph Available
+# ./pic wait deploy rook-ceph-mds-ceph-filesystem-a rook-ceph Available
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode && echo
 ./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"
