@@ -1,24 +1,37 @@
 #!/bin/bash
 
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+NODE_IP=${args[1]}
+REGISTRY_PROXY_REMOTEURL=${args[2]}
+CONTAINER_NAME=${args[3]}
+IP_ADDRESS=${args[4]}
+MIRROR_NAME=${args[5]}
 # create a new bridge network with your subnet and gateway for your ip block
-docker network create --subnet 203.0.113.0/24 --gateway 203.0.113.254 iptastic
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "docker network create --subnet 203.0.113.0/24 --gateway 203.0.113.254 iptastic"
 
 # run a container with a specific ip in that block
-docker rm -f registry-1-docker-io || true
-docker run -d \
-    -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "docker rm -f $CONTAINER_NAME || true"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "docker run -d \
+    -e REGISTRY_PROXY_REMOTEURL=$REGISTRY_PROXY_REMOTEURL \
     -v /var/lib/registry:/var/lib/registry \
-    --name registry-1-docker-io \
-    --net iptastic --ip 203.0.113.2 registry:2
-
+    --name $CONTAINER_NAME \
+    --net iptastic --ip $IP_ADDRESS registry:2"
 # curl the ip from any other place (assuming this is a public ip block duh)
 while true; do
-    nc -z 203.0.113.2 5000 && break
+    ssh -i $IDENTIFY_FILE \
+        -o PasswordAuthentication=no \
+        "$NODE_IP" "curl -fL http://$IP_ADDRESS:5000/v2/_catalog || exit 1" && break
     sleep 1
 done
-echo "mirrors:"                             >  $HOME/registries.yaml
-echo "  docker.io:"                         >> $HOME/registries.yaml
-echo "    endpoint:"                        >> $HOME/registries.yaml
-echo "      - \"http://203.0.113.2:5000\""  >> $HOME/registries.yaml
+echo "  $MIRROR_NAME:"                          >> $HOME/registries.yaml
+echo "    endpoint:"                            >> $HOME/registries.yaml
+echo "      - \"http://$IP_ADDRESS:5000\""      >> $HOME/registries.yaml
 
-echo "Exposed successfully. Use 203.0.113.2:5000 to access the registry"
+echo "Exposed successfully. Use $IP_ADDRESS:5000 to access the registry"

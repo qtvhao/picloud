@@ -33,8 +33,6 @@ echo "Installing recommended packages"
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 echo "{}" > "$HOME/.pic/expose-items.json"
 # 
-time ./pic Registry-as-a-pull-through-cache | tee $LOGS_DIR/registry-as-a-pull-through-cache.log
-# 
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
 # 
 echo;time ./pic redis | tee $LOGS_DIR/redis.log

@@ -37,8 +37,6 @@ scp  \
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "warp-cli connect || true"
-scp -i $IDENTIFY_FILE \
-    "/etc/rancher/k3s/registries.yaml" "$NODE_IP:/etc/rancher/k3s/registries.yaml"
 scp \
     -i $IDENTIFY_FILE \
     /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
@@ -57,7 +55,25 @@ ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
 # 
-NODE_COMMAND="curl -fL https://get.k3s.io | K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --server $K3S_URL --token $K3S_TOKEN"
+# ( stat $HOME/k3s || wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O $HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "( stat \$HOME/k3s )" || \
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "(wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O \$HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)" || exit 1
+# mv $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "cp \$HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s"
+# 
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "mkdir -p /etc/rancher/k3s/"
+scp -i $IDENTIFY_FILE \
+    $HOME/registries.yaml "$NODE_IP:/etc/rancher/k3s/registries.yaml"
+
+NODE_COMMAND="curl -fL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --server $K3S_URL --token $K3S_TOKEN"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
 ssh -i $IDENTIFY_FILE \
