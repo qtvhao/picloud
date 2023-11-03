@@ -38,6 +38,7 @@ kubectl > /dev/null 2>&1 || \
     (curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl)
 helm version > /dev/null 2>&1 || \
     (curl https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz -o helm-v3.13.1-linux-amd64.tar.gz && tar -xvf helm-v3.13.1-linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 linux-amd64/helm)
+rm helm-v3.13.1-linux-amd64.tar.gz || true
 cloudflared  version || \
     (curl https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared-linux-amd64.deb && dpkg -i cloudflared-linux-amd64.deb)
 ./k9s info > /dev/null 2>&1 || \

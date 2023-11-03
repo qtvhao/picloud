@@ -64,6 +64,7 @@ echo "  enabled: true" >> values-rook-ceph-cluster.yaml
 
 helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph-cluster \
    --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster -f values-rook-ceph-cluster.yaml
+rm values-rook-ceph-cluster.yaml
 kubectl -n rook-ceph get pod
 ./pic wait deploy rook-ceph-operator rook-ceph Available
 ./pic wait deploy rook-ceph-tools rook-ceph Available
