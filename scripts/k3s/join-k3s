@@ -22,21 +22,21 @@ fi
 set -e -o pipefail
 ssh-keygen -f "/root/.ssh/known_hosts" -R "$NODE_IP" || true
 ssh-keyscan -H "$NODE_IP" >> ~/.ssh/known_hosts
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "hostname" || exit 1
-echo "Connected to $NODE_IP"
+( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry-1.docker.io"      "registry-1-docker-io"      "203.0.113.2" "docker.io"       | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://quay.io"                   "quay-io"                   "203.0.113.3" "quay.io"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"           "registry-k8s-io"           "203.0.113.4" "registry.k8s.io" | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log) &
+# ssh -i $IDENTIFY_FILE \
+#     -o PasswordAuthentication=no \
+#     "$NODE_IP" "hostname" || exit 1
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
 ssh -i $IDENTIFY_FILE \
     "$NODE_IP" "rm -rf /var/lib/rook/ || true"
+echo "Connected to $NODE_IP"
 # 
 scp  \
     -i $IDENTIFY_FILE \
-    /etc/resolv.conf $NODE_IP:/etc/resolv.conf
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "warp-cli connect || true"
+    /etc/resolv.conf $NODE_IP:/etc/resolv.conf &
 scp \
     -i $IDENTIFY_FILE \
     /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
@@ -48,31 +48,17 @@ K3S_TOKEN=$(jq -r '.k3s_token' "$PIC_DIR/k3s.json")
 echo "K3S_URL: $K3S_URL"
 echo "K3S_TOKEN: $K3S_TOKEN"
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
-timeout 20 ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "sudo systemctl restart k3s" || true
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl stop k3s;systemctl disable k3s" || true
-kubectl delete node $K3S_NODE_NAME || true
+    "$NODE_IP" "k3s-uninstall.sh;systemctl stop k3s;systemctl disable k3s" || true
 # 
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "stat \$HOME/k3s" || \
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "(wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O \$HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)" || exit 1
-
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "cp \$HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s"
-# 
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "mkdir -p /etc/rancher/k3s/"
-time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry-1.docker.io"      "registry-1-docker-io"      "203.0.113.2" "docker.io"       | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://quay.io"                   "quay-io"                   "203.0.113.3" "quay.io"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"           "registry-k8s-io"           "203.0.113.4" "registry.k8s.io" | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    "$NODE_IP" "stat \$HOME/k3s || \
+    (wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O \$HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1);
+    cp \$HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s;
+    mkdir -p /etc/rancher/k3s/;
+    echo \"mirrors:\"                             >  \$HOME/registries.yaml" || exit 1
 scp -i $IDENTIFY_FILE \
     $HOME/registries.yaml "$NODE_IP:/etc/rancher/k3s/registries.yaml"
 
@@ -86,17 +72,17 @@ echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 COUNT_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
 echo "COUNT_NODES: $COUNT_NODES"
 while true; do
-    sleep 2
+    sleep 1
     kubectl label node $K3S_NODE_NAME --overwrite added-numberth=$COUNT_NODES && break || echo "Retrying to label node"
 done
 
 echo "Joined worker node to this cluster"
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "(iptables -h >/dev/null 2>&1 && iptables -w -P FORWARD ACCEPT) || true"
-NODE_NAME=$(ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "hostname")
+# ssh -i $IDENTIFY_FILE \
+#     -o PasswordAuthentication=no \
+#     "$NODE_IP" "(iptables -h >/dev/null 2>&1 && iptables -w -P FORWARD ACCEPT) || true"
+# NODE_NAME=$(ssh -i $IDENTIFY_FILE \
+#     -o PasswordAuthentication=no \
+#     "$NODE_IP" "hostname")
 
 # kubectl get pod/test-connectivity && kubectl delete pod/test-connectivity || echo ""
 # kubectl run test-connectivity --image=busybox \

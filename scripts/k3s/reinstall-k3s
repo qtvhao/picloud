@@ -12,14 +12,14 @@ fi
 PIC_DIR="$HOME/.pic"
 
 # ./pic uninstall-k3s $IDENTIFY_FILE
-which k3s-uninstall.sh && k3s-uninstall.sh || true
+# which k3s-uninstall.sh && k3s-uninstall.sh || true
 NODES=$(kubectl get nodes -o json | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
 NODES_IP=$(echo $NODES | jq -r '.[]')
 for node in $NODES_IP; do
     if [ -z "$node" ]; then
         continue
     fi
-    ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "k3s-killall.sh;k3s-agent-uninstall.sh;k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
+    ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
 done
 rm -rf /var/lib/rook/
 #
@@ -47,33 +47,28 @@ export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 echo "mirrors:"                             >  $HOME/registries.yaml
 # 
-time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry-1.docker.io"      "registry-1-docker-io"      "203.0.113.2" "docker.io"       | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://quay.io"                   "quay-io"                   "203.0.113.3" "quay.io"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"           "registry-k8s-io"           "203.0.113.4" "registry.k8s.io" | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
 mkdir -p /etc/rancher/k3s/
 cp $HOME/registries.yaml /etc/rancher/k3s/registries.yaml
 #
 echo "Installing k3s"
-time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init)
-# /etc/systemd/system/k3s.service
 echo "K3S_NODE_NAME: $K3S_NODE_NAME"
-# systemctl restart k3s
+time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init) &
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
 while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
     echo "Waiting for K3S token"
-    sleep 5
+    sleep 1
 done
 K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/token)
-cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
-update-ca-certificates
+# cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
+# update-ca-certificates
 mkdir -p ~/.kube
 cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 while true; do
-    kubectl -n kube-system rollout restart deployment coredns && break || echo "Retrying to restart coredns"
-    sleep 2
+    kubectl label node $K3S_NODE_NAME added-numberth=1 && break || echo "Retrying to label node"
+    sleep 1
 done
 kubectl get node -o wide
-kubectl label node $K3S_NODE_NAME added-numberth=1
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >"$PIC_DIR/k3s.json"
 ./pic status
 
@@ -87,7 +82,6 @@ if [ -f "NODES" ]; then
         rm -rf $LOGS_DIR/join-k3s.log
     done
 fi
-exit 1
 if [ ! -f "NODES" ]; then
     echo "NODES file does not exist. Creating NODES file"
     nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
@@ -102,8 +96,8 @@ if [ ! -f "NODES" ]; then
         rm -rf $LOGS_DIR/join-k3s.log
     done
 fi
-kubectl get node -o wide
-./pic expose
+# kubectl get node -o wide
+# ./pic expose
 
 echo
 echo "To join a worker node to this cluster, run the following command:"
