@@ -30,7 +30,7 @@ echo "      allowedTopologies: []" >> values-rook-ceph-cluster.yaml
 #     enabled: true
 echo "      enabled: true" >> values-rook-ceph-cluster.yaml
 #     isDefault: true
-echo "      isDefault: true" >> values-rook-ceph-cluster.yaml
+echo "      isDefault: false" >> values-rook-ceph-cluster.yaml
 #     mountOptions: []
 echo "      mountOptions: []" >> values-rook-ceph-cluster.yaml
 #     name: ceph-block
@@ -59,7 +59,10 @@ echo "        imageFormat: \"2\"" >> values-rook-ceph-cluster.yaml
 echo "      reclaimPolicy: Delete" >> values-rook-ceph-cluster.yaml
 #     volumeBindingMode: Immediate
 echo "      volumeBindingMode: Immediate" >> values-rook-ceph-cluster.yaml
+echo "toolbox:" >> values-rook-ceph-cluster.yaml
+echo "  enabled: true" >> values-rook-ceph-cluster.yaml
 
 helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph-cluster \
    --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster -f values-rook-ceph-cluster.yaml
 kubectl -n rook-ceph get pod
+./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"       

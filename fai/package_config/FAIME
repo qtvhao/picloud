@@ -10,6 +10,7 @@ netcat-traditional
 ca-certificates
 resolvconf
 open-iscsi
+ceph-iscsi
 
 PACKAGES install
 task-english 

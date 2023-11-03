@@ -29,7 +29,8 @@ echo "Connected to $NODE_IP"
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
 ssh -i $IDENTIFY_FILE \
-    "$NODE_IP" "apt update && apt-get install open-iscsi -y"
+    "$NODE_IP" "rm -rf /var/lib/rook/ || true"
+# 
 scp  \
     -i $IDENTIFY_FILE \
     /etc/resolv.conf $NODE_IP:/etc/resolv.conf
