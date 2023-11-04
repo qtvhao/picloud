@@ -37,6 +37,18 @@ fi
 NODE_NUMBERTH=${args[4]}
 if [ -z "$NODE_NUMBERTH" ]; then
     NODE_NUMBERTH=$(kubectl get nodes -o json | jq -r '.items | length')
+    # pic-rn: tunnel
+    PODS_NAME=$(kubectl get pods -A -o json | jq -r '[.items[].metadata.labels | select(.["pic-rn"] == "tunnel")]')
+    # PODS_COUNT=$(kubectl get pods -A -o json | jq -r '[.items[].metadata.labels | select(.["pic-rn"] == "tunnel")] | length') # return non-running pods
+    # PODS_COUNT=$(kubectl get pods -A -o json | jq -r 'select(.status.phase == "Running") | [.items[].metadata.labels | select(.["pic-rn"] == "tunnel")] | length')
+    PODS_COUNT=$(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running")' | jq -r '.metadata.labels | select(.["pic-rn"] == "tunnel")' | jq -s "length")
+    echo "PODS_COUNT: $PODS_COUNT"
+    TOTAL_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
+    
+    echo "TOTAL_NODES: $TOTAL_NODES"
+    # echo "PODS_NAME: $PODS_NAME"
+    echo "PODS_COUNT: $PODS_COUNT"
+    NODE_NUMBERTH=$(($TOTAL_NODES - $PODS_COUNT))
 fi
 echo "NODE_NUMBERTH: $NODE_NUMBERTH"
 RE_ROUTE_ALL=${args[5]}
@@ -158,6 +170,7 @@ echo "  template:"                                          >>cloudflared-deploy
 echo "    metadata:"                                        >>cloudflared-deployment.yaml
 echo "      labels:"                                        >>cloudflared-deployment.yaml
 echo "        app: cloudflared-$CONTAINER_TUNNEL_NAME"      >>cloudflared-deployment.yaml
+echo "        pic-rn: tunnel"                               >>cloudflared-deployment.yaml
 echo "    spec:"                                            >>cloudflared-deployment.yaml
 echo "      affinity:"                                      >>cloudflared-deployment.yaml
 echo "        podAntiAffinity:"                             >>cloudflared-deployment.yaml

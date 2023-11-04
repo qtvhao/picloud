@@ -62,7 +62,7 @@ K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/token)
 mkdir -p ~/.kube
 cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 while true; do
-    kubectl label node $K3S_NODE_NAME added-numberth=1 && break || echo "Retrying to label node"
+    kubectl label node $K3S_NODE_NAME added-numberth=0 && break || echo "Retrying to label node"
     sleep 1
 done
 kubectl get node -o wide
