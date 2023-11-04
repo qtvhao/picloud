@@ -69,33 +69,6 @@ kubectl get node -o wide
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >"$PIC_DIR/k3s.json"
 ./pic status
 
-if [ -f "NODES" ]; then
-    NODES=$(cat NODES)
-    for node in $NODES; do
-        if [ -z "$node" ]; then
-            continue
-        fi
-        time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log
-        rm -rf $LOGS_DIR/join-k3s.log
-    done
-fi
-if [ ! -f "NODES" ]; then
-    echo "NODES file does not exist. Creating NODES file"
-    nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
-    for node in $nodesOnLan; do
-        if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then
-            continue
-        fi
-        if [ -z "$node" ]; then
-            continue
-        fi
-        time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log
-        rm -rf $LOGS_DIR/join-k3s.log
-    done
-fi
-# kubectl get node -o wide
-# ./pic expose
-
 echo
 echo "To join a worker node to this cluster, run the following command:"
 echo "./pic join-k3s <node-ip> <identify-file>"

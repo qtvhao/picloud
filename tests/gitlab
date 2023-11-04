@@ -1,0 +1,4 @@
+#!/bin/bash
+
+time ./pic reinstall-k3s ../id_rsa
+# echo;time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log

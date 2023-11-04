@@ -135,6 +135,9 @@ case "$arg1" in
     "Registry-as-a-pull-through-cache")
         SCRIPTS_SUBFOLDER="scripts/storage"
         ;;
+    "auto-join")
+        SCRIPTS_SUBFOLDER="scripts/k3s"
+        ;;
 esac
 if [ -n "$SCRIPTS_SUBFOLDER" ]; then
     set -e
