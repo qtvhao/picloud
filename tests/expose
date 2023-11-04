@@ -1,16 +1,23 @@
 #!/bin/bash
+set -e -o pipefail
 
-TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns                    8154    404 "" "true"
+TUNNEL_NAMESPACE=default ./pic expose https     metrics-server.kube-system              443 404
+TUNNEL_NAMESPACE=default ./pic expose http      traefik.kube-system                     80
 cat ~/.pic/expose-picloud-default.json | jq
 rm ~/.pic/expose-picloud-default.json
 
-TUNNEL_NAMESPACE=default2 ./pic expose http     gitlab-webservice-default.gitlab-ns     8181    404 "" "true"
+TUNNEL_NAMESPACE=default2 ./pic expose https     metrics-server.kube-system             443 404
+TUNNEL_NAMESPACE=default2 ./pic expose http     traefik.kube-system                     80
 cat ~/.pic/expose-picloud-default2.json | jq
 rm ~/.pic/expose-picloud-default2.json
 
-TUNNEL_NAMESPACE=default ./pic expose tcp      gitlab-webservice-default.gitlab-ns      22      404 "" "true"
-cat ~/.pic/expose-picloud-default.json | jq
-rm ~/.pic/expose-picloud-default.json
+TUNNEL_NAMESPACE=default3 ./pic expose https     metrics-server.kube-system             443 404
+TUNNEL_NAMESPACE=default3 ./pic expose http      traefik.kube-system                    80     404 "" "true"
+cat ~/.pic/expose-picloud-default3.json | jq
+rm ~/.pic/expose-picloud-default3.json
 
-kubectl get pod -n default -o wide | grep cloudflared-default-
-kubectl get pod -n default2 -o wide | grep cloudflared-default2-
+./pic wait deploy cloudflared-default  default  Available
+./pic wait deploy cloudflared-default2 default2 Available
+./pic wait deploy cloudflared-default3 default3 Available
+
+echo; echo "All pods are running"

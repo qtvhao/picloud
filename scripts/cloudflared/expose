@@ -251,6 +251,9 @@ while true; do
     if [ "$status_code" == "403" ]; then
         break
     fi
+    if [ "$status_code" == "404" ]; then
+        break
+    fi
     if [ "$EXPECTED_STATUS_CODE" == "$status_code" ]; then
         break
     fi
