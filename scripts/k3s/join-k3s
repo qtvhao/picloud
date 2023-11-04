@@ -67,7 +67,7 @@ COUNT_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
 echo "COUNT_NODES: $COUNT_NODES"
 while true; do
     sleep 1
-    kubectl label node $K3S_NODE_NAME --overwrite added-numberth=$COUNT_NODES && break || echo "Retrying to label node"
+    kubectl label node $K3S_NODE_NAME --overwrite added-numberth=add-$COUNT_NODES && break || echo "Retrying to label node"
 done
 
 echo "Joined worker node to this cluster"

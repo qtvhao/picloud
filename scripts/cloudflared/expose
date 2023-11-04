@@ -35,21 +35,6 @@ if [ -z "$TUNNEL_NAMESPACE" ]; then
     TUNNEL_NAMESPACE="default"
 fi
 NODE_NUMBERTH=${args[4]}
-if [ -z "$NODE_NUMBERTH" ]; then
-    NODE_NUMBERTH=$(kubectl get nodes -o json | jq -r '.items | length')
-    # pic-rn: tunnel
-    PODS_NAME=$(kubectl get pods -A -o json | jq -r '[.items[].metadata.labels | select(.["pic-rn"] == "tunnel")]')
-    # PODS_COUNT=$(kubectl get pods -A -o json | jq -r '[.items[].metadata.labels | select(.["pic-rn"] == "tunnel")] | length') # return non-running pods
-    # PODS_COUNT=$(kubectl get pods -A -o json | jq -r 'select(.status.phase == "Running") | [.items[].metadata.labels | select(.["pic-rn"] == "tunnel")] | length')
-    PODS_COUNT=$(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running")' | jq -r '.metadata.labels | select(.["pic-rn"] == "tunnel")' | jq -s "length")
-    echo "PODS_COUNT: $PODS_COUNT"
-    TOTAL_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
-    
-    echo "TOTAL_NODES: $TOTAL_NODES"
-    # echo "PODS_NAME: $PODS_NAME"
-    echo "PODS_COUNT: $PODS_COUNT"
-    NODE_NUMBERTH=$(($TOTAL_NODES - $PODS_COUNT))
-fi
 echo "NODE_NUMBERTH: $NODE_NUMBERTH"
 RE_ROUTE_ALL=${args[5]}
 if [ -z "$RE_ROUTE_ALL" ]; then
@@ -84,7 +69,8 @@ cat "$EXPOSE_ITEMS_JSON" | \
         }' > "$EXPOSE_ITEMS_JSON".tmp
 echo "Moving $EXPOSE_ITEMS_JSON.tmp to $EXPOSE_ITEMS_JSON"
 mv "$EXPOSE_ITEMS_JSON".tmp "$EXPOSE_ITEMS_JSON"
-cloudflared tunnel login
+stat $HOME/.cloudflared/cert.pem > /dev/null 2>&1 || \
+    cloudflared tunnel login
 cloudflared tunnel create $TUNNEL_NAME || true
 stat "$HOME/.picloud/" > /dev/null 2>&1 || mkdir -p "$HOME/.picloud/"
 CONFIG_YAML_FILE="$HOME/.picloud/cloudflared-$TUNNEL_NAMESPACE.yml"
@@ -156,11 +142,34 @@ kubectl get configmap $CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE >/dev/null 2>&
 
 kubectl create secret generic tunnel-credentials --from-file=credentials.json=$HOME/.cloudflared/$TUNNEL_ID.json -n $TUNNEL_NAMESPACE
 kubectl create configmap $CONTAINER_TUNNEL_NAME --from-file=config.yaml=$CONFIG_YAML_FILE -n $TUNNEL_NAMESPACE
+if [ -z "$NODE_NUMBERTH" ]; then
+    # NODE_NUMBERTH=$(kubectl get nodes -o json | jq -r '.items | length')
+    # pic-rn: tunnel
+    # PODS_NAME=$(kubectl get pods -A -o json | jq -r '[.items[].metadata.labels | select(.["pic-rn"] == "tunnel")]')
+    # PODS_COUNT=$(kubectl get pods -A -o json | jq -r '[.items[].metadata.labels | select(.["pic-rn"] == "tunnel")] | length') # return non-running pods
+    # PODS_COUNT=$(kubectl get pods -A -o json | jq -r 'select(.status.phase == "Running") | [.items[].metadata.labels | select(.["pic-rn"] == "tunnel")] | length')
+    PODS_COUNT=$(kubectl get deploy -A -o json | jq -r '.items[0] | select(.metadata.labels["pic-rn"] == "tunnel-deploy")' | jq -s "length")
+    # echo "PODS_COUNT: $PODS_COUNT"
+    TOTAL_NODES=$(kubectl get nodes -o json | jq -r '.items | length')
+    
+    echo "TOTAL_NODES: $TOTAL_NODES"
+    # echo "PODS_NAME: $PODS_NAME"
+    echo "PODS_COUNT: $PODS_COUNT"
+    EXIST_NODE_NUMBERTH=$(kubectl get deploy -n default -o json | jq -r ".items[0].spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]")
+    if [ "null" == "$EXIST_NODE_NUMBERTH" ]; then
+        NODE_NUMBERTH="add-$(($TOTAL_NODES - $PODS_COUNT - 1))"
+    else
+        NODE_NUMBERTH="$EXIST_NODE_NUMBERTH"
+    fi
+fi
+
 echo "---"                                                  > cloudflared-deployment.yaml
 echo "apiVersion: apps/v1"                                  >>cloudflared-deployment.yaml
 echo "kind: Deployment"                                     >>cloudflared-deployment.yaml
 echo "metadata:"                                            >>cloudflared-deployment.yaml
 echo "  name: $CONTAINER_TUNNEL_NAME"                       >>cloudflared-deployment.yaml
+echo "  labels:"                                            >>cloudflared-deployment.yaml
+echo "    pic-rn: tunnel-deploy"                            >>cloudflared-deployment.yaml
 echo "spec:"                                                >>cloudflared-deployment.yaml
 echo "  selector:"                                          >>cloudflared-deployment.yaml
 echo "    matchLabels:"                                     >>cloudflared-deployment.yaml
@@ -170,18 +179,18 @@ echo "  template:"                                          >>cloudflared-deploy
 echo "    metadata:"                                        >>cloudflared-deployment.yaml
 echo "      labels:"                                        >>cloudflared-deployment.yaml
 echo "        app: cloudflared-$CONTAINER_TUNNEL_NAME"      >>cloudflared-deployment.yaml
-echo "        pic-rn: tunnel"                               >>cloudflared-deployment.yaml
+echo "        pic-rn: tunnel-pod"                           >>cloudflared-deployment.yaml
 echo "    spec:"                                            >>cloudflared-deployment.yaml
 echo "      affinity:"                                      >>cloudflared-deployment.yaml
-echo "        podAntiAffinity:"                             >>cloudflared-deployment.yaml
+echo "        nodeAffinity:"                                >>cloudflared-deployment.yaml
 echo "          requiredDuringSchedulingIgnoredDuringExecution:" >>cloudflared-deployment.yaml
-echo "            - labelSelector:"                         >>cloudflared-deployment.yaml
-echo "                matchExpressions:"                    >>cloudflared-deployment.yaml
-echo "                - key: added-numberth"                >>cloudflared-deployment.yaml
-echo "                  operator: In"                       >>cloudflared-deployment.yaml
-echo "                  values:"                            >>cloudflared-deployment.yaml
-echo "                  - \"$NODE_NUMBERTH\""               >>cloudflared-deployment.yaml
-echo "              topologyKey: kubernetes.io/hostname"    >>cloudflared-deployment.yaml
+echo "            nodeSelectorTerms:"                         >>cloudflared-deployment.yaml
+echo "            - matchExpressions:"                    >>cloudflared-deployment.yaml
+echo "              - key: added-numberth"                >>cloudflared-deployment.yaml
+echo "                operator: In"                       >>cloudflared-deployment.yaml
+echo "                values:"                            >>cloudflared-deployment.yaml
+echo "                - $NODE_NUMBERTH"               >>cloudflared-deployment.yaml
+# echo "              topologyKey: kubernetes.io/hostname"    >>cloudflared-deployment.yaml
 echo "      containers:"                                    >>cloudflared-deployment.yaml
 echo "        - name: cloudflared"                          >>cloudflared-deployment.yaml
 echo "          image: cloudflare/cloudflared"              >>cloudflared-deployment.yaml

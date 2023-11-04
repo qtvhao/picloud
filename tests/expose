@@ -1,9 +1,16 @@
 #!/bin/bash
 
-TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns                    8154 404 "" "true"
+TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns                    8154    404 "" "true"
 cat ~/.pic/expose-picloud-default.json | jq
 rm ~/.pic/expose-picloud-default.json
 
-TUNNEL_NAMESPACE=default2 ./pic expose http     gitlab-webservice-default.gitlab-ns     8181 404 "" "true"
+TUNNEL_NAMESPACE=default2 ./pic expose http     gitlab-webservice-default.gitlab-ns     8181    404 "" "true"
 cat ~/.pic/expose-picloud-default2.json | jq
 rm ~/.pic/expose-picloud-default2.json
+
+TUNNEL_NAMESPACE=default ./pic expose tcp      gitlab-webservice-default.gitlab-ns      22      404 "" "true"
+cat ~/.pic/expose-picloud-default.json | jq
+rm ~/.pic/expose-picloud-default.json
+
+kubectl get pod -n default -o wide | grep cloudflared-default-
+kubectl get pod -n default2 -o wide | grep cloudflared-default2-
