@@ -30,7 +30,7 @@ EXPECTED_STATUS_CODE=${args[3]}
 if [ -z "$EXPECTED_STATUS_CODE" ]; then
     EXPECTED_STATUS_CODE="200"
 fi
-RESERVED_EXPECTED_STATUS_CODE=$EXPECTED_STATUS_CODE
+# RESERVED_EXPECTED_STATUS_CODE=$EXPECTED_STATUS_CODE
 if [ -z "$TUNNEL_NAMESPACE" ]; then
     TUNNEL_NAMESPACE="default"
 fi
@@ -45,10 +45,10 @@ if [ -z "$RE_ROUTE_ALL" ]; then
 fi
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 if [ -z "$TUNNEL_NAME" ]; then
-    TUNNEL_NAME="picloud-$CNAME_RECORD"
+    TUNNEL_NAME="picloud-$TUNNEL_NAMESPACE"
 fi
 echo "TUNNEL_NAME: $TUNNEL_NAME"
-EXPOSE_ITEMS_JSON="$HOME/.pic/expose-items.json"
+EXPOSE_ITEMS_JSON="$HOME/.pic/expose-$TUNNEL_NAME.json"
 stat $EXPOSE_ITEMS_JSON > /dev/null 2>&1 || \
     echo "{}" >"$EXPOSE_ITEMS_JSON"
 MAP_KEY="$CNAME_RECORD-$TUNNEL_NAMESPACE"
@@ -61,7 +61,6 @@ cat "$EXPOSE_ITEMS_JSON" | \
         --arg TUNNEL_PORT "$TUNNEL_PORT" \
         --arg TUNNEL_NAMESPACE "$TUNNEL_NAMESPACE" \
         --arg TUNNEL_NICE_HOSTNAME "$TUNNEL_NICE_HOSTNAME" \
-        --arg EXPECTED_STATUS_CODE "$EXPECTED_STATUS_CODE" \
         --arg MAP_KEY "$MAP_KEY" \
         '.[$MAP_KEY] = {
             "CNAME_RECORD": $CNAME_RECORD,
@@ -69,8 +68,7 @@ cat "$EXPOSE_ITEMS_JSON" | \
             "TUNNEL_HOSTNAME": $TUNNEL_HOSTNAME,
             "TUNNEL_PORT": $TUNNEL_PORT,
             "TUNNEL_NAMESPACE": $TUNNEL_NAMESPACE,
-            "TUNNEL_NICE_HOSTNAME": $TUNNEL_NICE_HOSTNAME,
-            "EXPECTED_STATUS_CODE": $EXPECTED_STATUS_CODE
+            "TUNNEL_NICE_HOSTNAME": $TUNNEL_NICE_HOSTNAME
         }' > "$EXPOSE_ITEMS_JSON".tmp
 echo "Moving $EXPOSE_ITEMS_JSON.tmp to $EXPOSE_ITEMS_JSON"
 mv "$EXPOSE_ITEMS_JSON".tmp "$EXPOSE_ITEMS_JSON"
@@ -94,14 +92,14 @@ for RECORD_KEY in $RECORDS_KEYS; do
     FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
     # 
     if [ "true" == "$RE_ROUTE_ALL" ]; then
-    cloudflared tunnel route dns $TUNNEL_NAME $FQDN_RECORD
+        echo "Tunnel route dns $TUNNEL_NAME $FQDN_RECORD"
+        # cloudflared tunnel route dns $TUNNEL_NAME $FQDN_RECORD
     fi
     TUNNEL_PROTOCOL=$(echo $RECORD | jq -rM '.TUNNEL_PROTOCOL')
     TUNNEL_HOSTNAME=$(echo $RECORD | jq -rM '.TUNNEL_HOSTNAME')
     TUNNEL_PORT=$(echo $RECORD | jq -rM '.TUNNEL_PORT')
     TUNNEL_NAMESPACE=$(echo $RECORD | jq -rM '.TUNNEL_NAMESPACE')
     TUNNEL_NICE_HOSTNAME=$(echo $RECORD | jq -rM '.TUNNEL_NICE_HOSTNAME')
-    EXPECTED_STATUS_CODE=$(echo $RECORD | jq -rM '.EXPECTED_STATUS_CODE')
     if [ "gitlab-kas-gitlab-ns" == "$TUNNEL_NICE_HOSTNAME" ]; then
         CNAME_RECORD="tcp-gitlab-kas-gitlab-ns-8150"
     fi
@@ -208,7 +206,7 @@ echo "                path: config.yaml"                    >>cloudflared-deploy
 kubectl apply -f cloudflared-deployment.yaml -n $TUNNEL_NAMESPACE
 kubectl rollout restart deployment/$CONTAINER_TUNNEL_NAME -n $TUNNEL_NAMESPACE
 #
-EXPECTED_STATUS_CODE=$RESERVED_EXPECTED_STATUS_CODE
+# EXPECTED_STATUS_CODE=$RESERVED_EXPECTED_STATUS_CODE
 TUNNEL_PROTOCOL=$RESERVED_TUNNEL_PROTOCOL
 TUNNEL_HOSTNAME=$RESERVED_TUNNEL_HOSTNAME
 TUNNEL_PORT=$RESERVED_TUNNEL_PORT
@@ -238,7 +236,7 @@ while true; do
     sleep 5
 done
 echo
-echo "Tunnel exposed at $FQDN_RECORD"
+echo "Tunnel exposed at $FQDN_RECORD on node $NODE_NUMBERTH"
 if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
     if [ "22" == "$TUNNEL_PORT" ]; then
         grep -c "Host $FQDN_RECORD" ~/.ssh/config >/dev/null 2>&1 ||
