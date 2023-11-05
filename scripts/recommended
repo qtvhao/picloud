@@ -39,7 +39,7 @@ while ! ./pic pull-image busybox; do
     sleep 2
 done
 
-echo;time ./pic pull-image | tee $LOGS_DIR/pull-image.log
+echo;time ./pic pull-images &
 # 
 echo;time ./pic redis | tee $LOGS_DIR/redis.log
 # 
