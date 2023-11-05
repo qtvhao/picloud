@@ -94,6 +94,7 @@ kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-p
 helm list -n gitlab-agent-gitlab-agent -o json | jq -r '.[].name' | grep gitlab | xargs helm uninstall -n gitlab-agent-gitlab-agent || true
 kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete pod -n gitlab-ns || true
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns 8181 "502"
 time helm upgrade --install gitlab gitlab/gitlab \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
@@ -104,9 +105,9 @@ global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
 global.hosts.https=false,\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
 global.edition=ce,\
-global.kas.enabled=false,\
-gitlab.toolbox.enabled=false,\
-gitlab-runner.install=false,\
+global.kas.enabled=true,\
+gitlab.toolbox.enabled=true,\
+gitlab-runner.install=true,\
 runners.privileged=true,\
 redis.install=false,\
 global.redis.host=redis-master.default.svc.cluster.local,\
@@ -144,11 +145,11 @@ gitlab-runner.runners.privileged=true \
 time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log certificates
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log configure
-time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations
+time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations &
 # 
 # time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log certificates
 # time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log configure
-time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-dependencies.log dependencies
+time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-dependencies.log dependencies &
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-webservice-default.gitlab-ns    22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns 8181
 # kubectl logs deployment/gitlab-webservice-default -n gitlab-ns -c gitlab-workhorse | tee gitlab-webservice-default-gitlab-workhorse.log
@@ -159,73 +160,77 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns
 # ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 # 
 # ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-gitlab-shell.gitlab-ns   22
-./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
-exit 0
-echo "Folk and push to gitlab successfully"
-export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
-while true; do
-    status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
-    echo "Waiting for $FQDN_RECORD/users/sign_in to be ready. Status code: $status_code. Expected status code: 200"
-    if [ "$status_code" == "200" ]; then
-        break
-    fi
-    sleep 5
-done
-while true; do
-    kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
-done
-helm upgrade --install gitlab gitlab/gitlab \
-    -f "$RUNNER_CACHE_YAML" \
-    --namespace gitlab-ns \
-    --set certmanager-issuer.email="$EMAIL",\
-global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
-global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
-global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
-global.hosts.https=false,\
-global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
-global.edition=ce,\
-global.kas.enabled=true,\
-gitlab.toolbox.enabled=true,\
-gitlab-runner.install=true,\
-runners.privileged=true,\
-redis.install=false,\
-global.redis.host=redis-master.default.svc.cluster.local,\
-global.redis.auth.secret=redis,\
-global.redis.auth.key=redis-password,\
-nginx-ingress.enabled=false,\
-gitlab-runner.runners.privileged=true \
-    --set rbac.create=true \
-    --set global.minio.enabled=false \
-    --set global.registry.bucket=gitlab-registry \
-    --set global.appConfig.terraformState.enabled=true \
-    --set global.appConfig.object_store.enabled=true \
-    --set global.appConfig.object_store.proxy_download=true \
-    --set global.appConfig.object_store.connection.secret=gitlab-storage \
-    --set global.appConfig.object_store.connection.key=connection \
-    --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
-    --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
-    --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
-    --set global.appConfig.packages.bucket=gitlab-packages-storage \
-    --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
-    --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
-    --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
-    --set global.appConfig.backups.bucket=gitlab-backup-upload \
-    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
-    --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
-    --set gitlab.toolbox.backups.objectStorage.config.key=connection \
-    --set registry.enabled=false \
-    --set registry.storage.secret=gitlab-registry-storage \
-    --set registry.storage.key=connection \
-    &
+# export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+# while true; do
+#     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
+#     echo "Waiting for $FQDN_RECORD/users/sign_in to be ready. Status code: $status_code. Expected status code: 200"
+#     if [ "$status_code" == "200" ]; then
+#         break
+#     fi
+#     sleep 5
+# done
+# while true; do
+#     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
+# done
+# time helm upgrade --install gitlab gitlab/gitlab \
+#     -f "$RUNNER_CACHE_YAML" \
+#     --namespace gitlab-ns \
+#     --set certmanager-issuer.email="$EMAIL",\
+# global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
+# global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
+# global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
+# global.hosts.https=false,\
+# global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
+# global.edition=ce,\
+# global.kas.enabled=true,\
+# gitlab.toolbox.enabled=true,\
+# gitlab-runner.install=true,\
+# runners.privileged=true,\
+# redis.install=false,\
+# global.redis.host=redis-master.default.svc.cluster.local,\
+# global.redis.auth.secret=redis,\
+# global.redis.auth.key=redis-password,\
+# nginx-ingress.enabled=false,\
+# gitlab-runner.runners.privileged=true \
+#     --set certmanager.install=false \
+#     --set prometheus.server.enabled=false \
+#     --set global.ingress.enabled=false \
+#     --set gitlab.gitlab-exporter.enabled=false \
+#     --set rbac.create=true \
+#     --set global.minio.enabled=false \
+#     --set global.registry.bucket=gitlab-registry \
+#     --set global.appConfig.terraformState.enabled=true \
+#     --set global.appConfig.object_store.enabled=true \
+#     --set global.appConfig.object_store.proxy_download=true \
+#     --set global.appConfig.object_store.connection.secret=gitlab-storage \
+#     --set global.appConfig.object_store.connection.key=connection \
+#     --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+#     --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+#     --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+#     --set global.appConfig.packages.bucket=gitlab-packages-storage \
+#     --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+#     --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+#     --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+#     --set global.appConfig.backups.bucket=gitlab-backup-upload \
+#     --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+#     --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
+#     --set gitlab.toolbox.backups.objectStorage.config.key=connection \
+#     --set registry.enabled=false \
+#     --set registry.storage.secret=gitlab-registry-storage \
+#     --set registry.storage.key=connection \
+#     &
 
-./pic wait deploy       gitlab-kas          gitlab-ns Available
-./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
-./pic wait jobs gitlab-migrations-2     gitlab-ns complete
-./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
-./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
+time ./pic wait deploy       gitlab-kas          gitlab-ns Available
+time ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
+# time ./pic wait jobs       gitlab-migrations-2     gitlab-ns complete
+time ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
+time ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150
 TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 404 "" "true"
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-gitlab-shell.gitlab-ns   22
+./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
+echo "Folk and push to gitlab successfully"
+
 kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
     kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
 
