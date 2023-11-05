@@ -160,7 +160,7 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns
 # ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 # 
 # ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
-# export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 # while true; do
 #     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
 #     echo "Waiting for $FQDN_RECORD/users/sign_in to be ready. Status code: $status_code. Expected status code: 200"
