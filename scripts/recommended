@@ -34,15 +34,15 @@ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 echo "{}" > "$HOME/.pic/expose-items.json"
 # 
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
-echo;time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log
 # 
 echo;time ./pic redis | tee $LOGS_DIR/redis.log
 # 
-echo;time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log
+echo;time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log &
 #
 echo;time ./pic install-minio | tee $LOGS_DIR/s3.log
 # 
-echo;time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log
+echo;time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log &
+echo;time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log
 # 
 time ./pic install-harbor | tee $LOGS_DIR/harbor.log 
 # echo;time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log
