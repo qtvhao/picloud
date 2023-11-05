@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e -o pipefail # Exit with nonzero exit code if anything fails
+args=("$@")
+LOG_TARGET=${args[0]}
+NAMESPACE=${args[1]}
+LOG_FILE=${args[2]}
+while true; do
+    kubectl logs -f $LOG_TARGET  -n $NAMESPACE | tee $LOG_FILE && break || sleep 2
+done

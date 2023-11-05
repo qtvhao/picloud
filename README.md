@@ -7,7 +7,7 @@
 - [x] Minio S3 compatible object storage
 - [x] S3FS for mounting Minio as a filesystem use CSI driver
 - [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
-- [ ] Registry as a pull through cache with [Docker Registry](https://docs.docker.com/registry/)
+- [x] Registry as a pull through cache with [Docker Registry](https://docs.docker.com/registry/)
 # Installation
 ```bash
 curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +x pic
@@ -51,6 +51,13 @@ The script will automatically install k3s-agent on the listed machines.
 ```bash
 ./pic reinstall-k3s $IDENTITY_FILE
 ```
+
+# Setup Registry as a pull through cache (useful for air-gapped environment)
+
+```bash
+./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP"
+```
+
 ## Install recommended packages
 
 ```bash

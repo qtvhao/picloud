@@ -8,7 +8,11 @@ helm repo update
 PASSWORD=$(openssl rand -base64 32)
 echo "{}" > redis.json
 helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
- --set global.storageClass="local-path",global.redis.password="$PASSWORD" --set master.disableCommands="",replica.disableCommands=""
+ --set global.storageClass="local-path",global.redis.password="$PASSWORD" --set master.disableCommands="",replica.disableCommands="" &
 jq --arg password "$PASSWORD" '.redis.password = $password' redis.json > redis.json.tmp && mv redis.json.tmp redis.json
 TUNNEL_NAMESPACE=default ./pic expose tcp redis-master.default 6379
 jq --arg hostname "tcp-redis-master-6379.$DOMAIN" '.redis.host = $hostname' redis.json > redis.json.tmp && mv redis.json.tmp redis.json
+./pic wait pod          redis-master-0                      default Ready
+./pic wait pod          redis-replicas-0                    default Ready
+./pic wait pod          redis-replicas-1                    default Ready
+./pic wait pod          redis-replicas-2                    default Ready
