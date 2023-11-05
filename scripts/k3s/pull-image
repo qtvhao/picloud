@@ -45,19 +45,19 @@ if [ -z "$IMAGE_NAME" ]; then
 # ./pic pull-image rancher/mirrored-metrics-server:v0.6.3
 
 # 2 registry.k8s.io/sig-storage/csi-attacher:v4.3.0
-./pic pull-image registry.k8s.io/sig-storage/csi-attacher:v4.3.0
+./pic pull-image registry.k8s.io/sig-storage/csi-attacher:v4.3.0 || true
 # 6 registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
-./pic pull-image registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
+./pic pull-image registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0 || true
 # 2 registry.k8s.io/sig-storage/csi-provisioner:v3.5.0
-./pic pull-image registry.k8s.io/sig-storage/csi-provisioner:v3.5.0
+./pic pull-image registry.k8s.io/sig-storage/csi-provisioner:v3.5.0 || true
 # 2 registry.k8s.io/sig-storage/csi-resizer:v1.8.0
-./pic pull-image registry.k8s.io/sig-storage/csi-resizer:v1.8.0
+./pic pull-image registry.k8s.io/sig-storage/csi-resizer:v1.8.0 || true
 # 2 registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2
-./pic pull-image registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2
+./pic pull-image registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2 || true
 exit 0
 fi
 RANDOM_CONTAINER_NAME=$(openssl rand -hex 16)
 echo "Pull image $IMAGE_NAME to local registry"
 time (kubectl run -it \
     --image="$IMAGE_NAME" "pull-$RANDOM_CONTAINER_NAME" \
-    --restart=Never --rm --command -- sh -c "echo 'This is a temporary pod to install gitlab. It will be removed after installation is done.'") || true
+    --restart=Never --rm --command -- sh -c "echo 'This is a temporary pod to install gitlab. It will be removed after installation is done.'")
