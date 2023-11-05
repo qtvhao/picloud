@@ -5,6 +5,12 @@ args=("$@")
 LOG_TARGET=${args[0]}
 NAMESPACE=${args[1]}
 LOG_FILE=${args[2]}
+CONTAINER=${args[3]}
 while true; do
-    kubectl logs -f $LOG_TARGET  -n $NAMESPACE | tee $LOG_FILE && break || sleep 2
+    if [ -z "$CONTAINER" ]; then
+        kubectl logs -f $LOG_TARGET  -n $NAMESPACE | tee $LOG_FILE && break || sleep 2
+    else
+        kubectl logs -f $LOG_TARGET -c $CONTAINER -n $NAMESPACE | tee $LOG_FILE && break || sleep 2
+    fi
 done
+echo "===> $LOG_TARGET logs saved to $LOG_FILE"
