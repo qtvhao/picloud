@@ -50,7 +50,8 @@ export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 #
 echo "Installing k3s"
 echo "K3S_NODE_NAME: $K3S_NODE_NAME"
-time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init) &
+rm -rf /var/lib/rancher/ || true
+time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init && time systemctl restart k3s) &
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
 while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
     echo "Waiting for K3S token"
