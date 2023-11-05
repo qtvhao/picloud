@@ -11,3 +11,4 @@ for node in $NODES_IP; do
     ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
 done
 time ./pic recommended ../id_rsa | tee recommended.log
+# it costs 10 minutes to install recommended packages

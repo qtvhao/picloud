@@ -1,0 +1,21 @@
+#!/bin/bash
+
+args=("$@")
+IMAGE_NAME=${args[0]}
+
+set -e -o pipefail
+if [ -z "$IMAGE_NAME" ]; then
+    echo "Usage: ./pull-image.sh <image-name>"
+    GITLAB_VERSION="v16.5.1"
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce:$GITLAB_VERSION &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce:$GITLAB_VERSION &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce:$GITLAB_VERSION &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce:$GITLAB_VERSION &
+    ./pic pull-image registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v16.5.0 &
+    exit 0
+fi
+RANDOM_CONTAINER_NAME=$(openssl rand -hex 16)
+echo "Pull image $IMAGE_NAME to local registry"
+time (kubectl run -it \
+    --image="$IMAGE_NAME" "pull-$RANDOM_CONTAINER_NAME" \
+    --restart=Never --rm --command -- sh -c "echo 'This is a temporary pod to install gitlab. It will be removed after installation is done.'")

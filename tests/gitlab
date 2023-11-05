@@ -4,8 +4,13 @@ PIC_DIR="$HOME/.pic"
 LOGS_DIR="$PIC_DIR/logs/"
 time ./pic reinstall-k3s ../id_rsa > /dev/null
 # echo;time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log
-
+set -e -o pipefail
 apt install vnstat -y
+while ! ./pic pull-image busybox; do
+    sleep 2
+done
+
+time ./pic pull-image
 echo; ./pic redis | tee $LOGS_DIR/redis.log
 echo;time ./pic install-gitlab ../id_rsa | tee $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/gitlab.log
