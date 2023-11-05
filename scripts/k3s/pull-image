@@ -7,6 +7,7 @@ set -e -o pipefail
 if [ -z "$IMAGE_NAME" ]; then
     echo "Usage: ./pull-image.sh <image-name>"
     GITLAB_VERSION="v16.5.1"
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-kas:v16.5.0 || true
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/certificates:$GITLAB_VERSION
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:$GITLAB_VERSION
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/kubectl:$GITLAB_VERSION
@@ -18,13 +19,11 @@ if [ -z "$IMAGE_NAME" ]; then
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce:$GITLAB_VERSION
     ./pic pull-image registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v16.5.0
     # - registry.gitlab.com/gitlab-org/build/cng/gitlab-kas:v16.5.0
+    # - registry.gitlab.com/gitlab-org/build/cng/gitlab-pages:v1.49.0
     # - registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v14.29.0
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v14.29.0
-    # - cloudflare/cloudflared:latest
-    # ./pic pull-image cloudflare/cloudflared:latest
-    # - bitnami/postgres-exporter:0.12.0-debian-11-r86
+    ./pic pull-image cloudflare/cloudflared:latest || true
     ./pic pull-image bitnami/postgres-exporter:0.12.0-debian-11-r86
-    # - bitnami/postgresql:14.8.0
     ./pic pull-image bitnami/postgresql:14.8.0
 
     exit 0

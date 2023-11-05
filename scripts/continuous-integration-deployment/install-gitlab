@@ -20,7 +20,7 @@ PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Setting password to $PASSWORD"
 
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
-helm repo update
+time helm repo update
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 helm uninstall gitlab --namespace gitlab-ns || true
 NUM_SECRET=$(kubectl get secrets --namespace gitlab-ns -o name | wc -l)
@@ -65,7 +65,6 @@ echo "  accesskey: $ACCESS_KEY_ID"                                              
 echo "  secretkey: $SECRET_ACCESS_KEY"                                              >> $REGISTRY_MINIO_YAML
 # 
 kubectl create secret generic gitlab-registry-storage --from-file=connection=$REGISTRY_MINIO_YAML --namespace gitlab-ns
-
 
 kubectl create secret generic gitlab-minioaccess \
     --from-literal=accesskey="$ACCESS_KEY_ID" \
@@ -145,39 +144,28 @@ gitlab-runner.runners.privileged=true \
 time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log certificates
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log configure
-time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations &
+time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations
 # 
 # time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log certificates
 # time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log configure
-time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-dependencies.log dependencies
+time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log dependencies
+# time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log gitlab-workhorse &
+time ./pic logs deployment/gitlab-sidekiq-all-in-1-v2   gitlab-ns gitlab-webservice-default-dependencies.log dependencies
+# ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-webservice-default.gitlab-ns     22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http    gitlab-webservice-default.gitlab-ns     8181
-exit 0
+
 ./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
 echo "Folk and push to gitlab successfully"
 # kubectl logs deployment/gitlab-webservice-default -n gitlab-ns -c gitlab-workhorse | tee gitlab-webservice-default-gitlab-workhorse.log
-# kubectl logs deployment/gitlab-webservice-default -n gitlab-ns -c webservice | tee gitlab-webservice-default-webservice.log
 # kubectl logs deployment/gitlab-sidekiq-all-in-1-v2 -n gitlab-ns | tee gitlab-sidekiq-all-in-1-v2.log
-# TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8080    404
 
 # ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 # 
-# ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
-# while true; do
-#     status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/users/sign_in || true)
-#     echo "Waiting for $FQDN_RECORD/users/sign_in to be ready. Status code: $status_code. Expected status code: 200"
-#     if [ "$status_code" == "200" ]; then
-#         break
-#     fi
-#     sleep 5
-# done
-# while true; do
-#     kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password && break || sleep 5
-# done
 
-TUNNEL_NAMESPACE=default ./pic expose tcp       gitlab-kas.gitlab-ns 8150 "503"
-TUNNEL_NAMESPACE=default ./pic expose http      gitlab-kas.gitlab-ns 8154 "503" "" "true"
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-gitlab-shell.gitlab-ns   22
+TUNNEL_NAMESPACE=default ./pic expose   tcp         gitlab-kas.gitlab-ns            8150 "503"
+TUNNEL_NAMESPACE=default ./pic expose   http        gitlab-kas.gitlab-ns            8154 "503" "" "true"
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp         gitlab-gitlab-shell.gitlab-ns   22
 time ./pic wait deploy       gitlab-kas          gitlab-ns Available
 time ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 time ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
@@ -189,19 +177,8 @@ kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 # 
-# export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
-# GITLAB_OAUTH_URL="https://$FQDN_RECORD/oauth/token"
-# while true; do
-#     status_code=$(curl -s -o /dev/null -w "%{http_code}" $GITLAB_OAUTH_URL || true)
-#     echo "Waiting for $GITLAB_OAUTH_URL to be ready. Status code: $status_code. Expected status code: 302"
-#     if [ "$status_code" == "302" ]; then
-#         break
-#     fi
-#     sleep 5
-# done
-# echo "GITLAB_OAUTH_URL: $GITLAB_OAUTH_URL"
 
-GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+# GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"
