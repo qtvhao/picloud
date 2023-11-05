@@ -99,13 +99,15 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
 
     scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")
     if [ "$scriptFileExists" == "true" ]; then
-        cp "$2/$3" "$scriptFile"
+        stat "$scriptFile" > /dev/null 2>&1 || \
+            cp "$2/$3" "$scriptFile"
     else
         curl -s $remoteUrl -o $scriptFile
     fi
     chmod +x $scriptFile
     "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
-    rm $scriptFile || true
+    stat "$scriptFile" > /dev/null 2>&1 && \
+        rm $scriptFile || true
     exit 0
 fi
 if [ "$arg1" == "pxe-boot" ]; then
@@ -135,7 +137,7 @@ case "$arg1" in
     "Registry-as-a-pull-through-cache")
         SCRIPTS_SUBFOLDER="scripts/storage"
         ;;
-    "auto-join"|"logs"|"pull-image")
+    "auto-join"|"logs"|"pull-image"|"pull-images")
         SCRIPTS_SUBFOLDER="scripts/k3s"
         ;;
 esac
