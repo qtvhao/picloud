@@ -27,7 +27,8 @@ while true; do
     echo "Retrying to login to harbor"
     sleep 5
 done
-while ! docker buildx imagetools create busybox --tag http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
+echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .
+while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
     echo "Retrying to push to harbor"
     sleep 5
 done
