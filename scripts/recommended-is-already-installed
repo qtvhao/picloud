@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e -o pipefail
+source .env
+exposed() {
+    URL=$1
+    EXPECT_STATUS_CODE=$2
+    while true; do
+        STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+        echo "STATUS_CODE=$STATUS_CODE. EXPECT_STATUS_CODE=$EXPECT_STATUS_CODE"
+        if [ "$STATUS_CODE" == "$EXPECT_STATUS_CODE" ]; then
+            echo "exposed $URL"
+            break
+        fi
+        sleep 2
+    done
+}
+# TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
+exposed "http-console-minio-operator-9090.$DOMAIN" 200
+# TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
+exposed "http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN" 403
+# ./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
+exposed "http-harbor-registry-harbor-ns-5000.$DOMAIN" 200
+# TUNNEL_NAMESPACE=default ./pic expose http grafana.loki 80
+exposed "http-grafana-loki-80.$DOMAIN" 302
+# TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
+exposed "http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN" 403
+# TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
+exposed "http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN" 302
