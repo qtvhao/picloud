@@ -47,7 +47,7 @@ time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log) &
 # 
 ( time ./pic install-harbor | tee $LOGS_DIR/harbor.log) &
 #
-time ./pic install-minio | tee $LOGS_DIR/s3.log &
+( time ./pic install-minio | tee $LOGS_DIR/s3.log) &
 # Automaticaly add the new nodes to the cluster, with more memory and cpu we can use grafana to monitor the cluster
 ( ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
     ( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log)) &
