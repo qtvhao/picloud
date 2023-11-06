@@ -25,7 +25,6 @@ metadata:
 type: kubernetes.io/service-account-token
 EOF
 kubectl -n minio-operator  get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode;echo
-TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 # 
 PIC_DIR="$HOME/.pic"
 helm uninstall tenant-picloud -n tenant-ns || true
@@ -57,6 +56,5 @@ rm tenant-5.0.10.tgz
 while true; do
     kubectl -n tenant-ns get svc tenant-picloud-hl && break || sleep 5
 done
-TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
 
 echo "Minio console: https://http-console-minio-operator-9090.$DOMAIN/"

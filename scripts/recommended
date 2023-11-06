@@ -41,25 +41,41 @@ done
 
 time ./pic pull-images &
 # 
-time ( (./pic redis | tee $LOGS_DIR/redis.log) && (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)) &
+time (./pic redis | tee $LOGS_DIR/redis.log) &
+time (./pic install-minio | tee $LOGS_DIR/s3.log) &
 # 
-( time ./pic install-harbor | tee $LOGS_DIR/harbor.log) &
-#
-( time ./pic install-minio | tee $LOGS_DIR/s3.log) &
+time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
 wait
+
+TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
+TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
+
+./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
+while true; do
+    echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin && break;
+    echo "Retrying to login to harbor"
+    sleep 2
+done
+
+# 
+echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .
+while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
+    echo "Retrying to push to harbor"
+    sleep 2
+done
+
+( time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)
+# 
 ( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log) &
 ( time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log) &
 # Automaticaly add the new nodes to the cluster, with more memory and cpu we can use grafana to monitor the cluster
 ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) &
 wait
 
+TUNNEL_NAMESPACE=default ./pic expose http grafana.loki 80
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
-echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .
-while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
-    echo "Retrying to push to harbor"
-    sleep 2
-done
 
 # 
 echo "./pic has installed your recommended packages"

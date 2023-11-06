@@ -23,5 +23,4 @@ helm upgrade --install --namespace loki promtail grafana/promtail
 helm upgrade --install --namespace loki loki grafana/loki
 helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
 PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
-TUNNEL_NAMESPACE=default ./pic expose http grafana.loki 80
 echo "Grafana admin password: $PASSWORD"
