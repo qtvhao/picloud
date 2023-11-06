@@ -11,6 +11,8 @@ if [ -z "$PASSWORD" ]; then
     echo "Please set PASSWORD"
     exit 1
 fi
+sysctl fs.inotify.max_user_instances=1280
+sysctl fs.inotify.max_user_watches=655360
 echo "Installing Grafana"
 helm repo add grafana https://grafana.github.io/helm-charts
 kubectl get namespace loki || kubectl create namespace loki
@@ -21,5 +23,5 @@ helm upgrade --install --namespace loki promtail grafana/promtail
 helm upgrade --install --namespace loki loki grafana/loki
 helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
 PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
-TUNNEL_NAMESPACE=loki ./pic expose http grafana.gitlab-ns 80
+TUNNEL_NAMESPACE=loki ./pic expose http grafana.loki 80
 echo "Grafana admin password: $PASSWORD"
