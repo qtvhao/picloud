@@ -58,7 +58,7 @@ done
 current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
 max=$(cd "pic-repos/$REPO_NAME" && git rev-list --count HEAD)
 (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
-for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD|main"`; do
+for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD"`; do
     echo "Checkout $branch"
     # Create Local Branches for Each Remote Branch
     branch=$(echo $branch | sed 's/origin\///')
@@ -79,12 +79,15 @@ done;
 i=$((i-10))
 echo
 for i in $(seq $i -100 1); do
-    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || continue
-    echo "Checking out $i in order to avoid HTTP 429 Too Many Requests"
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
+    echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
 done;
+# (cd pic-repos/$REPO_NAME && git checkout $current_branch && git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || continue
 while true; do
     echo "Pushing $REPO_NAME to $REMOTE_REPO"
-    (cd pic-repos && cd $REPO_NAME && git push --set-upstream origin --all -o ci.skip) && break || true
+    (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
+        git pull --set-upstream origin $current_branch && \
+        git push --set-upstream origin --all -o ci.skip) && break || true
     sleep 5
 done
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
