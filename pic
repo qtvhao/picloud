@@ -99,7 +99,7 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
 
     scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")
     if [ "$scriptFileExists" == "true" ]; then
-        cp "$2/$3" "$scriptFile"
+        cp "$2/$3" "$scriptFile" || true
     else
         curl -s $remoteUrl -o $scriptFile
     fi
