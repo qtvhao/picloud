@@ -235,7 +235,7 @@ TUNNEL_PORT=$RESERVED_TUNNEL_PORT
 TUNNEL_NICE_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
-cloudflared tunnel route dns $TUNNEL_NAME $FQDN_RECORD
+cloudflared tunnel route dns --overwrite-dns $TUNNEL_NAME $FQDN_RECORD
 while true; do
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
         break;
