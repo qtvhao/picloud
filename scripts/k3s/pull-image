@@ -28,7 +28,7 @@ while true; do
     Failed=$(echo "$POD_STATUS" | grep Failed || true)
     if [ ! -z "$Failed" ]; then
         echo "Pod failed, exiting"
-        exit 1
+        break
     fi
     if [ ! -z "$Succeeded" ]; then
         echo "Pod succeeded, exiting"
