@@ -40,13 +40,13 @@ while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
     sleep 2
 done
 time ./pic pull-images "$FIRST_NODE_NAME" &
+time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
+(   ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
+    ( time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log))
+wait
 # 
 time (./pic redis | tee $LOGS_DIR/redis.log) &
 time (./pic install-minio | tee $LOGS_DIR/s3.log) &
-# 
-time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
-(   ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
-    ( time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log)) &
 wait
 
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
