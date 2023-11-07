@@ -54,7 +54,6 @@ while true; do
         -o PasswordAuthentication=no \
         "$NODE_IP" "hostname" && break || echo "Retrying to connect to $NODE_IP"
 done
-done
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "k3s-uninstall.sh;systemctl stop k3s;systemctl disable k3s" || true
