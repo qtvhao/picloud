@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e -o pipefail
 
 IDENTIFY_FILE="$HOME/id_rsa"
 ./pic reinstall-k3s $IDENTIFY_FILE
