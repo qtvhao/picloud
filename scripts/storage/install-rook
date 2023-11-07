@@ -7,6 +7,10 @@ if [ -z "$IDENTIFY_FILE" ]; then
     echo "Please provide the identify file"
     exit 1
 fi
+exit 1
+# kubectl -n rook-ceph patch cephcluster rook-ceph --type merge -p '{"spec":{"cleanupPolicy":{"confirmation":"yes-really-destroy-data"}}}'
+# kubectl -n rook-ceph delete cephcluster rook-ceph
+# kubectl -n rook-ceph get cephcluster && echo "Deleted rook-ceph" || true
 NODES=$(kubectl get nodes -o json | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
 NODES_IP=$(echo $NODES | jq -r '.[]')
 for node in $NODES_IP; do
@@ -179,7 +183,8 @@ echo "  storageClassName: ceph-filesystem" >> rook-ceph-pvc-claim-test.yaml
 # kubectl apply -f ./tests/csi-s3.yaml
 kubectl apply -f rook-ceph-pvc-claim-test.yaml
 rm rook-ceph-pvc-claim-test.yaml
-timeout 300 ./pic wait deploy pic-test-csi-s3 default Available
+kubectl -n rook-ceph rollout restart deploy rook-ceph-operator
+timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
 kubectl logs deployment/pic-test-csi-s3
 
 ./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"
