@@ -74,7 +74,6 @@ kubectl -n rook-ceph get pod
 # ./pic wait deploy rook-ceph-osd-0 rook-ceph Available
 # ./pic wait deploy rook-ceph-mds-ceph-filesystem-a rook-ceph Available
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode && echo
-./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"
 # 
 # apiVersion: apps/v1
 echo "apiVersion: apps/v1" > rook-ceph-pvc-claim-test.yaml
@@ -182,3 +181,5 @@ kubectl apply -f rook-ceph-pvc-claim-test.yaml
 rm rook-ceph-pvc-claim-test.yaml
 ./pic wait deploy pic-test-csi-s3 default Available
 kubectl logs deployment/pic-test-csi-s3
+
+./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"
