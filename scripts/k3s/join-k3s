@@ -47,6 +47,16 @@ echo "K3S_TOKEN: $K3S_TOKEN"
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
+    "$NODE_IP" "reboot"
+while true; do
+    sleep 1
+    ssh -i $IDENTIFY_FILE \
+        -o PasswordAuthentication=no \
+        "$NODE_IP" "hostname" && break || echo "Retrying to connect to $NODE_IP"
+done
+done
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
     "$NODE_IP" "k3s-uninstall.sh;systemctl stop k3s;systemctl disable k3s" || true
 # 
 ssh -i $IDENTIFY_FILE \
