@@ -1,9 +1,6 @@
 #!/bin/bash
 
-kubectl delete pvc pic-test-pvc
-kubectl apply -f ./tests/csi-s3.yaml
-sleep 20
-kubectl logs deployment/pic-test-csi-s3
-kubectl describe pvc pic-test-pvc
-# kubectl describe deploy pic-test-csi-s3
-kubectl delete deploy pic-test-csi-s3
+IDENTIFY_FILE="$HOME/id_rsa"
+./pic reinstall-k3s $IDENTIFY_FILE
+./pic auto-join $IDENTIFY_FILE
+./pic install-rook $IDENTIFY_FILE

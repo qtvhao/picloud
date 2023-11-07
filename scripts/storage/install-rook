@@ -75,3 +75,110 @@ kubectl -n rook-ceph get pod
 # ./pic wait deploy rook-ceph-mds-ceph-filesystem-a rook-ceph Available
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode && echo
 ./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"
+# 
+# apiVersion: apps/v1
+echo "apiVersion: apps/v1" > rook-ceph-pvc-claim-test.yaml
+# kind: Deployment
+echo "kind: Deployment" >> rook-ceph-pvc-claim-test.yaml
+# metadata:
+echo "metadata:" >> rook-ceph-pvc-claim-test.yaml
+#   name: pic-test-csi-s3
+echo "  name: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+# spec:
+echo "spec:" >> rook-ceph-pvc-claim-test.yaml
+#   replicas: 1
+echo "  replicas: 1" >> rook-ceph-pvc-claim-test.yaml
+#   selector:
+echo "  selector:" >> rook-ceph-pvc-claim-test.yaml
+#     matchLabels:
+echo "    matchLabels:" >> rook-ceph-pvc-claim-test.yaml
+#       app: pic-test-csi-s3
+echo "      app: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+#   template:
+echo "  template:" >> rook-ceph-pvc-claim-test.yaml
+#     metadata:
+echo "    metadata:" >> rook-ceph-pvc-claim-test.yaml
+#       creationTimestamp: null
+echo "      creationTimestamp: null" >> rook-ceph-pvc-claim-test.yaml
+#       labels:
+echo "      labels:" >> rook-ceph-pvc-claim-test.yaml
+#         app: pic-test-csi-s3
+echo "        app: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+#     spec:
+echo "    spec:" >> rook-ceph-pvc-claim-test.yaml
+#       containers:
+echo "      containers:" >> rook-ceph-pvc-claim-test.yaml
+#       - command:
+echo "      - command:" >> rook-ceph-pvc-claim-test.yaml
+#         - sh
+echo "        - sh" >> rook-ceph-pvc-claim-test.yaml
+#         - -c
+echo "        - -c" >> rook-ceph-pvc-claim-test.yaml
+#         - |
+echo "        - |" >> rook-ceph-pvc-claim-test.yaml
+#           for i in 1 2 3 4 5 6 7 8 9 10 ; do
+echo "          for i in 1 2 3 4 5 6 7 8 9 10 ; do" >> rook-ceph-pvc-claim-test.yaml
+#             echo $i
+echo "            echo \$i" >> rook-ceph-pvc-claim-test.yaml
+#             wget "https://raw.githubusercontent.com/qtvhao/picloud/main/tests/steffen-b-qDZ-Xd8dX6w-unsplash.jpg" -O "/tmp/dir/$i.png"
+echo "            wget \"https://raw.githubusercontent.com/qtvhao/picloud/main/tests/steffen-b-qDZ-Xd8dX6w-unsplash.jpg\" -O \"/tmp/dir/\$i.png\"" >> rook-ceph-pvc-claim-test.yaml
+#           done
+echo "          done" >> rook-ceph-pvc-claim-test.yaml
+#           sleep 1000
+echo "          sleep 1000" >> rook-ceph-pvc-claim-test.yaml
+#         image: busybox
+echo "        image: busybox" >> rook-ceph-pvc-claim-test.yaml
+#         name: pic-test-csi-s3
+echo "        name: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+#             # touch "/tmp/dir/$i.png"
+#         volumeMounts:
+echo "        volumeMounts:" >> rook-ceph-pvc-claim-test.yaml
+#         - mountPath: /tmp/dir/
+echo "        - mountPath: /tmp/dir/" >> rook-ceph-pvc-claim-test.yaml
+#           name: tmp-data
+echo "          name: tmp-data" >> rook-ceph-pvc-claim-test.yaml
+#       volumes:
+echo "      volumes:" >> rook-ceph-pvc-claim-test.yaml
+#       - name: tmp-data
+echo "      - name: tmp-data" >> rook-ceph-pvc-claim-test.yaml
+#         persistentVolumeClaim:
+echo "        persistentVolumeClaim:" >> rook-ceph-pvc-claim-test.yaml
+#           claimName: pic-test-pvc
+echo "          claimName: pic-test-pvc" >> rook-ceph-pvc-claim-test.yaml
+#           readOnly: false
+echo "          readOnly: false" >> rook-ceph-pvc-claim-test.yaml
+
+echo "" >> rook-ceph-pvc-claim-test.yaml
+# ---
+echo "---" >> rook-ceph-pvc-claim-test.yaml
+echo "" >> rook-ceph-pvc-claim-test.yaml
+
+# apiVersion: v1
+echo "apiVersion: v1" >> rook-ceph-pvc-claim-test.yaml
+# kind: PersistentVolumeClaim
+echo "kind: PersistentVolumeClaim" >> rook-ceph-pvc-claim-test.yaml
+# metadata:
+echo "metadata:" >> rook-ceph-pvc-claim-test.yaml
+#   name: pic-test-pvc
+echo "  name: pic-test-pvc" >> rook-ceph-pvc-claim-test.yaml
+# spec:
+echo "spec:" >> rook-ceph-pvc-claim-test.yaml
+#   accessModes:
+echo "  accessModes:" >> rook-ceph-pvc-claim-test.yaml
+#   - ReadWriteOnce
+echo "  - ReadWriteOnce" >> rook-ceph-pvc-claim-test.yaml
+#   resources:
+echo "  resources:" >> rook-ceph-pvc-claim-test.yaml
+#     requests:
+echo "    requests:" >> rook-ceph-pvc-claim-test.yaml
+#       storage: 100Gi
+echo "      storage: 100Gi" >> rook-ceph-pvc-claim-test.yaml
+#   storageClassName: ceph-filesystem
+echo "  storageClassName: ceph-filesystem" >> rook-ceph-pvc-claim-test.yaml
+
+# kubectl delete pvc pic-test-pvc
+# kubectl apply -f ./tests/csi-s3.yaml
+kubectl apply -f rook-ceph-pvc-claim-test.yaml
+rm rook-ceph-pvc-claim-test.yaml
+./pic wait deploy pic-test-csi-s3 default Available
+kubectl logs deployment/pic-test-csi-s3
