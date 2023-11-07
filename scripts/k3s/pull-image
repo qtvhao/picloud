@@ -2,7 +2,11 @@
 
 args=("$@")
 IMAGE_NAME=${args[0]}
-
+NODE_NAME=${args[1]}
+if [ -z "$NODE_NAME" ]; then
+    echo "Usage: ./pull-image <image-name> <node-name>"
+    exit 1
+fi
 set -e -o pipefail
 
 if [ -z "$IMAGE_NAME" ]; then

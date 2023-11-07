@@ -2,41 +2,42 @@
 
 args=("$@")
 IMAGE_NAME=${args[0]}
+NODE_NAME="${args[1]}"
 
 set -e -o pipefail
 if [ -z "$IMAGE_NAME" ]; then
     echo "Usage: ./pull-image.sh <image-name>"
     GITLAB_VERSION="v16.5.1"
-    ./pic pull-image rook/ceph:v1.12.7 &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce:$GITLAB_VERSION &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce:$GITLAB_VERSION &
-    ./pic pull-image quay.io/ceph/ceph:v17.2.6 &
-    ./pic pull-image quay.io/cephcsi/cephcsi:v3.9.0 &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitaly:$GITLAB_VERSION &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce:$GITLAB_VERSION &
-    ./pic pull-image goharbor/trivy-adapter-photon:v2.9.1 &
-    ./pic pull-image registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v16.5.0 &
-    ./pic pull-image goharbor/harbor-db:v2.9.1 &
-    ./pic pull-image quay.io/minio/minio:RELEASE.2023-10-07T15-07-38Z &
-    ./pic pull-image bitnami/postgresql:14.8.0 &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:$GITLAB_VERSION &
-    (./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-kas:v16.5.0 || true) &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/certificates:$GITLAB_VERSION &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/kubectl:$GITLAB_VERSION &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-base:$GITLAB_VERSION &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce:$GITLAB_VERSION &
-    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v14.29.0 &
-    (./pic pull-image cloudflare/cloudflared:latest || true) &
-    ./pic pull-image bitnami/postgres-exporter:0.12.0-debian-11-r86 &
+    ./pic pull-image rook/ceph:v1.12.7 $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image quay.io/ceph/ceph:v17.2.6 $NODE_NAME &
+    ./pic pull-image quay.io/cephcsi/cephcsi:v3.9.0 $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitaly:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image goharbor/trivy-adapter-photon:v2.9.1 $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v16.5.0 $NODE_NAME &
+    ./pic pull-image goharbor/harbor-db:v2.9.1 $NODE_NAME &
+    ./pic pull-image quay.io/minio/minio:RELEASE.2023-10-07T15-07-38Z $NODE_NAME &
+    ./pic pull-image bitnami/postgresql:14.8.0 $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:$GITLAB_VERSION $NODE_NAME &
+    (./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-kas:v16.5.0 $NODE_NAME || true) &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/certificates:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/kubectl:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-base:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ce:$GITLAB_VERSION $NODE_NAME &
+    ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v14.29.0 $NODE_NAME &
+    (./pic pull-image cloudflare/cloudflared:latest $NODE_NAME || true) &
+    ./pic pull-image bitnami/postgres-exporter:0.12.0-debian-11-r86 $NODE_NAME &
 
-    ./pic pull-image docker.io/bitnami/redis:7.2.2-debian-11-r0 &
-    ./pic pull-image goharbor/harbor-core:v2.9.1 &
-    ./pic pull-image goharbor/harbor-jobservice:v2.9.1 &
-    ./pic pull-image goharbor/harbor-portal:v2.9.1 &
-    ./pic pull-image goharbor/harbor-registryctl:v2.9.1 &
-    ./pic pull-image goharbor/redis-photon:v2.9.1 &
-    ./pic pull-image goharbor/registry-photon:v2.9.1 &
-    ./pic pull-image quay.io/minio/operator:v5.0.10 &
+    ./pic pull-image docker.io/bitnami/redis:7.2.2-debian-11-r0 $NODE_NAME &
+    ./pic pull-image goharbor/harbor-core:v2.9.1 $NODE_NAME &
+    ./pic pull-image goharbor/harbor-jobservice:v2.9.1 $NODE_NAME &
+    ./pic pull-image goharbor/harbor-portal:v2.9.1 $NODE_NAME &
+    ./pic pull-image goharbor/harbor-registryctl:v2.9.1 $NODE_NAME &
+    ./pic pull-image goharbor/redis-photon:v2.9.1 $NODE_NAME &
+    ./pic pull-image goharbor/registry-photon:v2.9.1 $NODE_NAME &
+    ./pic pull-image quay.io/minio/operator:v5.0.10 $NODE_NAME &
     # ./pic pull-image rancher/klipper-helm:v0.8.2-build20230815
     # ./pic pull-image rancher/klipper-lb:v0.4.4
     # ./pic pull-image rancher/local-path-provisioner:v0.0.24
@@ -45,15 +46,15 @@ if [ -z "$IMAGE_NAME" ]; then
     # ./pic pull-image rancher/mirrored-metrics-server:v0.6.3
 
     # 2 registry.k8s.io/sig-storage/csi-attacher:v4.3.0
-    (./pic pull-image registry.k8s.io/sig-storage/csi-attacher:v4.3.0 || true) &
+    (./pic pull-image registry.k8s.io/sig-storage/csi-attacher:v4.3.0 $NODE_NAME || true) &
     # 6 registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
-    (./pic pull-image registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0 || true) &
+    (./pic pull-image registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0 $NODE_NAME || true) &
     # 2 registry.k8s.io/sig-storage/csi-provisioner:v3.5.0
-    (./pic pull-image registry.k8s.io/sig-storage/csi-provisioner:v3.5.0 || true) &
+    (./pic pull-image registry.k8s.io/sig-storage/csi-provisioner:v3.5.0 $NODE_NAME || true) &
     # 2 registry.k8s.io/sig-storage/csi-resizer:v1.8.0
-    (./pic pull-image registry.k8s.io/sig-storage/csi-resizer:v1.8.0 || true)  &
+    (./pic pull-image registry.k8s.io/sig-storage/csi-resizer:v1.8.0 $NODE_NAME || true)  &
     # 2 registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2
-    (./pic pull-image registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2 || true)  &
+    (./pic pull-image registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2 $NODE_NAME || true)  &
     wait
     exit 0
 fi

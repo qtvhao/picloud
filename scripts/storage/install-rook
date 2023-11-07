@@ -171,7 +171,7 @@ echo "  resources:" >> rook-ceph-pvc-claim-test.yaml
 #     requests:
 echo "    requests:" >> rook-ceph-pvc-claim-test.yaml
 #       storage: 100Gi
-echo "      storage: 100Gi" >> rook-ceph-pvc-claim-test.yaml
+echo "      storage: 1Gi" >> rook-ceph-pvc-claim-test.yaml
 #   storageClassName: ceph-filesystem
 echo "  storageClassName: ceph-filesystem" >> rook-ceph-pvc-claim-test.yaml
 
@@ -179,7 +179,7 @@ echo "  storageClassName: ceph-filesystem" >> rook-ceph-pvc-claim-test.yaml
 # kubectl apply -f ./tests/csi-s3.yaml
 kubectl apply -f rook-ceph-pvc-claim-test.yaml
 rm rook-ceph-pvc-claim-test.yaml
-./pic wait deploy pic-test-csi-s3 default Available
+timeout 300 ./pic wait deploy pic-test-csi-s3 default Available
 kubectl logs deployment/pic-test-csi-s3
 
 ./pic expose https rook-ceph-mgr-dashboard.rook-ceph 8443 400 "" "true"

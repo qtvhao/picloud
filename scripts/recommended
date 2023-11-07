@@ -35,11 +35,11 @@ echo "{}" > "$HOME/.pic/expose-items.json"
 # 
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
 
-while ! ./pic pull-image busybox; do
+FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
+while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
     sleep 2
 done
-
-time ./pic pull-images &
+time ./pic pull-images "$FIRST_NODE_NAME" &
 # 
 time (./pic redis | tee $LOGS_DIR/redis.log) &
 time (./pic install-minio | tee $LOGS_DIR/s3.log) &
@@ -68,9 +68,10 @@ done
 ( time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)
 # 
 ( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log) &
-( time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log) &
+# ( ) &
 # Automaticaly add the new nodes to the cluster, with more memory and cpu we can use grafana to monitor the cluster
-( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) &
+(   time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log && \
+    time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log) &
 wait
 
 TUNNEL_NAMESPACE=default ./pic expose http grafana.loki 80
