@@ -16,8 +16,14 @@ time (kubectl run \
     --image="$IMAGE_NAME" "pull-$RANDOM_CONTAINER_NAME" \
     --restart=Never --command -- sh -c "echo 'This is a temporary pod to install gitlab. It will be removed after installation is done.'")
 
-while kubectl get pod "pull-$RANDOM_CONTAINER_NAME" >/dev/null 2>&1; do
+while true; do
+    sleep 1
     POD_STATUS=$(kubectl get pod "pull-$RANDOM_CONTAINER_NAME" -o json | jq -r '.status.phase')
+    Pending=$(echo "$POD_STATUS" | grep Pending || true)
+    if [ ! -z "$Pending" ]; then
+        echo "Pod is pending, exiting"
+        continue;
+    fi
     Succeeded=$(echo "$POD_STATUS" | grep Succeeded || true)
     Failed=$(echo "$POD_STATUS" | grep Failed || true)
     if [ ! -z "$Failed" ]; then
@@ -29,5 +35,5 @@ while kubectl get pod "pull-$RANDOM_CONTAINER_NAME" >/dev/null 2>&1; do
         break
     fi
     echo "Pod is not ready yet. Waiting for 1 second. Current status: $POD_STATUS"
-    sleep 1
 done
+kubectl delete pod "pull-$RANDOM_CONTAINER_NAME"
