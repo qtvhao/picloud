@@ -11,6 +11,10 @@ exposed() {
             echo "503 Service Unavailable. Exiting"
             exit 1
         fi
+        if [ "530" == "$STATUS_CODE" ]; then
+            echo "530 Site is frozen. Exiting"
+            exit 1
+        fi
         if [ "502" == "$STATUS_CODE" ]; then
             echo "502 Bad Gateway. Exiting"
             exit 1
