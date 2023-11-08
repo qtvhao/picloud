@@ -68,4 +68,5 @@ kubectl apply -f rook-ceph-pvc-claim-test.yaml
 
 # kubectl get dsp -n mayastor
 timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
+timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true
 exit 0
