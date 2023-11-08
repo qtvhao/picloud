@@ -64,9 +64,4 @@ echo "  storageClassName: longhorn" >> rook-ceph-pvc-claim-test.yaml
 # kubectl delete pvc pic-test-pvc
 # kubectl apply -f ./tests/csi-s3.yaml
 kubectl apply -f rook-ceph-pvc-claim-test.yaml
-# rm rook-ceph-pvc-claim-test.yaml
-
-# kubectl get dsp -n mayastor
-timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
-timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true
 exit 0

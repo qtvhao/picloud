@@ -44,6 +44,9 @@ time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
 (   ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
     ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
 wait
+timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
+timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true
+
 # 
 time (./pic redis | tee $LOGS_DIR/redis.log) &
 time (./pic install-minio | tee $LOGS_DIR/s3.log) &
