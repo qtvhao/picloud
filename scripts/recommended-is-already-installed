@@ -7,6 +7,10 @@ exposed() {
     while true; do
         STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
         echo "STATUS_CODE=$STATUS_CODE. EXPECT_STATUS_CODE=$EXPECT_STATUS_CODE"
+        if [ "503" == "$STATUS_CODE" ]; then
+            echo "503 Service Unavailable. Exiting"
+            exit 1
+        fi
         if [ "502" == "$STATUS_CODE" ]; then
             echo "502 Bad Gateway. Exiting"
             exit 1
