@@ -184,13 +184,13 @@ echo "    spec:"                                            >>cloudflared-deploy
 echo "      affinity:"                                      >>cloudflared-deployment.yaml
 echo "        nodeAffinity:"                                >>cloudflared-deployment.yaml
 echo "          preferredDuringSchedulingIgnoredDuringExecution:" >>cloudflared-deployment.yaml
-echo "            nodeSelectorTerms:"                         >>cloudflared-deployment.yaml
-echo "            - matchExpressions:"                    >>cloudflared-deployment.yaml
-echo "              - key: added-numberth"                >>cloudflared-deployment.yaml
-echo "                operator: In"                       >>cloudflared-deployment.yaml
-echo "                values:"                            >>cloudflared-deployment.yaml
-echo "                - $NODE_NUMBERTH"               >>cloudflared-deployment.yaml
-# echo "              topologyKey: kubernetes.io/hostname"    >>cloudflared-deployment.yaml
+echo "          - weight: 1"                                >>cloudflared-deployment.yaml
+echo "            preference:"                              >>cloudflared-deployment.yaml
+echo "              matchExpressions:"                      >>cloudflared-deployment.yaml
+echo "              - key: added-numberth"                  >>cloudflared-deployment.yaml
+echo "                operator: In"                         >>cloudflared-deployment.yaml
+echo "                values:"                              >>cloudflared-deployment.yaml
+echo "                - $NODE_NUMBERTH"                     >>cloudflared-deployment.yaml
 echo "      containers:"                                    >>cloudflared-deployment.yaml
 echo "        - name: cloudflared"                          >>cloudflared-deployment.yaml
 echo "          image: cloudflare/cloudflared"              >>cloudflared-deployment.yaml
