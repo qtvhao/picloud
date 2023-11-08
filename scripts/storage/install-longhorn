@@ -1,0 +1,71 @@
+#!/bin/bash
+set -e -o pipefail
+source .env
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "Please provide the identify file"
+    exit 1
+fi
+apt install open-iscsi nfs-common -y
+curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/scripts/environment_check.sh | bash
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/deploy/longhorn.yaml
+
+echo "apiVersion: apps/v1" > rook-ceph-pvc-claim-test.yaml
+echo "kind: Deployment" >> rook-ceph-pvc-claim-test.yaml
+echo "metadata:" >> rook-ceph-pvc-claim-test.yaml
+echo "  name: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+echo "spec:" >> rook-ceph-pvc-claim-test.yaml
+echo "  replicas: 2" >> rook-ceph-pvc-claim-test.yaml
+echo "  selector:" >> rook-ceph-pvc-claim-test.yaml
+echo "    matchLabels:" >> rook-ceph-pvc-claim-test.yaml
+echo "      app: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+echo "  template:" >> rook-ceph-pvc-claim-test.yaml
+echo "    metadata:" >> rook-ceph-pvc-claim-test.yaml
+echo "      creationTimestamp: null" >> rook-ceph-pvc-claim-test.yaml
+echo "      labels:" >> rook-ceph-pvc-claim-test.yaml
+echo "        app: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+echo "    spec:" >> rook-ceph-pvc-claim-test.yaml
+echo "      containers:" >> rook-ceph-pvc-claim-test.yaml
+echo "      - command:" >> rook-ceph-pvc-claim-test.yaml
+echo "        - sh" >> rook-ceph-pvc-claim-test.yaml
+echo "        - -c" >> rook-ceph-pvc-claim-test.yaml
+echo "        - |" >> rook-ceph-pvc-claim-test.yaml
+echo "          for i in 1 2 3 4 5 6 7 8 9 10 ; do" >> rook-ceph-pvc-claim-test.yaml
+echo "            echo \$i" >> rook-ceph-pvc-claim-test.yaml
+echo "            wget \"https://raw.githubusercontent.com/qtvhao/picloud/main/tests/steffen-b-qDZ-Xd8dX6w-unsplash.jpg\" -O \"/tmp/dir/\$i.png\"" >> rook-ceph-pvc-claim-test.yaml
+echo "          done" >> rook-ceph-pvc-claim-test.yaml
+echo "          sleep 1000" >> rook-ceph-pvc-claim-test.yaml
+echo "        image: busybox" >> rook-ceph-pvc-claim-test.yaml
+echo "        name: pic-test-csi-s3" >> rook-ceph-pvc-claim-test.yaml
+echo "        volumeMounts:" >> rook-ceph-pvc-claim-test.yaml
+echo "        - mountPath: /tmp/dir/" >> rook-ceph-pvc-claim-test.yaml
+echo "          name: tmp-data" >> rook-ceph-pvc-claim-test.yaml
+echo "      volumes:" >> rook-ceph-pvc-claim-test.yaml
+echo "      - name: tmp-data" >> rook-ceph-pvc-claim-test.yaml
+echo "        persistentVolumeClaim:" >> rook-ceph-pvc-claim-test.yaml
+echo "          claimName: pic-test-pvc" >> rook-ceph-pvc-claim-test.yaml
+echo "          readOnly: false" >> rook-ceph-pvc-claim-test.yaml
+echo "" >> rook-ceph-pvc-claim-test.yaml
+echo "---" >> rook-ceph-pvc-claim-test.yaml
+echo "" >> rook-ceph-pvc-claim-test.yaml
+echo "apiVersion: v1" >> rook-ceph-pvc-claim-test.yaml
+echo "kind: PersistentVolumeClaim" >> rook-ceph-pvc-claim-test.yaml
+echo "metadata:" >> rook-ceph-pvc-claim-test.yaml
+echo "  name: pic-test-pvc" >> rook-ceph-pvc-claim-test.yaml
+echo "spec:" >> rook-ceph-pvc-claim-test.yaml
+echo "  accessModes:" >> rook-ceph-pvc-claim-test.yaml
+echo "  - ReadWriteMany" >> rook-ceph-pvc-claim-test.yaml
+echo "  resources:" >> rook-ceph-pvc-claim-test.yaml
+echo "    requests:" >> rook-ceph-pvc-claim-test.yaml
+echo "      storage: 1Gi" >> rook-ceph-pvc-claim-test.yaml
+echo "  storageClassName: longhorn" >> rook-ceph-pvc-claim-test.yaml
+
+# kubectl delete pvc pic-test-pvc
+# kubectl apply -f ./tests/csi-s3.yaml
+kubectl apply -f rook-ceph-pvc-claim-test.yaml
+# rm rook-ceph-pvc-claim-test.yaml
+
+# kubectl get dsp -n mayastor
+timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
+exit 0

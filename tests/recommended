@@ -7,13 +7,13 @@ if [ -z "$IDENTIFY_FILE" ]; then
     echo "Usage: ./pic recommended IDENTIFY_FILE"
     exit 1
 fi
-NODES=$(kubectl get nodes -o json | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
-NODES_IP=$(echo $NODES | jq -r '.[]')
-for node in $NODES_IP; do
-    if [ -z "$node" ]; then
-        continue
-    fi
-    ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
-done
+# NODES=$(kubectl get nodes -o json | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
+# NODES_IP=$(echo $NODES | jq -r '.[]')
+# for node in $NODES_IP; do
+#     if [ -z "$node" ]; then
+#         continue
+#     fi
+#     ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "k3s-uninstall.sh;systemctl disable k3s-agent;systemctl disable k3s-agent" || true
+# done
 time ./pic recommended ../id_rsa | tee recommended.log
 # it costs 10 minutes to install recommended packages

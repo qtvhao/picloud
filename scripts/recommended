@@ -42,7 +42,7 @@ done
 time ./pic pull-images "$FIRST_NODE_NAME" &
 time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
 (   ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
-    ( time ./pic install-rook $IDENTIFY_FILE | tee $LOGS_DIR/install-rook.log))
+    ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
 wait
 # 
 time (./pic redis | tee $LOGS_DIR/redis.log) &
@@ -85,5 +85,5 @@ rm -rf $LOGS_DIR/harbor.log
 rm -rf $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/s3.log
 rm -rf $LOGS_DIR/redis.log
-rm -rf $LOGS_DIR/install-rook.log
+rm -rf $LOGS_DIR/install-longhorn.log
 exit 0

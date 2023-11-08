@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 NODE_IP=${args[1]}

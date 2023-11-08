@@ -8,11 +8,11 @@ set -e -o pipefail
 if [ -z "$IMAGE_NAME" ]; then
     echo "Usage: ./pull-image.sh <image-name>"
     GITLAB_VERSION="v16.5.1"
-    ./pic pull-image rook/ceph:v1.12.7 $NODE_NAME &
+    # ./pic pull-image rook/ceph:v1.12.7 $NODE_NAME &
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ce:$GITLAB_VERSION $NODE_NAME &
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ce:$GITLAB_VERSION $NODE_NAME &
-    ./pic pull-image quay.io/ceph/ceph:v17.2.6 $NODE_NAME &
-    ./pic pull-image quay.io/cephcsi/cephcsi:v3.9.0 $NODE_NAME &
+    # ./pic pull-image quay.io/ceph/ceph:v17.2.6 $NODE_NAME &
+    # ./pic pull-image quay.io/cephcsi/cephcsi:v3.9.0 $NODE_NAME &
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitaly:$GITLAB_VERSION $NODE_NAME &
     ./pic pull-image registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ce:$GITLAB_VERSION $NODE_NAME &
     ./pic pull-image goharbor/trivy-adapter-photon:v2.9.1 $NODE_NAME &
