@@ -183,7 +183,7 @@ echo "        pic-rn: tunnel-pod"                           >>cloudflared-deploy
 echo "    spec:"                                            >>cloudflared-deployment.yaml
 echo "      affinity:"                                      >>cloudflared-deployment.yaml
 echo "        nodeAffinity:"                                >>cloudflared-deployment.yaml
-echo "          requiredDuringSchedulingIgnoredDuringExecution:" >>cloudflared-deployment.yaml
+echo "          preferredDuringSchedulingIgnoredDuringExecution:" >>cloudflared-deployment.yaml
 echo "            nodeSelectorTerms:"                         >>cloudflared-deployment.yaml
 echo "            - matchExpressions:"                    >>cloudflared-deployment.yaml
 echo "              - key: added-numberth"                >>cloudflared-deployment.yaml
