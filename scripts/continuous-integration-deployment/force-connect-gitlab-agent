@@ -25,10 +25,15 @@ if [ -z "$ID" ]; then
         exit 1
     fi
 fi
-
+EXISTS_AGENTS=$(curl -s --request GET --header "Authorization: Bearer $GITLAB_TOKEN" \
+    --header "Content-Type: application/json" \
+    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents")
+echo "EXISTS_AGENT: $EXISTS_AGENTS"
+FIRST_AGENT_ID=$(echo $EXISTS_AGENTS | jq -r '.[0].id')
+echo "FIRST_AGENT_ID: $FIRST_AGENT_ID"
 EXISTS_TOKENS=$(curl -s --request GET --header "Authorization: Bearer $GITLAB_TOKEN" \
     --header "Content-Type: application/json" \
-    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens")
+    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/$FIRST_AGENT_ID/tokens")
 echo "EXISTS_TOKENS: $EXISTS_TOKENS"
 TOKEN_IDS=$(echo $EXISTS_TOKENS | jq -r '.[].id' || echo "")
 for TOKEN_ID in $TOKEN_IDS; do
@@ -36,16 +41,24 @@ for TOKEN_ID in $TOKEN_IDS; do
     curl -s --request DELETE --header "Authorization: Bearer $GITLAB_TOKEN" \
         --header "Content-Type: application/json" \
         --data '{"name":"gitlab-agent-token-'$(date +%s)'"}' \
-        "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens/$TOKEN_ID"
+        "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/$FIRST_AGENT_ID/tokens/$TOKEN_ID"
 done
 TOKEN_CREATED=$(curl -s --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
     --header "Content-Type: application/json" \
     --data '{"name":"gitlab-agent-token-'$(date +%s)'"}' \
-    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/1/tokens" | jq -r '.token')
+    "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/cluster_agents/$FIRST_AGENT_ID/tokens")
+echo "TOKEN_CREATED: $TOKEN_CREATED"
+TOKEN_STRING=$(echo $TOKEN_CREATED |  jq -r '.token')
+if [ "null" == "$TOKEN_STRING" ]; then
+    echo "TOKEN_STRING is null"
+    exit 1
+fi
+echo "TOKEN_STRING: $TOKEN_STRING"
 helm repo add gitlab https://charts.gitlab.io && helm repo update || echo ""
+helm uninstall gitlab-agent-$PROJECT_NAME -n gitlab-agent-gitlab-agent || echo ""
 helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
     --namespace gitlab-agent-gitlab-agent \
     --create-namespace \
     --set image.tag=v16.5.0 \
-    --set config.token=$TOKEN_CREATED \
+    --set config.token="$TOKEN_STRING" \
     --set config.kasAddress=wss://tcp-gitlab-kas-gitlab-ns-8150.$DOMAIN
