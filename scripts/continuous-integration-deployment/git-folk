@@ -78,7 +78,7 @@ for i in $(seq 1 +10 $max); do
 done;
 i=$((i-10))
 echo
-for i in $(seq $i -100 1); do
+for i in $(seq $i -100 1) ""; do
     (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
     echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
 done;
