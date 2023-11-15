@@ -14,3 +14,4 @@ metal/roles/pxe_server/files/data/tftp/
 dvd/
 NODES
 awscliv2.zip
+install-docker.sh

@@ -1,4 +1,4 @@
-FROM debian-bookworm as fai-mk-configspace
+FROM debian:bookworm as fai-mk-configspace
 RUN apt-get update && apt-get install -y wget
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
 RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
@@ -8,7 +8,7 @@ RUN apt update && apt install -y fai-quickstart apt-cacher-ng
 RUN fai-mk-configspace
 # Thanks to https://raw.githubusercontent.com/ricardobranco777/docker-fai/master/Dockerfile
 
-FROM debian-bookworm
+FROM debian:bookworm
 COPY --from=fai-mk-configspace /srv/fai/config /fai-mk-configspace
 RUN apt-get update && apt-get install -y wget
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
