@@ -73,16 +73,17 @@ fi
 ENCRYPTED_FAI_ROOTPW=$(echo $FAI_ROOTPW | openssl passwd -stdin -6)
 SANITIZED_FAI_ROOTPW=$(echo $ENCRYPTED_FAI_ROOTPW | sed 's/\//\\\//g')
 sed -i "s/FAI_ROOTPW=.*/FAI_ROOTPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/fai-bookworm/nfsroot.conf
+docker rm -f fai-setup
 docker run --name fai-setup \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
-(docker exec -it fai bash -c "rm -rf /srv/fai/nfsroot")
+(docker exec -it fai-setup bash -c "rm -rf /srv/fai/nfsroot")
 FAI_SETUP_IMAGE_ID=$(docker image inspect fai-setup-base | jq -r ".[0].Id")
 FAI_ROOTPW_MD5=$(echo "$FAI_ROOTPW""$FAI_SETUP_IMAGE_ID" | md5sum | cut -c1-20)
 FAI_SETUP_BASE="fai-setup-base-$FAI_ROOTPW_MD5"
 
-docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai-setup bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
 echo "Fai-setup finished"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-setup $FAI_SETUP_BASE
 docker tag $FAI_SETUP_BASE fai-setup-base
