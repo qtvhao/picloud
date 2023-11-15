@@ -87,7 +87,6 @@ docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it
 echo "Fai-setup finished"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-setup $FAI_SETUP_BASE
 docker tag $FAI_SETUP_BASE fai-setup-base
-exit 0
 cp scripts/fai/Dockerfile.fai-setup ./Dockerfile.fai-setup || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-setup -o ./Dockerfile.fai-setup
 time docker build -t fai-setup -f Dockerfile.fai-setup .
 echo "Dockerfile.fai-setup built"
@@ -103,16 +102,15 @@ docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
     time ( (docker exec -it fai fai-mirror -C /srv/fai/config/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) | tee fai-mirror.log)
 # 8907 lines
 echo "Fai-mirror finished"
-exit 0
 # docker stop fai || true
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || time docker commit fai $FAI_CD_BASE
 docker rm -f fai || true
-# exit 0
 echo "Fai-mirror committed: $FAI_CD_BASE"
 docker tag $FAI_CD_BASE fai-cd-base
 # 
 echo "Copying ssh key to fai container"
 docker run --net host --name fai \
+    -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     -v ./dvd/:/dvd/ \
     -v /var/www/html/:/var/www/html/ \
     -v ./fai/pxelinux.cfg/:/srv/tftp/fai/pxelinux.cfg/ \
@@ -133,9 +131,11 @@ echo "Fai-setup starting"
 
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
-time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso))
+stat ./dvd/$HOSTNAME-fai-cd.iso || \
+    time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso))
 echo "====" >> fai-cd.log
-time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -m /tmp/$HOSTNAME -f -S /var/www/html/squash.img))
+stat /var/www/html/squash.img || \
+    time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -m /tmp/$HOSTNAME -f -S /var/www/html/squash.img))
 # Start validate
 docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/etc/resolv.conf-installserver"
 docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg"

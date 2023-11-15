@@ -6,7 +6,6 @@ RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --out
 RUN curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
 RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
 RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
-COPY fai/fai-bookworm /srv/fai/config/fai-bookworm
 RUN mkdir -p /srv/fai/config/fai-bookworm/apt/
 COPY fai/files/etc/resolv.conf /srv/fai/nfsroot/etc/resolv.conf
 RUN cp /etc/apt/sources.list /srv/fai/config/fai-bookworm/apt/sources.list
