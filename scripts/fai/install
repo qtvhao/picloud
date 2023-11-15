@@ -35,18 +35,7 @@ chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
 # warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
-# docker image inspect debian:bookworm > /dev/null 2>&1 || \
-    # docker pull debian:bookworm
-# docker tag debian:bookworm debian-bookworm
-# 
-if [ -f "$HOME/.pic/fai-rootpw.json" ]; then
-    FAI_ROOTPW=$(cat $HOME/.pic/fai-rootpw.json | jq -r ".FAI_ROOTPW")
-else
-    FAI_ROOTPW=$(openssl rand -hex 32)
-    jq -n --arg FAI_ROOTPW "$FAI_ROOTPW" '{"FAI_ROOTPW":$FAI_ROOTPW}' > $HOME/.pic/fai-rootpw.json
-fi
-# cat $HOME/.pic/fai-rootpw.json
-# cat ./fai/fai-bookworm/nfsroot.conf
+
 docker buildx inspect || docker buildx create --use
 time docker buildx build \
     --push \
@@ -64,7 +53,7 @@ docker run --name fai-config \
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/qtvhao/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/qtvhao/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
- time ( (docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
+ time ( ( docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
  # 2055 lines
 echo "Fai-setup finished"
 # docker stop fai-config || true
@@ -75,9 +64,29 @@ docker rm -f fai-config || true
 echo "Fai-setup committed: $FAI_SETUP_BASE"
 docker tag $FAI_SETUP_BASE fai-setup-base
 # 
+if [ -f "$HOME/.pic/fai-rootpw.json" ]; then
+    FAI_ROOTPW=$(cat $HOME/.pic/fai-rootpw.json | jq -r ".FAI_ROOTPW")
+else
+    FAI_ROOTPW=$(openssl rand -hex 32)
+    jq -n --arg FAI_ROOTPW "$FAI_ROOTPW" '{"FAI_ROOTPW":$FAI_ROOTPW}' > $HOME/.pic/fai-rootpw.json
+fi
 ENCRYPTED_FAI_ROOTPW=$(echo $FAI_ROOTPW | openssl passwd -stdin -6)
 SANITIZED_FAI_ROOTPW=$(echo $ENCRYPTED_FAI_ROOTPW | sed 's/\//\\\//g')
 sed -i "s/FAI_ROOTPW=.*/FAI_ROOTPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/fai-bookworm/nfsroot.conf
+docker run --name fai-setup \
+    -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
+    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
+    --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+(docker exec -it fai bash -c "rm -rf /srv/fai/nfsroot")
+FAI_SETUP_IMAGE_ID=$(docker image inspect fai-setup-base | jq -r ".[0].Id")
+FAI_ROOTPW_MD5=$(echo "$FAI_ROOTPW""$FAI_SETUP_IMAGE_ID" | md5sum | cut -c1-20)
+FAI_SETUP_BASE="fai-setup-base-$FAI_ROOTPW_MD5"
+
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -it fai bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
+echo "Fai-setup finished"
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-setup $FAI_SETUP_BASE
+docker tag $FAI_SETUP_BASE fai-setup-base
+exit 0
 cp scripts/fai/Dockerfile.fai-setup ./Dockerfile.fai-setup || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-setup -o ./Dockerfile.fai-setup
 time docker build -t fai-setup -f Dockerfile.fai-setup .
 echo "Dockerfile.fai-setup built"
