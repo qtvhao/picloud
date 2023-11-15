@@ -36,12 +36,14 @@ docker rm -f apt-cacher-ng || true
 # warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
 
-docker buildx inspect || docker buildx create --use
+(docker buildx ls | grep docker.sock) || docker buildx create --use
+(cat /root/.docker/config.json | grep index.docker.io) || \
+    docker login -u $GITHUB_USERNAME
 time docker buildx build \
     --push \
-    --cache-from docker.io/qtvhao/picloud:branch-cache \
-    --cache-to type=registry,ref=docker.io/qtvhao/picloud:branch-cache,mode=max \
-    -t docker.io/qtvhao/picloud:fai-config -f Dockerfile.fai-config .
+    --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
+    --cache-to type=registry,ref=docker.io/$GITHUB_USERNAME/picloud:branch-cache,mode=max \
+    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .
 
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
@@ -49,9 +51,9 @@ rm Dockerfile.fai-config
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai-config \
     -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
-    --privileged --entrypoint /bin/bash -d docker.io/qtvhao/picloud:fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
-FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/qtvhao/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
-FAI_SETUP_BASE="docker.io/qtvhao/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
+    --privileged --entrypoint /bin/bash -d docker.io/$GITHUB_USERNAME/picloud:fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
+FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
  time ( ( docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
  # 2055 lines
