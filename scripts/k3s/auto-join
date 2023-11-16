@@ -13,6 +13,7 @@ if [ -f "NODES" ]; then
         # rm -rf $LOGS_DIR/join-k3s.log
     done
 fi
+K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 if [ ! -f "NODES" ]; then
     echo "NODES file does not exist. Creating NODES file"
     nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
