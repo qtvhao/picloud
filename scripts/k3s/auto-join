@@ -24,6 +24,7 @@ if [ ! -f "NODES" ]; then
         if [ -z "$node" ]; then
             continue
         fi
+        echo "$node"
         time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log
         rm -rf $LOGS_DIR/join-k3s.log
     done
