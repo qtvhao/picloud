@@ -25,9 +25,9 @@ if [ ! -f "NODES" ]; then
             continue
         fi
         echo "$node"
-        time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log
-        rm -rf $LOGS_DIR/join-k3s.log
+        time ( (./pic join-k3s "$node" $IDENTIFY_FILE | tee $LOGS_DIR/join-k3s.log) && rm $LOGS_DIR/join-k3s.log) &
     done
+    wait
 fi
 
 wait
