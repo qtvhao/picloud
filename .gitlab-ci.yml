@@ -61,7 +61,7 @@ kaniko-build:
         fi
       fi
     - echo $DOCKERFILE_PATH
-    - /kaniko/executor --context $KANIKO_BUILD_CONTEXT --dockerfile $DOCKERFILE_PATH --destination $IMAGE_TAG $KANIKO_ARGS
+    - /kaniko/executor --insecure-pull --insecure --skip-tls-verify --context $KANIKO_BUILD_CONTEXT --dockerfile $DOCKERFILE_PATH --destination $IMAGE_TAG $KANIKO_ARGS
   # Run this job in a branch/tag where a Containerfile/Dockerfile exists
   rules:
     - exists:
