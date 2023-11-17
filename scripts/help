@@ -2,6 +2,7 @@
 echo "Help for PiCloud"
 echo "Usage: ./pic [command]"
 echo "Commands:"
+echo "  recommended [identify-file]"
 echo "  update"
 echo "  expose [protocol] [hostname] [port]"
 echo "  install"
