@@ -64,4 +64,5 @@ echo "  storageClassName: longhorn" >> rook-ceph-pvc-claim-test.yaml
 # kubectl delete pvc pic-test-pvc
 # kubectl apply -f ./tests/csi-s3.yaml
 kubectl apply -f rook-ceph-pvc-claim-test.yaml
+rm rook-ceph-pvc-claim-test.yaml
 exit 0

@@ -64,7 +64,7 @@ while true; do
 done
 
 # 
-echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .
+echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .;rm busybox.Dockerfile
 while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
     echo "Retrying to push to harbor"
     sleep 2

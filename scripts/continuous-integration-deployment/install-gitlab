@@ -145,10 +145,12 @@ time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log certificates
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log configure
 time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations
+rm gitlab-migrations-1.log
 # 
 # time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log certificates
 # time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log configure
 time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log dependencies
+rm gitlab-webservice-default-dependencies.log
 # time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log gitlab-workhorse &
 time ./pic logs deployment/gitlab-sidekiq-all-in-1-v2   gitlab-ns gitlab-webservice-default-dependencies.log dependencies
 # ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
