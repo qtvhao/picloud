@@ -54,7 +54,6 @@ if [ "null" == "$TOKEN_STRING" ]; then
     exit 1
 fi
 echo "TOKEN_STRING: $TOKEN_STRING"
-helm repo add gitlab https://charts.gitlab.io && helm repo update || echo ""
 helm uninstall gitlab-agent-$PROJECT_NAME -n gitlab-agent-gitlab-agent || echo ""
 helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
     --namespace gitlab-agent-gitlab-agent \

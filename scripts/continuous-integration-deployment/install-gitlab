@@ -20,7 +20,7 @@ PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Setting password to $PASSWORD"
 
 helm repo add gitlab https://charts.gitlab.io/ || echo ""
-time helm repo update
+
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 helm uninstall gitlab --namespace gitlab-ns || true
 NUM_SECRET=$(kubectl get secrets --namespace gitlab-ns -o name | wc -l)
@@ -94,7 +94,7 @@ helm list -n gitlab-agent-gitlab-agent -o json | jq -r '.[].name' | grep gitlab 
 kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete pod -n gitlab-ns || true
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns 8181 "502"
-time helm upgrade --install gitlab gitlab/gitlab \
+helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\

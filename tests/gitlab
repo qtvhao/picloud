@@ -11,7 +11,7 @@ set -e -o pipefail
 #     sleep 2
 # done
 
-echo; ./pic redis | tee $LOGS_DIR/redis.log
+# echo; ./pic redis | tee $LOGS_DIR/redis.log
 # time ./pic pull-image &
 # this will reduce the time to install gitlab from 3m28 to 2m41
 echo;time ./pic install-gitlab ../id_rsa | tee $LOGS_DIR/gitlab.log
