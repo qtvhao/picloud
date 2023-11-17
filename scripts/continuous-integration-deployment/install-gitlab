@@ -18,11 +18,28 @@ stat "$PIC_DIR"/gitlab.json || \
 
 PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Setting password to $PASSWORD"
-
-helm repo add gitlab https://charts.gitlab.io/ || echo ""
+# helm repo add gitlab https://charts.gitlab.io/ || echo ""
 
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 helm uninstall gitlab --namespace gitlab-ns || true
+
+kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
+    --namespace gitlab-ns \
+    --set certmanager-issuer.email="$EMAIL" \
+    --set global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN"
+
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181 "404"
+./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
+
+echo "Folk and push to gitlab successfully"
+while ! ./pic succeed-pipeline root%2Fpicloud main; do
+    echo "Waiting for gitlab runner to be ready"
+    sleep 2
+done
+echo "Gitlab runner is ready"
+exit 0
+
 NUM_SECRET=$(kubectl get secrets --namespace gitlab-ns -o name | wc -l)
 if [ "$NUM_SECRET" -gt 0 ]; then
     kubectl get secrets --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
@@ -89,11 +106,10 @@ echo "              Insecure = true"                                            
 echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
 echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
 
-kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+
 helm list -n gitlab-agent-gitlab-agent -o json | jq -r '.[].name' | grep gitlab | xargs helm uninstall -n gitlab-agent-gitlab-agent || true
 kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete pod -n gitlab-ns || true
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns 8181 "502"
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
@@ -153,8 +169,6 @@ time ./pic logs deployment/gitlab-sidekiq-all-in-1-v2   gitlab-ns gitlab-webserv
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-webservice-default.gitlab-ns     22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http    gitlab-webservice-default.gitlab-ns     8181
 
-./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
-echo "Folk and push to gitlab successfully"
 # kubectl logs deployment/gitlab-webservice-default -n gitlab-ns -c gitlab-workhorse | tee gitlab-webservice-default-gitlab-workhorse.log
 # kubectl logs deployment/gitlab-sidekiq-all-in-1-v2 -n gitlab-ns | tee gitlab-sidekiq-all-in-1-v2.log
 
