@@ -87,6 +87,7 @@ while true; do
     sleep 1
 done
 kubectl get node -o wide
+
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >"$PIC_DIR/k3s.json"
 ./pic status
 

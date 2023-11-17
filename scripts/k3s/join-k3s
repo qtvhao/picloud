@@ -44,16 +44,14 @@ echo "K3S_URL: $K3S_URL"
 echo "K3S_TOKEN: $K3S_TOKEN"
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 # 
-# apt install open-iscsi
 ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no "$NODE_IP" "apt install nfs-common open-iscsi -y"
-# systemctl enable --now iscsid
+
 ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no "$NODE_IP" "systemctl enable --now iscsid"
-# modprobe iscsi_tcp
+
 ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no "$NODE_IP" "modprobe iscsi_tcp"
-# echo iscsi_tcp >/etc/modules-load.d/iscsi-tcp.conf
+
 ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no "$NODE_IP" "echo iscsi_tcp >/etc/modules-load.d/iscsi-tcp.conf"
 ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
     "$NODE_IP" "reboot"
 while true; do
     sleep 1
