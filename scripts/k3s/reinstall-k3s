@@ -38,7 +38,8 @@ for node in $NODES_IP; do
         continue
     fi
     echo "Uninstalling k3s from $node"
-    (ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $node "timeout 120 k3s-uninstall.sh" || true)
+    FIRST_IP_OF_NODE=$(echo $node | cut -d, -f1)
+    (ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $FIRST_IP_OF_NODE "timeout 120 k3s-uninstall.sh" || true) &
 done
 wait
 #
