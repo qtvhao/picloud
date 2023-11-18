@@ -99,8 +99,44 @@ kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs k
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
     --namespace gitlab-ns \
-    --set certmanager-issuer.email="$EMAIL" \
-    --set global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN"
+    --set certmanager-issuer.email="$EMAIL",\
+global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
+global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
+global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
+global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
+global.edition=ce,\
+global.kas.enabled=true,\
+gitlab.toolbox.enabled=true,\
+gitlab-runner.install=true,\
+runners.privileged=true,\
+nginx-ingress.enabled=false,\
+gitlab-runner.runners.privileged=true \
+    --set certmanager.install=false \
+    --set prometheus.server.enabled=false \
+    --set global.ingress.enabled=false \
+    --set gitlab.gitlab-exporter.enabled=false \
+    --set rbac.create=true \
+    --set global.minio.enabled=false \
+    --set global.registry.bucket=gitlab-registry \
+    --set global.appConfig.terraformState.enabled=true \
+    --set global.appConfig.object_store.enabled=true \
+    --set global.appConfig.object_store.proxy_download=true \
+    --set global.appConfig.object_store.connection.secret=gitlab-storage \
+    --set global.appConfig.object_store.connection.key=connection \
+    --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+    --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+    --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+    --set global.appConfig.packages.bucket=gitlab-packages-storage \
+    --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+    --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+    --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+    --set global.appConfig.backups.bucket=gitlab-backup-upload \
+    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+    --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
+    --set gitlab.toolbox.backups.objectStorage.config.key=connection \
+    --set registry.enabled=false \
+    --set registry.storage.secret=gitlab-registry-storage \
+    --set registry.storage.key=connection &
 
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181 "404"
 ./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
@@ -111,6 +147,7 @@ while ! ./pic succeed-pipeline root%2Fpicloud main; do
     sleep 2
 done
 echo "Gitlab runner is ready"
+./pic get-pipelines root%2Fpicloud main | jq ".[0].status"
 exit 0
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
     -f "$RUNNER_CACHE_YAML" \
