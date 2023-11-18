@@ -23,23 +23,6 @@ echo "Setting password to $PASSWORD"
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 helm uninstall gitlab --namespace gitlab-ns || true
 
-kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
-helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
-    --namespace gitlab-ns \
-    --set certmanager-issuer.email="$EMAIL" \
-    --set global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN"
-
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181 "404"
-./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
-
-echo "Folk and push to gitlab successfully"
-while ! ./pic succeed-pipeline root%2Fpicloud main; do
-    echo "Waiting for gitlab runner to be ready"
-    sleep 2
-done
-echo "Gitlab runner is ready"
-exit 0
-
 NUM_SECRET=$(kubectl get secrets --namespace gitlab-ns -o name | wc -l)
 if [ "$NUM_SECRET" -gt 0 ]; then
     kubectl get secrets --namespace gitlab-ns -o name | xargs kubectl delete --namespace gitlab-ns || true
@@ -69,6 +52,7 @@ echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $
 echo "endpoint: http://tenant-picloud-hl.tenant-ns:9000"     >> $RAILS_MINIO_YAML
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
 kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
+# 
 
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
 echo "s3:"                                                                          >  $REGISTRY_MINIO_YAML
@@ -105,11 +89,29 @@ echo "              BucketName = \"gitlab-cache\""                              
 echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
 echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
 echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
+# 
 
 
 helm list -n gitlab-agent-gitlab-agent -o json | jq -r '.[].name' | grep gitlab | xargs helm uninstall -n gitlab-agent-gitlab-agent || true
 kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete pod -n gitlab-ns || true
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
+
+kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
+    --namespace gitlab-ns \
+    --set certmanager-issuer.email="$EMAIL" \
+    --set global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN"
+
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181 "404"
+./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
+
+echo "Folk and push to gitlab successfully"
+while ! ./pic succeed-pipeline root%2Fpicloud main; do
+    echo "Waiting for gitlab runner to be ready"
+    sleep 2
+done
+echo "Gitlab runner is ready"
+exit 0
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
