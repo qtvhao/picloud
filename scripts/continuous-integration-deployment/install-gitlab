@@ -97,7 +97,7 @@ kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs k
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
-helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.5.0.tgz \
+helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.6.0.tgz \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
@@ -200,4 +200,10 @@ while ! ./pic succeed-pipeline root%2Fpicloud main; do
         break;
     fi
     sleep 2
+done
+
+rm gitlab-images.txt || true
+IMAGES=$(kubectl get nodes -o json | jq ".items[0].status.images" | jq -r ".[] | .names[1]")
+for IMAGE in $IMAGES; do
+    echo "$IMAGE" >> ./gitlab-images.txt
 done
