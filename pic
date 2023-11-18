@@ -81,6 +81,9 @@ if [ "$arg1" == "wait" ]; then
     DEPLOYMENT=$3
     NAMESPACE=$4
     CONDITION=$5
+    while true; do #
+        kubectl get ns kube-system && break;
+    done
     while true; do
         kubectl wait --for=condition=$CONDITION $RESOURCE_TYPE/$DEPLOYMENT -n $NAMESPACE --timeout 10s && break || sleep 5
     done

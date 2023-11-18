@@ -201,9 +201,3 @@ while ! ./pic succeed-pipeline root%2Fpicloud main; do
     fi
     sleep 2
 done
-
-rm gitlab-images.txt || true
-IMAGES=$(kubectl get nodes -o json | jq ".items[0].status.images" | jq -r ".[] | .names[1]")
-for IMAGE in $IMAGES; do
-    echo "$IMAGE" >> ./gitlab-images.txt
-done
