@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "- Images:"
+NODES=$(kubectl get nodes -o json | jq -r ".items")
+STATUS_IMAGES=$(echo "$NODES" | jq -r ".[].status.images" | jq -r ".[]")
+NAMES=$(echo $STATUS_IMAGES | jq -r ".names[1]" | uniq)
+echo "$NAMES" | tee images.txt
+echo
+
+echo "- Registries:"
+REGISTRIES=$(echo "$NAMES" | sed 's/\/.*//g' | sort | uniq)
+echo "$REGISTRIES" | tee registries.txt
