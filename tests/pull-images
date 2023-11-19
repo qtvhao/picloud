@@ -17,5 +17,7 @@ vnstat -d enp1s0 > ./vnstat.log
 vnstat -d $BRIDGE_ID >> ./vnstat.log
 echo "==="
 time ./pic pull-images ip-192-168-1-192
+
+sleep 60
 vnstat -d enp1s0 >> ./vnstat.log
 vnstat -d $BRIDGE_ID >> ./vnstat.log

@@ -145,21 +145,11 @@ time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations
 rm gitlab-migrations-1.log
 # 
-# time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log certificates
-# time ./pic logs deployment/gitlab-webservice-default gitlab-ns gitlab-webservice-default-configure.log configure
 time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log dependencies
 rm gitlab-webservice-default-dependencies.log
-# time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log gitlab-workhorse &
 time ./pic logs deployment/gitlab-sidekiq-all-in-1-v2   gitlab-ns gitlab-webservice-default-dependencies.log dependencies
-# ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose tcp     gitlab-webservice-default.gitlab-ns     22
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http    gitlab-webservice-default.gitlab-ns     8181
-
-# kubectl logs deployment/gitlab-webservice-default -n gitlab-ns -c gitlab-workhorse | tee gitlab-webservice-default-gitlab-workhorse.log
-# kubectl logs deployment/gitlab-sidekiq-all-in-1-v2 -n gitlab-ns | tee gitlab-sidekiq-all-in-1-v2.log
-
-# ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
-# 
 
 TUNNEL_NAMESPACE=default ./pic expose   tcp         gitlab-kas.gitlab-ns            8150 "503"
 TUNNEL_NAMESPACE=default ./pic expose   http        gitlab-kas.gitlab-ns            8154 "503" "" "true"
@@ -176,7 +166,6 @@ PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-p
 echo "GitLab root password: $PASSWORD"
 # 
 
-# GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 if [ -z "$IDENTIFY_FILE" ]; then
     echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic recommended IDENTIFY_FILE"
@@ -188,16 +177,3 @@ if [ -f $IDENTIFY_FILE ]; then
 fi
 ./pic add-ssh-key-gitlab "$(cat ~/.ssh/id_rsa.pub)"
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
-
-./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
-echo "Folk and push to gitlab successfully"
-while ! ./pic succeed-pipeline root%2Fpicloud main; do
-    echo "Waiting for gitlab runner to be ready"
-    STATUS=$(./pic get-pipelines root%2Fpicloud main | jq -r ".[0].status")
-    EXPECTED_STATUS="running"
-    if [ "$STATUS" == "$EXPECTED_STATUS" ]; then
-        echo "Pipeline is running"
-        break;
-    fi
-    sleep 2
-done
