@@ -225,6 +225,11 @@ if [ "$arg1" == "list-nodename" ]; then
     "list-nodename" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     exit 0
 fi
+if [ "alias-kubectl" == "$arg1" ]; then
+    set -e
+    cat ~/.bashrc | grep "alias kubectl=\"k3s kubectl\"" || echo "alias kubectl=\"k3s kubectl\"" >> ~/.bashrc
+    exit 0
+fi
 if [ "$arg1" == "wait-nodename" ]; then
     set -e
     CHECK_AT=$(date +%s)

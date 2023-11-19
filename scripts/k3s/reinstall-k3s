@@ -11,6 +11,7 @@ if [ ! -f $IDENTIFY_FILE ]; then
     echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload $IDENTIFY_FILE in your github account"
     exit 1
 fi
+./pic alias-kubectl
 #
 PIC_DIR="$HOME/.pic"
 
@@ -43,15 +44,15 @@ for node in $NODES_IP; do
 done
 wait
 #
-set -e -o pipefail
+set -xeo pipefail
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
 echo "K8S_MASTER_NODE_IP: $K8S_MASTER_NODE_IP"
 echo "Installing k3s"
 curl -fsSL https://get.docker.com -o install-docker.sh
 docker ps >/dev/null 2>&1 || sh install-docker.sh
 rm install-docker.sh || true
-kubectl >/dev/null 2>&1 ||
-    (curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" >/usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl)
+# kubectl >/dev/null 2>&1 ||
+    # (curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" >/usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl)
 helm version >/dev/null 2>&1 ||
     (curl https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz -o helm-v3.13.1-linux-amd64.tar.gz && tar -xvf helm-v3.13.1-linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 linux-amd64/helm)
 rm helm-v3.13.1-linux-amd64.tar.gz || true
@@ -78,14 +79,14 @@ while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
     sleep 1
 done
 K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/token)
-# cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
-# update-ca-certificates
+
 mkdir -p ~/.kube
 cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 while true; do
     kubectl label node $K3S_NODE_NAME added-numberth=add-0 && break || echo "Retrying to label node"
     sleep 1
 done
+
 kubectl get node -o wide
 
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >"$PIC_DIR/k3s.json"
