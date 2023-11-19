@@ -5,6 +5,17 @@ LOGS_DIR="$PIC_DIR/logs/"
 set -e -o pipefail
 ./pic reinstall-k3s ../id_rsa
 
-vnstat
+vnstat --remove enp1s0 --force
+vnstat --add -i enp1s0
+BRIDGE_ID="br-"$(docker network inspect iptastic | jq -r '.[0].Id' | cut -c1-12)
+echo "BRIDGE_ID: $BRIDGE_ID"
+vnstat --remove $BRIDGE_ID --force
+vnstat --add -i $BRIDGE_ID
+systemctl restart vnstat
+
+vnstat -d enp1s0 > ./vnstat.log
+vnstat -d $BRIDGE_ID >> ./vnstat.log
+echo "==="
 time ./pic pull-images ip-192-168-1-192
-vnstat
+vnstat -d enp1s0 >> ./vnstat.log
+vnstat -d $BRIDGE_ID >> ./vnstat.log
