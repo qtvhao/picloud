@@ -6,19 +6,10 @@ LOGS_DIR="$PIC_DIR/logs/"
 set -e -o pipefail
 ./pic reinstall-k3s ../id_rsa
 # apt install vnstat -y
-# THIS_MACHINE="ip-"$(hostname -I | awk '{print $1}' | sed 's/\./-/g');echo $THIS_MACHINE
-# while ! ./pic pull-image busybox $THIS_MACHINE; do
-#     sleep 2
-# done
+THIS_MACHINE="ip-"$(hostname -I | awk '{print $1}' | sed 's/\./-/g');echo $THIS_MACHINE
 
-# echo; ./pic redis | tee $LOGS_DIR/redis.log
-# time ./pic pull-image &
+time ./pic pull-images "$THIS_MACHINE"
 # this will reduce the time to install gitlab from 3m28 to 2m41
-PIC_DIR="$HOME/.pic"
-LOGS_DIR="$PIC_DIR/logs/"
-# time (./pic install-harbor | tee $LOGS_DIR/harbor.log)
 echo;time ./pic install-gitlab ../id_rsa | tee $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/gitlab.log
 wait
-# ./pic wait pod          redis-master-0                  default Ready
-# ./pic wait pod          redis-replicas-0                  default Ready

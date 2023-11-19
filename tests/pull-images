@@ -5,4 +5,6 @@ LOGS_DIR="$PIC_DIR/logs/"
 set -e -o pipefail
 ./pic reinstall-k3s ../id_rsa
 
+vnstat
 time ./pic pull-images ip-192-168-1-192
+vnstat
