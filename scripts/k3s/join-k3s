@@ -20,9 +20,6 @@ if [ ! -f $IDENTIFY_FILE ]; then
     exit 1
 fi
 set -xeo pipefail
-ssh-keygen -R "$NODE_IP"
-ssh-keyscan "$NODE_IP" >> /root/.ssh/known_hosts
-echo "" >> /root/.ssh/known_hosts
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
