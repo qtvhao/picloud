@@ -1,0 +1,78 @@
+#!/bin/bash
+
+set -eo pipefail
+args=("$@")
+ORG_NAME=${args[0]}
+PAT=${args[1]}
+if [ -z "$PAT" ]; then
+    echo "PAT is required"
+    exit 1
+fi
+IDENTITY_FILE=${args[2]}
+if [ -z "$ORG_NAME" ]; then
+    echo "ORG_NAME is required"
+    exit 1
+fi
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is required"
+    exit 1
+fi
+if [ ! -f "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE does not exist"
+    exit 1
+fi
+API_URL="https://api.github.com/orgs/$ORG_NAME/repos"
+# curl -X GET -u "$ORG_NAME:$PAT" "$API_URL" | jq -r '.[]'
+full_names=$(curl -s -X GET -u "$ORG_NAME:$PAT" "$API_URL" | jq -r '.[] | .full_name')
+# echo "full_names: $full_names"
+MSG=$(ssh -T -i "$IDENTITY_FILE" git@github.com 2>&1 || true)
+if [[ "$MSG" != *"successfully authenticated"* ]]; then
+    echo "ERROR: $MSG"
+    exit 1
+fi
+echo "MSG: $MSG"
+# 
+GITHUB_AUTH="git:$PAT"
+for REPO in  $full_names;
+do
+    REPO_NAME=$(basename $REPO)
+    if [ -d "../$REPO_NAME" ]; then
+        echo "REPO_NAME: $REPO_NAME"
+    fi
+    PROJECT_NAME=$(echo $REPO_NAME)
+    # if PROJECT_NAME is starts with dot, skip
+    if [[ "$PROJECT_NAME" == .* ]]; then
+        echo "Skip $PROJECT_NAME"
+        continue
+    fi
+    echo "PROJECT_NAME: $PROJECT_NAME"
+    while ! ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" ".."; do
+        echo "Retrying..."
+        sleep 60
+    done
+    break;
+    ./pic create-remote-mirrors https://$GITHUB_AUTH@github.com/$REPO.git
+done
+# 
+while true; do
+    sleep 15
+    echo "Waiting for pic to be ready"
+    SHOULD_CONTINUE=false
+    for REPO in  $full_names;
+    do
+        REPO_NAME=$(basename $REPO)
+        ./pic succeed-pipeline root%2F$REPO_NAME develop || SHOULD_CONTINUE=true
+        if [ "$SHOULD_CONTINUE" = true ]; then
+            echo
+            echo "$REPO is not ready"
+            break
+        fi
+        echo "Processing $REPO"
+    done
+    if [ "$SHOULD_CONTINUE" = true ]; then
+        continue
+    fi
+    break;
+done
+
+echo "Done"
