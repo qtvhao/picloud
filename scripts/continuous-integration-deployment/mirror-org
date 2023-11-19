@@ -61,6 +61,11 @@ while true; do
     for REPO in  $full_names;
     do
         REPO_NAME=$(basename $REPO)
+
+        if [[ "$REPO_NAME" == .* ]]; then
+            echo "Skip $REPO_NAME"
+            continue
+        fi
         ./pic succeed-pipeline root%2F$REPO_NAME develop || SHOULD_CONTINUE=true
         if [ "$SHOULD_CONTINUE" = true ]; then
             echo
