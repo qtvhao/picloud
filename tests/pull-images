@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PIC_DIR="$HOME/.pic"
+LOGS_DIR="$PIC_DIR/logs/"
+set -e -o pipefail
+./pic reinstall-k3s ../id_rsa
+
+time ./pic pull-images ip-192-168-1-192

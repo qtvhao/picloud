@@ -6,7 +6,13 @@ NODE_NAME=${args[0]}
 set -e -o pipefail
 echo "Usage: ./pull-image.sh <image-name>"
 # gitlab-images.txt
-GITLAB_IMAGES_TXT="./gitlab-images.txt"
+GITLAB_IMAGES_TXT="./images.txt"
+# Error from server (Forbidden): is forbidden: error looking up service account default/default: serviceaccount "default" not found
+LAST_LINE=$(cat $GITLAB_IMAGES_TXT | tail -n 1)
+while true; do
+    sleep 10
+    ./pic pull-image $LAST_LINE $NODE_NAME && break
+done
 while read -r line; do
     ./pic pull-image $line $NODE_NAME &
 done < "$GITLAB_IMAGES_TXT"
