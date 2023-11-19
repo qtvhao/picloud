@@ -50,7 +50,6 @@ do
         echo "Retrying..."
         sleep 60
     done
-    break;
     ./pic create-remote-mirrors https://$GITHUB_AUTH@github.com/$REPO.git
 done
 # 
