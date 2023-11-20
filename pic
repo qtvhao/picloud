@@ -90,16 +90,17 @@ if [ "$arg1" == "wait" ]; then
     exit 0
 fi
 if [ "$arg1" == "self-update" ]; then
-    # curl https://api.github.com/users/qtvhao/events/public | jq
-    EVENTS=$(curl https://api.github.com/users/qtvhao/events/public | jq -r )
-    EVENTS_TYPE_PUSH_EVENT=$(echo $EVENTS | jq -r '[.[] | select(.type == "PushEvent")]')
+    REPO="qtvhao/picloud"
+    REPO_EVENTS=$(curl "https://api.github.com/repos/$REPO/events")
+    EVENTS_TYPE_PUSH_EVENT=$(echo $REPO_EVENTS | jq -r '[.[] | select(.type == "PushEvent")]')
     EVENTS_TYPE_PUSH_EVENT_FIRST=$(echo $EVENTS_TYPE_PUSH_EVENT | jq -r '.[0]')
     PAYLOAD=$(echo $EVENTS_TYPE_PUSH_EVENT_FIRST | jq -r '.payload')
     # echo "PAYLOAD: $PAYLOAD"
     HEAD=$(echo $PAYLOAD | jq -r '.head')
     echo "HEAD: $HEAD"
     echo "$HEAD" > "$PIC_DIR/pic-version"
-    curl https://raw.githubusercontent.com/qtvhao/picloud/$HEAD/pic -o pic && chmod +x pic
+    URL="https://raw.githubusercontent.com/qtvhao/picloud/$HEAD/pic"
+    curl "$URL" -o pic && chmod +x pic
     exit 0
 fi
 if [ "$arg1" == "redis" ]; then
