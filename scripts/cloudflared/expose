@@ -240,7 +240,7 @@ while true; do
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
         break;
     fi
-    status_code=$(curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/ || true)
+    status_code=$(timeout 5 curl -s -o /dev/null -w "%{http_code}" https://$FQDN_RECORD/ || true)
     echo "Status code: $status_code"
     if [ "$status_code" == "200" ]; then
         break
