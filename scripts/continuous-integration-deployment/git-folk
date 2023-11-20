@@ -91,7 +91,7 @@ while true; do
     sleep 5
 done
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
-CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME"
+CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY           "$CI_REGISTRY"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_IMAGE     "$CI_REGISTRY_IMAGE"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_PASSWORD  "$PASSWORD"
