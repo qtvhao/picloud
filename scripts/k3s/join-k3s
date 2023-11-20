@@ -52,7 +52,7 @@ ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no "$NODE_IP" "echo iscsi_tcp >/
 ssh -i $IDENTIFY_FILE \
     "$NODE_IP" "reboot"
 while true; do
-    sleep 1
+    sleep 10
     ssh -i $IDENTIFY_FILE \
         -o PasswordAuthentication=no \
         "$NODE_IP" "hostname" && break || echo "Retrying to connect to $NODE_IP"
