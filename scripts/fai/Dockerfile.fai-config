@@ -85,6 +85,30 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libsepol2:am
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libssh2-1:amd64 libssl3:amd64 libstdc++6:amd64 libsystemd0:amd64 libtasn1-6:amd64 libtinfo6:amd64 libtirpc-common libtirpc3:amd64 libudev1:amd64 libunistring2:amd64 libuuid1:amd64 libwrap0:amd64 libxml2:amd64 libxtables12:amd64 libxxhash0:amd64 
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libzstd1:amd64 login logsave lsb-release mawk media-types mount mtools ncurses-base ncurses-bin netbase nfs-common nfs-kernel-server openbsd-inetd openssh-client openssl passwd perl perl-base perl-modules-5.36 pinentry-curses procps publicsuffix python3 
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y python3-minimal python3.11 python3.11-minimal readline-common reprepro rpcbind runit-helper sed sensible-utils squashfs-tools sysvinit-utils tar tcpd tftpd-hpa tzdata ucf update-inetd usr-is-merged util-linux util-linux-extra wait-for-it wget xorriso xz-utils zlib1g:amd64 zstd
+# set DEBIAN_FRONTEND
+ARG DEBIAN_FRONTEND=noninteractive
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y debconf-utils
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y dracut-core
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y fai-client fai-setup-storage
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y file iputils-arping
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y syslinux-efi zstd
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y console-data
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y cryptsetup-bin dmeventd gettext-base gpgconf grub-common \
+  grub-pc-bin grub2-common initscripts insserv keyutils libaio1 libassuan0 \
+  libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3 libdevmapper-event1.02.1 \
+  libefiboot1 libefivar1 libevent-core-2.1-7 libexpat1 libfido2-1 libfreetype6 \
+  libfuse2 libgee-0.8-2 libglib2.0-0 libhd21 libicu72 libinih1 libldap-2.5-0 \
+  liblinear4 liblua5.3-0 liblvm2cmd2.03 libncurses6 libnfsidmap1 libnghttp2-14
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libnsl2 libnuma1 libnvme1 libpcap0.8 libpci3 libpcre3 libpng16-16 libpsl5 \
+  libpython3-stdlib libpython3.11-minimal libpython3.11-stdlib librtmp1 \
+  libsasl2-2 libsasl2-modules-db libsqlite3-0 libssh2-1 libudns0 liburcu8 \
+  libusb-1.0-0 libwrap0 libx86emu3 linux-base linux-image-6.1.0-13-amd64 \
+  lua-lpeg media-types nmap-common ntpsec-ntpdig openssh-client openssh-server \
+  openssh-sftp-server openssl pci.ids python3 python3-minimal python3-ntp \
+  python3.11 python3.11-minimal runit-helper startpar sysv-rc ucf uuid-runtime
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
 COPY fai/basefiles /srv/fai/config/basefiles
