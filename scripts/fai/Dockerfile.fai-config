@@ -93,7 +93,9 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y            
     file-roller  flac           fluidsynth  fonts-cantarell  fonts-noto-color-emoji           \
                      gnome-disk-utility     gnome-shell                             \
     gcab                               gnome-font-viewer      gnome-shell-extensions  gobject-introspection     \
-    gcc-12                         gnome-icon-theme       gnome-software                          \
+    gcc-12                         gnome-icon-theme
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    gnome-software                          \
                            gnome-initial-setup    gnome-sound-recorder    gpm                         \
     gcr              gnome-2048               gnome-keyring          gnome-sudoku                              \
                           gnome-klotski          gnome-sushi                            \
@@ -108,8 +110,9 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y            
              gnome-color-manager      gnome-remote-desktop   gnome-user-share                            gvfs \
     git              gnome-contacts           gnome-robots           gnome-video-effects                  gzip \
     gjs              gnome-control-center     gnome-session          gnome-weather          \
-    glib-networking            gnome-settings-daemon  gnupg2                 \
-    hdparm  hicolor-icon-theme  hitori  hoichess  hostname  htop  hunspell  hwinfo \
+    glib-networking            gnome-settings-daemon  gnupg2
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    hdparm  hicolor-icon-theme  hitori  hoichess  hostname  htop  hunspell  hwinfo \
     iagno  ifupdown          im-config    init-system-helpers        ipp-usb    iso-codes \
     ibus   iio-sensor-proxy  imagemagick                iproute2  ispell \
                          insserv                  iotop               iptables       iw \
@@ -119,10 +122,9 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y            
                    lightsoff  lm-sensors         lp-solve             lsof      lynx \
     laptop-detect                linuxlogo                                          lua-lpeg  lz4 \
       less      lirc                logrotate          lsb-release-minimal  lua5.3   \
-             libauthen-sasl-perl                 \
-                   \
-   \
-                  libcairo-perl  libclone-perl \
+             libauthen-sasl-perl
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    libcairo-perl  libclone-perl \
     libcairo-gobject-perl    libcap2             \
                    \
     libdata-dump-perl     \
@@ -146,7 +148,9 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y liblc3     
     libndp     libnet-http-perl  libnet-ssleay-perl    libnfnetlink            libnftnl  libnl3   libnotify  libnumber-compare-perl  libnvme\
     liboauth  libodfgen  libogg  libonig  libopenmpt  liborcus  libosinfo\
     libpagemaker  libparse-recdescent-perl  libpciaccess  libperl4-corelibs-perl  libphonenumber  libplacebo  libpng1.6  libproxy  libpst \
-    libpaper      libpcap                   libpeas       libpgm                  libpipeline     libplist    libportal  libpsl    libpwquality\
+    libpaper      libpcap
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    libpeas       libpgm                  libpipeline     libplist    libportal  libpsl    libpwquality\
     libqmi  libqrtr-glib  libqxp\
     librabbitmq  libraw  libraw1394  libregexp-ipv6-perl  libreoffice  libreoffice-dictionaries  librest  librevenge  librist  librsvg\
     libsamplerate  libseccomp  libselinux   libsepol  libshumate  libsigc++-2.0  libsmbios   libsodium   libsoup3  libspectre  libssh   libstaroffice \
@@ -157,7 +161,9 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y liblc3     
     libva  libvdpau  libvdpau-va-gl  libvidstab  libvisio  libvisual  libvorbis\
     libwacom  libwebp  libwmf  libwnck3  libwpd  libwpe  libwpg  libwps  libwww-perl  libwww-robotrules-perl\
     libx11-protocol-perl  libxcomposite  libxdmcp   libxinerama         libxml-twig-perl         libxrandr     libxss   libxxf86dga \
-    libx86emu             libxcrypt      libxext    libxkbcommon        libxml-xpathengine-perl  libxrender    libxt    libxxf86vm \
+    libx86emu             libxcrypt
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    libxext    libxkbcommon        libxml-xpathengine-perl  libxrender    libxt    libxxf86vm \
     libxau                libxcursor     libxfixes  libxkbfile          libxml2                  libxres       libxtst \
     libxaw                libxcvt        libxfont   libxklavier         libxmlb                  libxshmfence  libxv \
     libxcb                libxdamage     libxi      libxml-parser-perl  libxmu                   libxslt       libxvmc\
@@ -165,7 +171,9 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y liblc3     
     libzmf  libzstd\
     mailcap     man-db      mawk     media-player-info  mesa         miniupnpc                       mod-dnssd     mozjs102  mpfr4   multipath-tools \
     mako        manpages    mbedtls  media-types        meta-gnome3  mjpegtools                      modemmanager  mpclib3   mpg123  mutter \
-    malcontent  markupsafe  mdadm    memtest86+         mhash        mobile-broadband-provider-info  mokutil       mpeg2dec  mtdev   mythes\
+    malcontent  markupsafe  mdadm
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    memtest86+         mhash        mobile-broadband-provider-info  mokutil       mpeg2dec  mtdev   mythes\
     nano      nbd      net-snmp  netselect        network-manager-applet  nftables  nmon                node-prismjs  nspr      ntfs-3g  nvme-cli \
     nas       ncurses  netbase   nettle           newt                    nghttp2   node-clipboard      norm          nss       ntpsec \
     nautilus  neon27   netcat    network-manager  nfs-utils               nmap      node-normalize.css  npth          nss-mdns  numactl\
@@ -182,17 +190,23 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y pam        
     pcaudiolib  pigz                   poppler-data  psmisc                 python-apt    python-idna\
     qpdf  qqwing  qrencode  quadrapassel\
     raptor2  rdate     realmd   reiserfsprogs  resolvconf  rpcbind  rtkit     rubberband  rygel \
-    rasqal   readline  redland  requests       rhythmbox   rsync    rtmpdump  rust-rav1e\
+    rasqal   readline  redland
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    requests       rhythmbox   rsync    rtmpdump  rust-rav1e\
     sane-airscan    setuptools                 shim-signed    snappy                   soundtouch         srt                   switcheroo-control \
     sane-backends   sg3-utils                  shine          sndio                    spandsp            ssl-cert              synaptic \
     sbc             sgml-base                  shotwell       snowball                 speech-dispatcher  startpar              syslinux \
     scowl           sgml-data                  simple-scan    software-properties      speex              startup-notification  system-config-printer \
-    seahorse        shadow                     six            sonic                    sphinxbase         sudo                  systemd \
+    seahorse        shadow
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    six            sonic                    sphinxbase         sudo                  systemd \
     sed             shared-mime-info           slang2         sord                     sqlite3            suitesparse           sysvinit \
     sensible-utils  shim                       smartmontools  sound-icons              squashfs-tools     svt-av1 \
     serd            shim-helpers-amd64-signed  snapd-glib     sound-theme-freedesktop  sratom             swell-foop\
     taglib  tar           tdb          thin-provisioning-tools  timgm6mb-soundfont  tpm-udev  tracker-miners     twolame \
-    tali    tasksel       tevent       tiff                     totem               tpm2-tss  transmission       tzdata \
+    tali    tasksel       tevent
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    tiff                     totem               tpm2-tss  transmission       tzdata \
     talloc  tcp-wrappers  texlive-bin  time                     totem-pl-parser     tracker   ttf-ancient-fonts\
     ucf       udisks2  unattended-upgrades  unzip         upower          usb-modeswitch-data  usbmuxd   usrmerge \
     uchardet  udns     unbound              update-inetd  usb-modeswitch  usb.ids              usbutils  util-linux
@@ -202,10 +216,14 @@ RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y v4l-utils  
     x11-apps           xbitmaps                  xdg-desktop-portal-gtk  xfonts-scalable   xmlsec1                      xserver-xorg-video-nouveau \
     x11-session-utils  xcb-util                  xdg-user-dirs           xfonts-utils      xorg                         xserver-xorg-video-qxl \
     x11-utils          xcb-util-image            xdg-user-dirs-gtk       xfsdump           xorg-docs                    xserver-xorg-video-vesa \
-    x11-xkb-utils      xcb-util-keysyms          xdg-utils               xfsprogs          xrdp                         xserver-xorg-video-vmware \
+    x11-xkb-utils      xcb-util-keysyms
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    xdg-utils               xfsprogs          xrdp                         xserver-xorg-video-vmware \
     x11-xserver-utils  xcb-util-renderutil       xf86-input-wacom        xft               xserver-xorg-input-libinput  xterm \
     x264               xcb-util-wm               xfonts-100dpi           xinit             xserver-xorg-video-amdgpu    xvidcore \
-    x265               xdg-dbus-proxy            xfonts-75dpi            xkbset            xserver-xorg-video-ati       xwayland \
+    x265               xdg-dbus-proxy
+
+RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    xfonts-75dpi            xkbset            xserver-xorg-video-ati       xwayland \
     xapian-core        xdg-desktop-portal        xfonts-base             xkeyboard-config  xserver-xorg-video-fbdev     xxhash \
     xauth              xdg-desktop-portal-gnome  xfonts-encodings        xml-core          xserver-xorg-video-intel     xz-utils\
     yajl  yelp  yelp-xsl
