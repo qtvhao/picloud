@@ -12,6 +12,7 @@ resolvconf
 open-iscsi
 nfs-common
 vnstat
+wakeonlan
 
 PACKAGES install
 task-english 
