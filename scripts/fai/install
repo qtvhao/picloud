@@ -113,6 +113,7 @@ docker tag $FAI_CD_BASE fai-cd-base
 # 
 echo "Copying ssh key to fai container"
 docker run --net host --name fai \
+    -v /var/lib/registry/:/srv/fai/nfsroot/var/lib/registry/ \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     -v ./dvd/:/dvd/ \
     -v /var/www/html/:/var/www/html/ \
@@ -128,9 +129,6 @@ echo "$GITHUB_KEYS" > /srv/fai/config/files/root-ssh-key
 docker cp /srv/fai/config/files/root-ssh-key fai:/srv/fai/config/files/root-ssh-key
 docker cp ~/.ssh/id_rsa.pub fai:/srv/fai/nfsroot/root/.ssh/authorized_keys
 echo "Fai-setup starting"
-
-# cat fai-setup.log | tail -n50
-# rm fai-setup.log
 
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
@@ -151,7 +149,6 @@ rm  fai-cd.log || true
 
 echo
 echo
-# docker cp fai:/$HOSTNAME-fai-cd.iso $HOSTNAME-fai-cd.iso
 echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
