@@ -112,12 +112,6 @@ echo "Fai-mirror committed: $FAI_CD_BASE"
 docker tag $FAI_CD_BASE fai-cd-base
 # 
 echo "Copying ssh key to fai container"
-# fai/pxelinux.cfg/01-2c-59-e5-04-c4-51
-if [ -f "./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER" ]; then
-    mkdir -p ./fai/pxelinux.cfg/ || true
-    URL="https://raw.githubusercontent.com/qtvhao/picloud/main/fai/pxelinux.cfg/01-2c-59-e5-04-c4-51"
-    curl $URL -o ./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER
-fi
 docker run --net host --name fai \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     -v ./dvd/:/dvd/ \
