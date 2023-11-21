@@ -11,6 +11,7 @@ if [ ! -f $IDENTIFY_FILE ]; then
     echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload $IDENTIFY_FILE in your github account"
     exit 1
 fi
+chmod 0400 $IDENTIFY_FILE
 ./pic alias-kubectl
 #
 PIC_DIR="$HOME/.pic"
@@ -66,6 +67,8 @@ cp $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 # 
+ssh-keygen -R $NODE_IP || true
+ssh-keyscan -H $NODE_IP >> ~/.ssh/known_hosts
 ( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
 #
 echo "Installing k3s"
