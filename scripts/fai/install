@@ -30,8 +30,6 @@ rm ./dvd/$HOSTNAME-fai-cd.iso || true
 docker rm -f fai-config || true
 docker rm -f fai || true
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
-mkdir -p /var/cache/apt-cacher-ng
-chmod -R 0777 /var/cache/apt-cacher-ng
 docker rm -f apt-cacher-ng || true
 # warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
@@ -51,7 +49,6 @@ rm Dockerfile.fai-config
 
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai-config \
-    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d docker.io/$GITHUB_USERNAME/picloud:fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
@@ -79,7 +76,6 @@ sed -i "s/FAI_ROOTPW=.*/FAI_ROOTPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/fai-bookworm
 docker rm -f fai-setup
 docker run --name fai-setup \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
-    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 (docker exec -it fai-setup bash -c "rm -rf /srv/fai/nfsroot")
 FAI_SETUP_IMAGE_ID=$(docker image inspect fai-setup-base | jq -r ".[0].Id")
@@ -96,7 +92,6 @@ echo "Dockerfile.fai-setup built"
 rm Dockerfile.fai-setup
 docker run --name fai \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
-    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_CD_BASE_FULL="$FAI_MIRROR_IMAGE_ID-$HOSTNAME-$cl"
@@ -120,7 +115,6 @@ docker run --net host --name fai \
     -v ./fai/pxelinux.cfg/:/srv/tftp/fai/pxelinux.cfg/ \
     --cap-add=NET_ADMIN \
     -v ./dnsmasq.conf:/etc/dnsmasq.conf \
-    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)

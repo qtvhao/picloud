@@ -69,166 +69,22 @@ RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
 RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y dosfstools mtools wait-for-it curl dnsmasq
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y a52dec  accountsservice  adwaita-icon-theme  alsa-topology-conf  anacron  apg               argon2     at-spi2-core
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    acl              aisleriot           alsa-ucm-conf             apparmor    aspell         
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y  adduser                     alsa-utils          apache2  appstream  apt       aspell-en  attr         
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y baobab      base-passwd  bash-completion  binutils  bluez       bolt          brltty  bsd-mailx    bubblewrap  bzip2
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y base-files  bash         bc                 bogofilter  brasero  brotli  btrfs-progs  busybox
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y ca-certificates  cdparanoia        codec2             coreutils  cryptsetup     
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y            cdrdao                          console-common  cpio       cups
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y                                       console-data    cups-filters \
-    cdebconf         cheese      cmark            coinor-cbc  colord      console-setup   cron       cups-pk-helper \
-    dash     debian-archive-keyring  desktop-file-utils   diffutils             dnsmasq      dpkg \
-    dav1d  debianutils             dh-runit                     dmidecode      docbook-xml  \
-                               dialog               distro-info       dmraid         dosfstools   duktape \
-    dbus   debconf      desktop-base            dictionaries-common  distro-info-data  dns-root-data      dump \
-    e2fsprogs          efibootmgr  elfutils  emacsen-common  eog        evince     evolution-data-server  exfatprogs  exiv2 \
-    efivar      elogind   enchant-2       espeak-ng  evolution  exempi                 exim4       expat \
-            findutils      flashrom              fonts-dejavu            fonts-quicksand   fwupd \
-          flatpak     fontconfig       fonts-liberation2       fonts-urw-base35   fwupd-amd64-signed \
-    file         five-or-more   flite         fonts-noto              four-in-a-row     \
-    file-roller  flac           fluidsynth  fonts-cantarell  fonts-noto-color-emoji           \
-                     gnome-disk-utility     gnome-shell                             \
-    gcab                               gnome-font-viewer      gnome-shell-extensions  gobject-introspection     \
-    gcc-12                         gnome-icon-theme
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    gnome-software                          \
-                           gnome-initial-setup    gnome-sound-recorder    gpm                         \
-    gcr              gnome-2048               gnome-keyring          gnome-sudoku                              \
-                          gnome-klotski          gnome-sushi                            \
-    gdisk            gnome-backgrounds        gnome-logs             gnome-system-monitor    grep                      \
-                gnome-mahjongg         gnome-taquin                               \
-    gdm3             gnome-browser-connector  gnome-maps             gnome-terminal                     \
-    geoclue-2.0      gnome-calculator         gnome-menus            gnome-tetravex          groff                      guile-3.0 \
-       gnome-calendar           gnome-mines            gnome-text-editor       gsettings-desktop-schemas \
-    gettext          gnome-characters         gnome-music            gnome-themes-extra                             \
-             gnome-chess              gnome-nibbles          gnome-tweaks                                \
-    ghostscript      gnome-clocks             gnome-online-accounts  gnome-user-docs                           \
-             gnome-color-manager      gnome-remote-desktop   gnome-user-share                            gvfs \
-    git              gnome-contacts           gnome-robots           gnome-video-effects                  gzip \
-    gjs              gnome-control-center     gnome-session          gnome-weather          \
-    glib-networking            gnome-settings-daemon  gnupg2
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    hdparm  hicolor-icon-theme  hitori  hoichess  hostname  htop  hunspell  hwinfo \
-    iagno  ifupdown          im-config    init-system-helpers        ipp-usb    iso-codes \
-    ibus   iio-sensor-proxy  imagemagick                iproute2  ispell \
-                         insserv                  iotop               iptables       iw \
-    jackd2  javascript-common  jbig2dec  jigit  jq \
-    kbd  keyutils  kmod \
-    lame                lftp       linux-base          low-memory-monitor   lshw      lvm2 \
-                   lightsoff  lm-sensors         lp-solve             lsof      lynx \
-    laptop-detect                linuxlogo                                          lua-lpeg  lz4 \
-      less      lirc                logrotate          lsb-release-minimal  lua5.3   \
-             libauthen-sasl-perl
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    libcairo-perl  libclone-perl \
-    libcairo-gobject-perl    libcap2             \
-                   \
-    libdata-dump-perl     \
-    libencode-locale-perl    \
-                       liberror-perl     libextutils-depends-perl \
-      libfile-basedir-perl       libfile-find-rule-perl  libfile-listing-perl   libfont-afm-perl  libftdi1 \
-    libfile-desktopentry-perl  libfile-lchown-perl     libfile-mimeinfo-perl       \
-            libglib-object-introspection-perl                      libgtk3-perl \
-            libglib-perl                           \
-    libgcrypt20                                              \
-    libhtml-form-perl    libhtml-parser-perl  libhtml-tree-perl     libhttp-daemon-perl  libhttp-message-perl \
-       libhtml-format-perl  libhtml-tagset-perl  libhttp-cookies-perl  libhttp-date-perl    libhttp-negotiate-perl \
-    libical3       libio-html-perl        libipc-system-simple-perl \
-               libio-socket-ssl-perl  libiptcdata \
-   \
-   \
-      liblinux-lvm-perl        liblwp-mediatypes-perl
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y liblc3      liblinear  liblocale-gettext-perl  liblouis     liblqr         libltc   liblwp-protocol-https-perl\
-    libmailtools-perl  libmanette  libmbim  libmd  libmediaart  libmnl  libmodplug  libmpc  libmspub  libmtp  libmwaw  libmysofa\
-    libnatpmp  libnet-dbus-perl  libnet-smtp-ssl-perl  libnetfilter-conntrack  libnfs    libnice  libnma     libnsl                  libnumbertext \
-    libndp     libnet-http-perl  libnet-ssleay-perl    libnfnetlink            libnftnl  libnl3   libnotify  libnumber-compare-perl  libnvme\
-    liboauth  libodfgen  libogg  libonig  libopenmpt  liborcus  libosinfo\
-    libpagemaker  libparse-recdescent-perl  libpciaccess  libperl4-corelibs-perl  libphonenumber  libplacebo  libpng1.6  libproxy  libpst \
-    libpaper      libpcap
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    libpeas       libpgm                  libpipeline     libplist    libportal  libpsl    libpwquality\
-    libqmi  libqrtr-glib  libqxp\
-    librabbitmq  libraw  libraw1394  libregexp-ipv6-perl  libreoffice  libreoffice-dictionaries  librest  librevenge  librist  librsvg\
-    libsamplerate  libseccomp  libselinux   libsepol  libshumate  libsigc++-2.0  libsmbios   libsodium   libsoup3  libspectre  libssh   libstaroffice \
-    libsdl2        libsecret   libsemanage  libshout  libsidplay  libsm          libsndfile  libsoup2.4  libsoxr   libsrtp2    libssh2\
-    libtasn1-6  libtext-charwidth-perl  libtext-iconv-perl     libthai    libtie-ixhash-perl  libtirpc  libtry-tiny-perl \
-    libteam     libtext-glob-perl       libtext-wrapi18n-perl  libtheora  libtimedate-perl    libtool\
-    libudfread  libunistring  libunity  libunwind  liburcu  liburi-perl  libusb-1.0  libusbmuxd  libutempter\
-    libva  libvdpau  libvdpau-va-gl  libvidstab  libvisio  libvisual  libvorbis\
-    libwacom  libwebp  libwmf  libwnck3  libwpd  libwpe  libwpg  libwps  libwww-perl  libwww-robotrules-perl\
-    libx11-protocol-perl  libxcomposite  libxdmcp   libxinerama         libxml-twig-perl         libxrandr     libxss   libxxf86dga \
-    libx86emu             libxcrypt
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    libxext    libxkbcommon        libxml-xpathengine-perl  libxrender    libxt    libxxf86vm \
-    libxau                libxcursor     libxfixes  libxkbfile          libxml2                  libxres       libxtst \
-    libxaw                libxcvt        libxfont   libxklavier         libxmlb                  libxshmfence  libxv \
-    libxcb                libxdamage     libxi      libxml-parser-perl  libxmu                   libxslt       libxvmc\
-    libyaml  libytnef  libyuv\
-    libzmf  libzstd\
-    mailcap     man-db      mawk     media-player-info  mesa         miniupnpc                       mod-dnssd     mozjs102  mpfr4   multipath-tools \
-    mako        manpages    mbedtls  media-types        meta-gnome3  mjpegtools                      modemmanager  mpclib3   mpg123  mutter \
-    malcontent  markupsafe  mdadm
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    memtest86+         mhash        mobile-broadband-provider-info  mokutil       mpeg2dec  mtdev   mythes\
-    nano      nbd      net-snmp  netselect        network-manager-applet  nftables  nmon                node-prismjs  nspr      ntfs-3g  nvme-cli \
-    nas       ncurses  netbase   nettle           newt                    nghttp2   node-clipboard      norm          nss       ntpsec \
-    nautilus  neon27   netcat    network-manager  nfs-utils               nmap      node-normalize.css  npth          nss-mdns  numactl\
-    ocl-icd     open-isns    opencore-amr  openh264   openldap  openssh  opus  orca                     os-prober  ostree \
-    open-iscsi  openal-soft  openexr       openjpeg2  openni2   openssl  orc   orphan-sysvinit-scripts  osinfo-db\
-    p11-kit     pci.ids                pinentry      popt                   publicsuffix  python-certifi             python-oauthlib \
-    p7zip       pciutils               pipewire      power-profiles-daemon  pulseaudio    python-cffi                python-urllib3 \
-    packagekit  pcre2                  pixman        powermgmt-base         pyatspi       python-charset-normalizer  python-wadllib
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y pam         pcre3                  pkgconf       ppp                    pycairo       python-cryptography        python3-defaults \
-    pango1.0    pcsc-lite              plymouth      procinfo               pygobject     python-cups                python3.11 \
-    pangomm     perl                   pocketsphinx  procps                 pyjwt         python-dateutil            pyxdg \
-    parted      perl-openssl-defaults  policykit-1   protobuf               pyparsing     python-distro \
-    patch       perl-tk                poppler       protobuf-c             pysmbc        python-httplib2 \
-    pcaudiolib  pigz                   poppler-data  psmisc                 python-apt    python-idna\
-    qpdf  qqwing  qrencode  quadrapassel\
-    raptor2  rdate     realmd   reiserfsprogs  resolvconf  rpcbind  rtkit     rubberband  rygel \
-    rasqal   readline  redland
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    requests       rhythmbox   rsync    rtmpdump  rust-rav1e\
-    sane-airscan    setuptools                 shim-signed    snappy                   soundtouch         srt                   switcheroo-control \
-    sane-backends   sg3-utils                  shine          sndio                    spandsp            ssl-cert              synaptic \
-    sbc             sgml-base                  shotwell       snowball                 speech-dispatcher  startpar              syslinux \
-    scowl           sgml-data                  simple-scan    software-properties      speex              startup-notification  system-config-printer \
-    seahorse        shadow
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    six            sonic                    sphinxbase         sudo                  systemd \
-    sed             shared-mime-info           slang2         sord                     sqlite3            suitesparse           sysvinit \
-    sensible-utils  shim                       smartmontools  sound-icons              squashfs-tools     svt-av1 \
-    serd            shim-helpers-amd64-signed  snapd-glib     sound-theme-freedesktop  sratom             swell-foop\
-    taglib  tar           tdb          thin-provisioning-tools  timgm6mb-soundfont  tpm-udev  tracker-miners     twolame \
-    tali    tasksel       tevent
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    tiff                     totem               tpm2-tss  transmission       tzdata \
-    talloc  tcp-wrappers  texlive-bin  time                     totem-pl-parser     tracker   ttf-ancient-fonts\
-    ucf       udisks2  unattended-upgrades  unzip         upower          usb-modeswitch-data  usbmuxd   usrmerge \
-    uchardet  udns     unbound              update-inetd  usb-modeswitch  usb.ids              usbutils  util-linux
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y v4l-utils  vim  vnstat  vo-aacenc  vo-amrwbenc  volume-key  vte2.91  vulkan-loader\
-    wakeonlan  wavpack  wayland  webp-pixbuf-loader  webrtc-audio-processing  wget  wildmidi  wireless-regdb  wireplumber  woff2  wpa  wpebackend-fdo\
-    x11-apps           xbitmaps                  xdg-desktop-portal-gtk  xfonts-scalable   xmlsec1                      xserver-xorg-video-nouveau \
-    x11-session-utils  xcb-util                  xdg-user-dirs           xfonts-utils      xorg                         xserver-xorg-video-qxl \
-    x11-utils          xcb-util-image            xdg-user-dirs-gtk       xfsdump           xorg-docs                    xserver-xorg-video-vesa \
-    x11-xkb-utils      xcb-util-keysyms
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    xdg-utils               xfsprogs          xrdp                         xserver-xorg-video-vmware \
-    x11-xserver-utils  xcb-util-renderutil       xf86-input-wacom        xft               xserver-xorg-input-libinput  xterm \
-    x264               xcb-util-wm               xfonts-100dpi           xinit             xserver-xorg-video-amdgpu    xvidcore \
-    x265               xdg-dbus-proxy
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y    xfonts-75dpi            xkbset            xserver-xorg-video-ati       xwayland \
-    xapian-core        xdg-desktop-portal        xfonts-base             xkeyboard-config  xserver-xorg-video-fbdev     xxhash \
-    xauth              xdg-desktop-portal-gnome  xfonts-encodings        xml-core          xserver-xorg-video-intel     xz-utils\
-    yajl  yelp  yelp-xsl
-
-RUN /etc/init.d/apt-cacher-ng start && apt update  && apt install -y z3  zbar  zenity  zeromq3  zile  zimg  zlib  zvbi  zxing-cpp
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y adduser apt apt-cacher-ng base-files base-passwd bash binutils binutils-common:amd64 binutils-x86-64-linux-gnu bsdutils ca-certificates coreutils curl dash dbus dbus-bin dbus-daemon dbus-session-bus-common dbus-system-bus-common debconf 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y debconf-utils debian-archive-keyring debianutils debootstrap diffutils dirmngr dmsetup dns-root-data dnsmasq dnsmasq-base dosfstools dpkg e2fsprogs fai-client fai-doc fai-quickstart fai-server file findutils
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y gcc-12-base:amd64 gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm gpgv grep gzip hostname init-system-helpers iproute2 isc-dhcp-server keyutils libacl1:amd64 libapparmor1:amd64 libapt-pkg6.0:amd64 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libarchive13:amd64 libassuan0:amd64 libattr1:amd64 libaudit-common libaudit1:amd64 libbinutils:amd64 libblkid1:amd64 libbpf1:amd64 libbrotli1:amd64 libbsd0:amd64 libburn4:amd64 libbz2-1.0:amd64 libc-ares2:amd64 libc-bin libc6:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libcap-ng0:amd64 libcap2:amd64 libcap2-bin libcbor0.8:amd64 libcom-err2:amd64 libcrypt1:amd64 libctf-nobfd0:amd64 libctf0:amd64 libcurl4:amd64 libdb5.3:amd64 libdbus-1-3:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libdebconfclient0:amd64 libdevmapper1.02.1:amd64 libedit2:amd64 libelf1:amd64 libevent-2.1-7:amd64 libevent-core-2.1-7:amd64 libevent-pthreads-2.1-7:amd64 libexpat1:amd64 libext2fs2:amd64 libffi8:amd64 libfido2-1:amd64 libfile-lchown-perl libfuse2:amd64 libgcc-s1:amd64 libgcrypt20:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libgdbm-compat4:amd64 libgdbm6:amd64 libgmp10:amd64 libgnutls30:amd64 libgpg-error0:amd64 libgpgme11:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libgprofng0:amd64 libgssapi-krb5-2:amd64 libhogweed6:amd64 libicu72:amd64 libidn2-0:amd64 libisoburn1:amd64 libisofs6:amd64 libjansson4:amd64 libjte2:amd64 libk5crypto3:amd64 libkeyutils1:amd64 libkrb5-3:amd64 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libkrb5support0:amd64 libksba8:amd64 libldap-2.5-0:amd64 liblz4-1:amd64 liblzma5:amd64 liblzo2-2:amd64 libmagic-mgc libmagic1:amd64 libmd0:amd64 libmnl0:amd64 libmount1:amd64 libncursesw6:amd64 libnetfilter-conntrack3:amd64 libnettle8:amd64 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libnfnetlink0:amd64 libnfsidmap1:amd64 libnftables1:amd64 libnftnl11:amd64 libnghttp2-14:amd64 libnpth0:amd64 libnsl2:amd64 libp11-kit0:amd64 libpam-modules:amd64 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libpam-modules-bin libpam-runtime libpam0g:amd64 libpcre2-8-0:amd64 libperl5.36:amd64 libproc2-0:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libpsl5:amd64 libpython3-stdlib:amd64 libpython3.11-minimal:amd64 libpython3.11-stdlib:amd64 libreadline8:amd64 librtmp1:amd64 libsasl2-2:amd64 libsasl2-modules-db:amd64 libseccomp2:amd64 libselinux1:amd64 libsemanage-common libsemanage2:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libsepol2:amd64 libsmartcols1:amd64 libsqlite3-0:amd64 libss2:amd64
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libssh2-1:amd64 libssl3:amd64 libstdc++6:amd64 libsystemd0:amd64 libtasn1-6:amd64 libtinfo6:amd64 libtirpc-common libtirpc3:amd64 libudev1:amd64 libunistring2:amd64 libuuid1:amd64 libwrap0:amd64 libxml2:amd64 libxtables12:amd64 libxxhash0:amd64 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libzstd1:amd64 login logsave lsb-release mawk media-types mount mtools ncurses-base ncurses-bin netbase nfs-common nfs-kernel-server openbsd-inetd openssh-client openssl passwd perl perl-base perl-modules-5.36 pinentry-curses procps publicsuffix python3 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y python3-minimal python3.11 python3.11-minimal readline-common reprepro rpcbind runit-helper sed sensible-utils squashfs-tools sysvinit-utils tar tcpd tftpd-hpa tzdata ucf update-inetd usr-is-merged util-linux util-linux-extra wait-for-it wget xorriso xz-utils zlib1g:amd64 zstd
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
 COPY fai/basefiles /srv/fai/config/basefiles
