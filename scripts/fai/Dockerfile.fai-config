@@ -109,6 +109,24 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libnsl2 libn
   lua-lpeg media-types nmap-common ntpsec-ntpdig openssh-client openssh-server \
   openssh-sftp-server openssl pci.ids python3 python3-minimal python3-ntp \
   python3.11 python3.11-minimal runit-helper startpar sysv-rc ucf uuid-runtime
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-2048 gnome-accessibility-themes \
+  gnome-backgrounds gnome-bluetooth-3-common gnome-bluetooth-sendto \
+  gnome-browser-connector gnome-calculator gnome-calendar gnome-characters
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-chess gnome-clocks gnome-color-manager gnome-contacts \
+  gnome-control-center gnome-control-center-data gnome-core \
+  gnome-desktop3-data gnome-disk-utility gnome-font-viewer gnome-games \
+  gnome-icon-theme gnome-initial-setup gnome-keyring gnome-keyring-pkcs11 \
+  gnome-klotski gnome-logs gnome-mahjongg gnome-maps gnome-menus gnome-mines
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-music gnome-nibbles gnome-online-accounts gnome-remote-desktop \
+  gnome-robots gnome-session gnome-session-bin gnome-session-common \
+  gnome-settings-daemon gnome-settings-daemon-common gnome-shell \
+  gnome-shell-common gnome-shell-extension-prefs gnome-shell-extensions \
+  gnome-software gnome-software-common gnome-sound-recorder gnome-sudoku \
+  gnome-sushi gnome-system-monitor gnome-taquin gnome-terminal \
+  gnome-terminal-data gnome-tetravex gnome-text-editor gnome-themes-extra \
+  gnome-themes-extra-data gnome-tweaks gnome-user-docs gnome-user-share \
+  gnome-video-effects gnome-weather gnupg gnupg-l10n gnupg-utils gpg gpg-agent
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
 COPY fai/basefiles /srv/fai/config/basefiles
