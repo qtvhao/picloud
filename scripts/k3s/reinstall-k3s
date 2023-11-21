@@ -63,7 +63,6 @@ k9s info >/dev/null 2>&1 ||
 rm k9s_Linux_amd64.tar.gz || true
 ( stat $HOME/k3s || wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O $HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)
 cp $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
-# systemctl status nm-cloud-setup.service || apt install -y network-manager
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 # 

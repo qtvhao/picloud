@@ -10,7 +10,8 @@ netcat-traditional
 ca-certificates
 resolvconf
 open-iscsi
-ceph-iscsi
+nfs-common
+vnstat
 
 PACKAGES install
 task-english 

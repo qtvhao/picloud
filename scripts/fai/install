@@ -38,7 +38,8 @@ cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw
 
 (docker buildx ls | grep docker.sock) || docker buildx create --use
 (cat /root/.docker/config.json | grep index.docker.io) || \
-    docker login -u $GITHUB_USERNAME
+    ( echo "Login to docker.io as $GITHUB_USERNAME: https://hub.docker.com/settings/security?generateToken=true" && \
+    docker login -u $GITHUB_USERNAME)
 time docker buildx build \
     --push \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \

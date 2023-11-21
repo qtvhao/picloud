@@ -7,7 +7,7 @@ if [ -z "$IDENTIFY_FILE" ]; then
     echo "Please provide the identify file"
     exit 1
 fi
-apt install open-iscsi nfs-common -y
+
 curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/scripts/environment_check.sh | bash
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/deploy/longhorn.yaml
 
