@@ -120,14 +120,11 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
 
     scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")
     if [ "$scriptFileExists" == "true" ]; then
-        cp "$2/$3" "$scriptFile" || true
+        # cp "$2/$3" "$scriptFile" || true
+        "$2/$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     else
-        curl -s $remoteUrl -o $scriptFile
+        curl -s $remoteUrl -o - | bash -s -- "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     fi
-    chmod +x $scriptFile
-    "$scriptFile" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
-    stat "$scriptFile" > /dev/null 2>&1 && \
-        rm $scriptFile || true
     exit 0
 fi
 if [ "$arg1" == "pxe-boot" ]; then
@@ -162,6 +159,9 @@ case "$arg1" in
         ;;
     "dump-images"|"auto-join"|"logs"|"pull-image"|"pull-images")
         SCRIPTS_SUBFOLDER="scripts/k3s"
+        ;;
+    "print-available-node")
+        SCRIPTS_SUBFOLDER="scripts/fai"
         ;;
 esac
 if [ -n "$SCRIPTS_SUBFOLDER" ]; then
