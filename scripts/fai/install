@@ -43,6 +43,7 @@ time docker buildx build \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
     --cache-to type=registry,ref=docker.io/$GITHUB_USERNAME/picloud:branch-cache,mode=max \
     -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .
+docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config
 
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
