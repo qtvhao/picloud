@@ -92,8 +92,9 @@ wakeonlan $MAC_ADDRESS
 IP_ADDRESS_FILE="$HOME/.pic/$MAC_ADDRESS-IP_ADDRESS.txt"
 IP_ADDRESS=$(cat $IP_ADDRESS_FILE)
 REGISTRY_FOLDER="/var/lib/registry/"
-rsync -av -e "ssh -i $IDENTITY_FILE" $REGISTRY_FOLDER $IP_ADDRESS:$REGISTRY_FOLDER
-# with avz, it will copy the whole folder. a is for archive, v is for verbose, z is for compress
+ssh -i $IDENTITY_FILE root@$IP_ADDRESS "rm -rf $REGISTRY_FOLDER" || true
+time rsync -avP -e "ssh -i $IDENTITY_FILE" $REGISTRY_FOLDER $IP_ADDRESS:$REGISTRY_FOLDER
+# with avP, the -P option is implied, which is --partial --progress ( --partial enables resuming partial transfers)
 echo
 ssh -i $IDENTITY_FILE root@$IP_ADDRESS "cat /etc/os-release"
 echo "Now you can SSH to the node with this command:"

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -x -e -o pipefail
 args=("$@")
 MAC_ADDRESS=${args[0]}
 if [ -z "$MAC_ADDRESS" ]; then
@@ -47,7 +47,7 @@ while true; do
     wakeonlan $MAC_ADDRESS > /dev/null 2>&1 || true
     echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") SSH is ready."
     sleep 12
-    ssh-keygen -R "$IP_ADDRESS" > /dev/null 2>&1 || true
+    ssh-keygen -R "$IP_ADDRESS" || true
     ssh-keyscan "$IP_ADDRESS" >> ~/.ssh/known_hosts > /dev/null 2>&1 || true
     (timeout 10 ssh \
         -o PasswordAuthentication=no \
@@ -69,8 +69,4 @@ while true; do
         -o StrictHostKeyChecking=no \
         -i $IDENTITY_FILE root@$IP_ADDRESS "echo" > /dev/null 2>&1) && break || continue;
 done
-echo
-ssh -i $IDENTITY_FILE root@$IP_ADDRESS "cat /etc/os-release"
-echo "Now you can SSH to the node with this command:"
-echo "  ssh -i $IDENTITY_FILE $IP_ADDRESS"
-
+echo $IP_ADDRESS > $HOME/.pic/$MAC_ADDRESS-IP_ADDRESS.txt
