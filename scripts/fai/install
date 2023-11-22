@@ -126,11 +126,14 @@ echo "Fai-setup starting"
 
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
-stat ./dvd/$HOSTNAME-fai-cd.iso || \
+stat ./dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso || \
     time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso))
 echo "====" >> fai-cd.log
-stat /var/www/html/squash.img || \
-    time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -m /tmp/$HOSTNAME -f -S /var/www/html/squash.img))
+
+rm /var/www/html/squash.img || true
+stat /var/www/html/squash-$FAI_CD_BASE.img || \
+    time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -m /tmp/$HOSTNAME -f -S /var/www/html/squash-$FAI_CD_BASE.img))
+cp /var/www/html/squash-$FAI_CD_BASE.img /var/www/html/squash.img
 # Start validate
 docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/etc/resolv.conf-installserver"
 docker exec -it fai bash -c "stat -c '%s' /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg"
