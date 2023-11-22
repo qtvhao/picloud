@@ -51,6 +51,7 @@ rm Dockerfile.fai-config
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai-config \
     --privileged --entrypoint /bin/bash -d docker.io/$GITHUB_USERNAME/picloud:fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
@@ -78,6 +79,7 @@ docker rm -f fai-setup
 docker run --name fai-setup \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+docker cp fai-setup:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-setup.log
 (docker exec -it fai-setup bash -c "rm -rf /srv/fai/nfsroot")
 FAI_SETUP_IMAGE_ID=$(docker image inspect fai-setup-base | jq -r ".[0].Id")
 FAI_ROOTPW_MD5=$(echo "$FAI_ROOTPW""$FAI_SETUP_IMAGE_ID" | md5sum | cut -c1-20)
@@ -94,6 +96,7 @@ rm Dockerfile.fai-setup
 docker run --name fai \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+docker cp fai:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-fai.log
 FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_CD_BASE_FULL="$FAI_MIRROR_IMAGE_ID-$HOSTNAME-$cl"
 FAI_CD_BASE="fai-cd-base-"$(echo $FAI_CD_BASE_FULL | md5sum | cut -c1-20)
@@ -117,6 +120,7 @@ docker run --net host --name fai \
     --cap-add=NET_ADMIN \
     -v ./dnsmasq.conf:/etc/dnsmasq.conf \
     --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+docker cp fai:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-fai-2.log
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
 mkdir -p /srv/fai/config/files/ || true
