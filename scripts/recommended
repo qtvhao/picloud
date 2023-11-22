@@ -82,7 +82,7 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns
 ./pic wait pod          redis-replicas-1                    default Ready
 ./pic wait pod          redis-replicas-2                    default Ready
 TUNNEL_NAMESPACE=default ./pic expose tcp redis-master.default 6379
-
+wait
 ./pic dump-images
 
 echo "./pic has installed your recommended packages"
