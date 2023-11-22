@@ -126,8 +126,11 @@ echo "Fai-setup starting"
 
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
+rm ./dvd/$HOSTNAME-fai-cd.iso || true
 stat ./dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso || \
-    time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-fai-cd.iso))
+    time ( (docker exec -it fai fai-cd -C /srv/fai/config/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso))
+
+mv ./dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso ./dvd/$HOSTNAME-fai-cd.iso
 echo "====" >> fai-cd.log
 
 rm /var/www/html/squash.img || true
