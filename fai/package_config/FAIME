@@ -13,6 +13,8 @@ open-iscsi
 nfs-common
 vnstat
 wakeonlan
+syslinux
+pv
 
 PACKAGES install
 task-english 

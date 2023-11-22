@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e -o pipefail
-syslinux -h > /dev/null 2>&1 || apt-get install syslinux -y
-pv -h > /dev/null 2>&1 || apt-get install pv -y
+
 args=("$@")
 ISO_FILE=${args[0]}
 USB_DEVICE=${args[1]}
