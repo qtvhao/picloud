@@ -12,7 +12,7 @@ time ./pic pull-images "$THIS_MACHINE"
 echo;time ./pic install-gitlab ../id_rsa | tee $LOGS_DIR/gitlab.log
 rm -rf $LOGS_DIR/gitlab.log
 wait
-
+IDENTIFY_FILE="../id_rsa"
 ./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
 echo "Folk and push to gitlab successfully"
 while ! ./pic succeed-pipeline root%2Fpicloud main; do
