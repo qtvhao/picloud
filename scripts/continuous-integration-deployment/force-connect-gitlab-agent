@@ -55,7 +55,7 @@ if [ "null" == "$TOKEN_STRING" ]; then
 fi
 echo "TOKEN_STRING: $TOKEN_STRING"
 helm uninstall gitlab-agent-$PROJECT_NAME -n gitlab-agent-gitlab-agent || echo ""
-helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
+helm upgrade --install gitlab-agent-$PROJECT_NAME https://gitlab-charts.s3.amazonaws.com/gitlab-agent-1.21.0.tgz \
     --namespace gitlab-agent-gitlab-agent \
     --create-namespace \
     --set image.tag=v16.5.0 \
