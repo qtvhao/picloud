@@ -129,6 +129,7 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-musi
   gnome-video-effects gnome-weather gnupg gnupg-l10n gnupg-utils gpg gpg-agent
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   syslinux pv
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   rdate reiserfsprogs smartmontools openssh-client openssh-server usbutils xfsdump zile
+RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
 COPY fai/basefiles /srv/fai/config/basefiles
