@@ -23,7 +23,6 @@ if [ ! -f "NODES" ]; then
         echo "$node" >> NODES
         ssh-keygen -R "$node" || true
         ssh-keyscan "$node" >> /root/.ssh/known_hosts
-        echo "" >> /root/.ssh/known_hosts
         THE_HOSTNAME=$(ssh -i $IDENTIFY_FILE $node hostname)
         echo "$THE_HOSTNAME"
     done
