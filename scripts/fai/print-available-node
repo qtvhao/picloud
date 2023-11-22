@@ -3,8 +3,7 @@ args=("$@")
 IP_ADDRESS=${args[0]}
 IDENTIFY_FILE=${args[1]}
 timeout .05 ping -c1 $IP_ADDRESS > /dev/null 2>&1 || exit 0;
-echo
-# echo "192.168.1.$i is pingable"
+# echo "$IP_ADDRESS is pingable"
 timeout .5 nc -z $IP_ADDRESS 22 > /dev/null 2>&1 || exit 0;
 # echo "192.168.1.$i:22 is pingable"
 ssh-keygen -R $IP_ADDRESS > /dev/null 2>&1 || true
@@ -14,7 +13,7 @@ timeout 5 ssh \
     -i "$IDENTIFY_FILE" \
     -o PasswordAuthentication=no \
     $IP_ADDRESS "hostname" > /dev/null 2>&1 || exit 0;
-# echo "192.168.1.$i is sshable"
+# echo "$IP_ADDRESS is sshable"
 PRODUCT_NAME=$(ssh \
     -i "$IDENTIFY_FILE" \
     -o PasswordAuthentication=no \
