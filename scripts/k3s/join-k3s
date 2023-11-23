@@ -20,6 +20,8 @@ if [ ! -f $IDENTIFY_FILE ]; then
     exit 1
 fi
 set -xeo pipefail
+REGISTRY_FOLDER="/var/lib/registry/"
+time rsync -avP -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
