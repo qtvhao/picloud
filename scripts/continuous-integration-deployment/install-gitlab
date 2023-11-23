@@ -124,6 +124,24 @@ gitlab-runner.runners.privileged=true \
     --set registry.enabled=false \
     --set registry.storage.secret=gitlab-registry-storage \
     --set registry.storage.key=connection &
+    # --set global.minio.enabled=false \
+    # --set global.registry.bucket=gitlab-registry \
+    # --set global.appConfig.terraformState.enabled=true \
+    # --set global.appConfig.object_store.enabled=true \
+    # --set global.appConfig.object_store.proxy_download=true \
+    # --set global.appConfig.object_store.connection.secret=gitlab-storage \
+    # --set global.appConfig.object_store.connection.key=connection \
+    # --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+    # --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+    # --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+    # --set global.appConfig.packages.bucket=gitlab-packages-storage \
+    # --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+    # --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+    # --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+    # --set global.appConfig.backups.bucket=gitlab-backup-upload \
+    # --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+    # --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
+    # --set gitlab.toolbox.backups.objectStorage.config.key=connection \
 
 time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 # time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log certificates
