@@ -4,4 +4,4 @@ set -e -o pipefail
 IDENTIFY_FILE="$HOME/id_rsa"
 ./pic reinstall-k3s $IDENTIFY_FILE
 ./pic auto-join $IDENTIFY_FILE
-./pic install-longhorn $IDENTIFY_FILE
+time ( ./pic install-longhorn $IDENTIFY_FILE)

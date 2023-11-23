@@ -1,0 +1,2 @@
+#!/bin/bash
+time (./pic reinstall-k3s $HOME/id_rsa)
