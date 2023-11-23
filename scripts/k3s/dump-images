@@ -12,7 +12,7 @@ for NODE_IP_V4_ADDRESS in $NODES_IP_V4_ADDRESSES; do
 done
 NAMES=$(echo "$RUNNING_CONTAINERS" | sort -k2 | awk '{print $1}' | uniq)
 
-echo "$NAMES" | tee images.txt
+echo "$NAMES" | awk '!a[$0]++' | tee images.txt
 echo
 
 echo "- Registries:"

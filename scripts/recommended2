@@ -37,7 +37,7 @@ rm $HOME/.pic/expose-* || true
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
 
 FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
-while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
+while ! ./pic pull-image docker.io/cloudflare/cloudflared:latest $FIRST_NODE_NAME; do
     sleep 2
 done
 time (./pic pull-images "$FIRST_NODE_NAME") &
