@@ -24,7 +24,8 @@ fi
 API_URL="https://api.github.com/orgs/$ORG_NAME/repos"
 # curl -X GET -u "$ORG_NAME:$PAT" "$API_URL" | jq -r '.[]'
 full_names=$(curl -s -X GET -u "$ORG_NAME:$PAT" "$API_URL" | jq -r '.[] | .full_name')
-# echo "full_names: $full_names"
+ssh-keygen -R github.com
+ssh-keyscan -t rsa github.com >> $HOME/.ssh/known_hosts
 MSG=$(ssh -T -i "$IDENTITY_FILE" git@github.com 2>&1 || true)
 if [[ "$MSG" != *"successfully authenticated"* ]]; then
     echo "ERROR: $MSG"
