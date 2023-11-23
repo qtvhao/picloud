@@ -4,22 +4,14 @@ args=("$@")
 IDENTIFY_FILE=${args[0]}
 echo "- Images:"
 NODES_IP_V4_ADDRESSES=$(kubectl get nodes -o json | jq -r ".items[].status.addresses[0] | select(.type == \"InternalIP\") | .address")
+RUNNING_CONTAINERS=""
 for NODE_IP_V4_ADDRESS in $NODES_IP_V4_ADDRESSES; do
     echo "Node: $NODE_IP_V4_ADDRESS"
-    crictl_containers_ids=$(ssh -i $IDENTIFY_FILE $NODE_IP_V4_ADDRESS "crictl ps -a -q | xargs")
-    for crictl_containers_id in $crictl_containers_ids; do
-        status_state=$(ssh -i $IDENTIFY_FILE $NODE_IP_V4_ADDRESS "crictl inspect $crictl_containers_id | jq -r '.status.state'")
-        if [ "CONTAINER_RUNNING" == "$status_state" ]; then
-            image=$(ssh -i $IDENTIFY_FILE $NODE_IP_V4_ADDRESS "crictl inspect $crictl_containers_id | jq -r '.status.image.image'")
-            echo "$image"
-        fi
-    done
+    RUNNING_CONTAINERS_IMAGES_SORT_BY_CREATED=$(ssh -i $IDENTIFY_FILE $NODE_IP_V4_ADDRESS "crictl ps -a -q | xargs crictl inspect | jq -r '.status.image.image + \" \" + .status.createdAt'")$'\n\n'
+    RUNNING_CONTAINERS="$RUNNING_CONTAINERS$RUNNING_CONTAINERS_IMAGES_SORT_BY_CREATED"
 done
-exit 0
-NODES=$(kubectl get nodes -o json | jq -r ".items")
-STATUS_IMAGES=$(echo "$NODES" | jq -r ".[].status.images" | jq -r ".[]")
-SORT_BY_sizeBytes_DESC=$(echo "$STATUS_IMAGES" | jq -s 'sort_by(.sizeBytes) | reverse' | jq -r '.[]')
-NAMES=$(echo $SORT_BY_sizeBytes_DESC | jq -r ".names[1]" | uniq)
+NAMES=$(echo "$RUNNING_CONTAINERS" | sort -k2 | awk '{print $1}' | uniq)
+
 echo "$NAMES" | tee images.txt
 echo
 
