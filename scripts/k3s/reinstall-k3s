@@ -18,6 +18,7 @@ PIC_DIR="$HOME/.pic"
 
 echo "Uninstalling k3s"
 echo "- Uninstalling longhorn"
+if kubectl get ns;then 
 namespaces=$(kubectl get ns -o json | jq -r '.items[].metadata.name')
 echo "namespaces: $namespaces"
 removable_namespaces=$(echo "$namespaces" | grep -v "kube-system\|longhorn-system\|kube-public\|kube-node-lease")
@@ -51,6 +52,7 @@ kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/dep
 echo "3. Waiting for longhorn to be uninstalled"
 (kubectl get job longhorn-uninstall -n longhorn-system && \
     ./pic wait job longhorn-uninstall longhorn-system Complete) || true
+fi
 
 NODES_JSON=$(kubectl get nodes -o json || echo "")
 NODES=$(echo $NODES_JSON | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
