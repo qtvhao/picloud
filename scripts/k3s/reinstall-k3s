@@ -23,39 +23,27 @@ namespaces=$(kubectl get ns -o json | jq -r '.items[].metadata.name')
 echo "namespaces: $namespaces"
 removable_namespaces=$(echo "$namespaces" | grep -v "kube-system\|longhorn-system\|kube-public\|kube-node-lease")
 echo "removable_namespaces: $removable_namespaces"
+MATCHING="No resources found in"
 for namespace in $removable_namespaces; do
-    if kubectl get deployment -n $namespace; then
-        kubectl get deployment -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete deployment -n $namespace {}
-    fi
-    if kubectl get statefulset -n $namespace; then
-        kubectl get statefulset -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete statefulset -n $namespace {}
-    fi
-    if kubectl get daemonset -n $namespace; then
-        kubectl get daemonset -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete daemonset -n $namespace {}
-    fi
-    if kubectl get job -n $namespace; then
-        kubectl get job -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete job -n $namespace {}
-    fi
-    if kubectl get cronjob -n $namespace; then
-        kubectl get cronjob -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete cronjob -n $namespace {}
-    fi
-    if kubectl get pvc -n $namespace; then
-        kubectl get pvc -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete pvc -n $namespace {}
-    fi
-    if kubectl get pv -n $namespace; then
-        kubectl get pv -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete pv -n $namespace {}
-    fi
-    if kubectl get service -n $namespace; then
-        kubectl get service -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete service -n $namespace {}
-    fi
-    if kubectl get secret -n $namespace; then
-        kubectl get secret -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete secret -n $namespace {}
-    fi
-    if kubectl get configmap -n $namespace; then
-        kubectl get configmap -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete configmap -n $namespace {}
-    fi
-    if kubectl get ingress -n $namespace; then
-        kubectl get ingress -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete ingress -n $namespace {}
+    RNs="deployment statefulset daemonset job cronjob pvc service secret configmap ingress"
+    for RN in $RNs; do
+        MATCHING="No resources found in"
+        if [ "x0" == "x$(kubectl get $RN -n $namespace | grep "$MATCHING" | wc -l)" ]; then
+            echo "No $RN in $namespace"
+        else
+            echo "Deleting $RN in $namespace"
+            kubectl get $RN -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete $RN -n $namespace {}
+        fi
+    done
+done
+
+while true; do
+    if [ "x0" == "x$(kubectl get pv | grep "No resources found" | wc -l)" ]; then
+        echo "All pv are released"
+        break
+    else
+        echo "Waiting for all pv to be released"
+        sleep 2
     fi
 done
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag || true
@@ -115,6 +103,8 @@ ssh-keyscan -H $NODE_IP >> ~/.ssh/known_hosts
 echo "Installing k3s"
 echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 rm -rf /var/lib/rancher/ || true
+k3s-killall.sh || true
+k3s-uninstall.sh || true
 time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init && time systemctl restart k3s) &
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
 while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
