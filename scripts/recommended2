@@ -1,0 +1,47 @@
+#!/bin/bash
+source .env
+if [ -z $DOMAIN ]; then
+    echo "DOMAIN is empty. Please specify in .env file"
+    exit 1
+fi
+if [ -z $EMAIL ]; then
+    echo "EMAIL is empty. Please specify in .env file"
+    exit 1
+fi
+set -e -o pipefail
+stat ~/.ssh/id_rsa.pub || ssh-keygen
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+echo "IDENTIFY_FILE: $IDENTIFY_FILE"
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
+    echo "Usage: ./pic recommended IDENTIFY_FILE"
+    exit 1
+fi
+if [ ! -f $IDENTIFY_FILE ]; then
+    echo "$IDENTIFY_FILE does not exist. Please create a ssh key pair in order to connect to the new machine."
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload ./id_rsa in your github account into the current directory"
+    echo "Usage: ./pic recommended IDENTIFY_FILE"
+    exit 1
+fi
+
+stat "$PIC_DIR"/gitlab.json || \
+jq -n \
+    --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" \
+    '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > "$PIC_DIR"/gitlab.json
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
+echo "Installing recommended packages"
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+rm $HOME/.pic/expose-* || true
+# 
+echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
+
+FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
+while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
+    sleep 2
+done
+time ./pic pull-images "$FIRST_NODE_NAME" &
+time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
+(   ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
+    ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
+wait
