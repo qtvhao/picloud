@@ -4,6 +4,7 @@ set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 PIC_DIR="$HOME/.pic"
+echo "Installing k3s recommended packages 1"
 ./pic recommended2 $IDENTIFY_FILE
 timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
 timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true

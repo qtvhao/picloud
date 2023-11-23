@@ -4,6 +4,7 @@ set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 PIC_DIR="$HOME/.pic"
+echo "Installing k3s recommended packages"
 ./pic recommended1 $IDENTIFY_FILE
 # 
 ( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log) &

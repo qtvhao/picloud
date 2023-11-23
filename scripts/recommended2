@@ -30,7 +30,7 @@ jq -n \
     --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" \
     '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > "$PIC_DIR"/gitlab.json
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
-echo "Installing recommended packages"
+echo "Installing recommended packages 1"
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 rm $HOME/.pic/expose-* || true
 # 
