@@ -2,10 +2,12 @@
 args=("$@")
 IP_ADDRESS=${args[0]}
 IDENTIFY_FILE=${args[1]}
-timeout .05 ping -c1 $IP_ADDRESS > /dev/null 2>&1 || exit 0;
+
+timeout 5 ping -c1 $IP_ADDRESS > /dev/null 2>&1 || exit 0;
 # echo "$IP_ADDRESS is pingable"
-timeout .5 nc -z $IP_ADDRESS 22 > /dev/null 2>&1 || exit 0;
-# echo "192.168.1.$i:22 is pingable"
+timeout 5 nc -z $IP_ADDRESS 22 > /dev/null 2>&1 || exit 0;
+# echo "$IP_ADDRESS is sshable"
+# 
 ssh-keygen -R $IP_ADDRESS > /dev/null 2>&1 || true
 ssh-keyscan $IP_ADDRESS >> ~/.ssh/known_hosts 2>&1 || true
 # echo "$IP_ADDRESS is known hosts"

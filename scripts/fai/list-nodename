@@ -11,8 +11,6 @@ MAX=254
 echo
 for i in `seq 2 $MAX`; do
     IP_ADDRESS="192.168.1.$i"
-    timeout .05 ping -c1 $IP_ADDRESS > /dev/null 2>&1 || continue;
-    timeout .5 nc -z $IP_ADDRESS 22 > /dev/null 2>&1 || continue;
     sleep .1
     # total 254 addresses cost 25.4 seconds
     ./pic print-available-node "192.168.1.$i" "$IDENTIFY_FILE" &

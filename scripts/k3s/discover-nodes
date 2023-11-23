@@ -1,0 +1,19 @@
+#!/bin/bash
+
+IDENTIFY_FILE="$HOME/id_rsa"
+echo "" > NODES
+K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
+nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
+for node in $nodesOnLan; do
+    if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then
+        continue
+    fi
+    if [ -z "$node" ]; then
+        continue
+    fi
+    echo "$node" >> NODES
+    ssh-keygen -R "$node" || true
+    ssh-keyscan "$node" >> /root/.ssh/known_hosts
+    THE_HOSTNAME=$(ssh -i $IDENTIFY_FILE $node hostname)
+    echo "$THE_HOSTNAME"
+done
