@@ -41,9 +41,10 @@ while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
     sleep 2
 done
 time (./pic pull-images "$FIRST_NODE_NAME") &
+( time (./pic install-minio | tee $LOGS_DIR/s3.log) && \
+    time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)) &
+wait
 time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
 ( ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
     ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
-time (./pic install-minio | tee $LOGS_DIR/s3.log) &
 wait
-time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)
