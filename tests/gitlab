@@ -7,7 +7,6 @@ LOGS_DIR="$PIC_DIR/logs/"
 set -e -o pipefail
 IDENTIFY_FILE="$HOME/id_rsa"
 ./pic recommended2 $IDENTIFY_FILE
-echo;time ./pic install-gitlab $HOME/id_rsa | tee $LOGS_DIR/gitlab.log
 # rm -rf $LOGS_DIR/gitlab.log
 ./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
 echo "Folk and push to gitlab successfully"

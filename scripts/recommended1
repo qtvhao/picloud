@@ -10,9 +10,7 @@ timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
 timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true
 
 # 
-time (./pic redis | tee $LOGS_DIR/redis.log) &
-time (./pic install-minio | tee $LOGS_DIR/s3.log) &
-wait
+time (./pic redis | tee $LOGS_DIR/redis.log)
 
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"

@@ -51,7 +51,7 @@ echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $
 # echo "endpoint: https://http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
 echo "endpoint: http://tenant-picloud-hl.tenant-ns:9000"     >> $RAILS_MINIO_YAML
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
-# kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
+kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
 # 
 
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
@@ -67,10 +67,10 @@ echo "  secretkey: $SECRET_ACCESS_KEY"                                          
 # 
 # kubectl create secret generic gitlab-registry-storage --from-file=connection=$REGISTRY_MINIO_YAML --namespace gitlab-ns
 
-# kubectl create secret generic gitlab-minioaccess \
-#     --from-literal=accesskey="$ACCESS_KEY_ID" \
-#     --from-literal=secretkey="$SECRET_ACCESS_KEY" \
-#     --namespace gitlab-ns
+kubectl create secret generic gitlab-minioaccess \
+    --from-literal=accesskey="$ACCESS_KEY_ID" \
+    --from-literal=secretkey="$SECRET_ACCESS_KEY" \
+    --namespace gitlab-ns
 
 RUNNER_CACHE_YAML="$HOME/runner_cache.yaml"
 echo "gitlab-runner:"                                                           >  $RUNNER_CACHE_YAML
@@ -97,8 +97,8 @@ kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs k
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
-    # -f "$RUNNER_CACHE_YAML" \
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.6.0.tgz \
+    -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
 global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
@@ -121,25 +121,26 @@ gitlab-runner.runners.privileged=true \
     --set global.ingress.enabled=false \
     --set gitlab.gitlab-exporter.enabled=false \
     --set registry.enabled=false \
+    --set global.minio.enabled=false \
+    --set global.appConfig.terraformState.enabled=true \
+    --set global.appConfig.object_store.enabled=true \
+    --set global.appConfig.object_store.proxy_download=true \
+    --set global.appConfig.object_store.connection.secret=gitlab-storage \
+    --set global.appConfig.object_store.connection.key=connection \
+    --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
+    --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
+    --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
+    --set global.appConfig.packages.bucket=gitlab-packages-storage \
+    --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
+    --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
+    --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
+    --set global.appConfig.backups.bucket=gitlab-backup-upload \
+    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
     &
     # --set global.registry.bucket=gitlab-registry \
     # --set rbac.create=true \
 #     --set registry.storage.secret=gitlab-registry-storage \
-#     --set registry.storage.key=connection    # --set global.minio.enabled=false \
-    # --set global.appConfig.terraformState.enabled=true \
-    # --set global.appConfig.object_store.enabled=true \
-    # --set global.appConfig.object_store.proxy_download=true \
-    # --set global.appConfig.object_store.connection.secret=gitlab-storage \
-    # --set global.appConfig.object_store.connection.key=connection \
-    # --set global.appConfig.lfs.bucket=gitlab-lfs-storage \
-    # --set global.appConfig.artifacts.bucket=gitlab-artifacts-storage \
-    # --set global.appConfig.uploads.bucket=gitlab-uploads-storage \
-    # --set global.appConfig.packages.bucket=gitlab-packages-storage \
-    # --set global.appConfig.externalDiffs.bucket=gitlab-external-diffs \
-    # --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
-    # --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
-    # --set global.appConfig.backups.bucket=gitlab-backup-upload \
-    # --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
+#     --set registry.storage.key=connection    
     # --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
     # --set gitlab.toolbox.backups.objectStorage.config.key=connection \
 
