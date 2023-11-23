@@ -23,22 +23,41 @@ namespaces=$(kubectl get ns -o json | jq -r '.items[].metadata.name')
 echo "namespaces: $namespaces"
 removable_namespaces=$(echo "$namespaces" | grep -v "kube-system\|longhorn-system\|kube-public\|kube-node-lease")
 echo "removable_namespaces: $removable_namespaces"
-kubectl get deployment -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete deployment {} || true
-kubectl get statefulset -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete statefulset {} || true
-kubectl get daemonset -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete daemonset {} || true
-kubectl get job -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete job {} || true
-kubectl get cronjob -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete cronjob {} || true
-kubectl get pvc -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete pvc {} || true
-kubectl get pv -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete pv {} || true
-kubectl get service -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete service {} || true
-kubectl get secret -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete secret {} || true
-kubectl get configmap -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete configmap {} || true
-kubectl get ingress -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | xargs -I {} kubectl delete ingress {} || true
-kubectl get rolebinding -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | grep -v "longhorn-system" | xargs -I {} kubectl delete rolebinding {} || true
-kubectl get role -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | grep -v "longhorn-system" | xargs -I {} kubectl delete role {} || true
-kubectl get clusterrolebinding -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | grep -v "longhorn-system" | xargs -I {} kubectl delete clusterrolebinding {} || true
-kubectl get clusterrole -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | grep -v "longhorn-system" | xargs -I {} kubectl delete clusterrole {} || true
-kubectl get serviceaccount -o json | jq -r '.items[] | select(.metadata.namespace | contains("'$removable_namespaces'")) | .metadata.name' | grep -v "longhorn-system" | xargs -I {} kubectl delete serviceaccount {} || true
+for namespace in $removable_namespaces; do
+    if kubectl get deployment -n $namespace; then
+        kubectl get deployment -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete deployment -n $namespace {}
+    fi
+    if kubectl get statefulset -n $namespace; then
+        kubectl get statefulset -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete statefulset -n $namespace {}
+    fi
+    if kubectl get daemonset -n $namespace; then
+        kubectl get daemonset -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete daemonset -n $namespace {}
+    fi
+    if kubectl get job -n $namespace; then
+        kubectl get job -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete job -n $namespace {}
+    fi
+    if kubectl get cronjob -n $namespace; then
+        kubectl get cronjob -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete cronjob -n $namespace {}
+    fi
+    if kubectl get pvc -n $namespace; then
+        kubectl get pvc -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete pvc -n $namespace {}
+    fi
+    if kubectl get pv -n $namespace; then
+        kubectl get pv -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete pv -n $namespace {}
+    fi
+    if kubectl get service -n $namespace; then
+        kubectl get service -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete service -n $namespace {}
+    fi
+    if kubectl get secret -n $namespace; then
+        kubectl get secret -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete secret -n $namespace {}
+    fi
+    if kubectl get configmap -n $namespace; then
+        kubectl get configmap -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete configmap -n $namespace {}
+    fi
+    if kubectl get ingress -n $namespace; then
+        kubectl get ingress -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete ingress -n $namespace {}
+    fi
+done
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag || true
 
 echo "1. Deleting longhorn"
