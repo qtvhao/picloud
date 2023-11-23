@@ -120,12 +120,12 @@ gitlab-runner.runners.privileged=true \
     --set prometheus.server.enabled=false \
     --set global.ingress.enabled=false \
     --set gitlab.gitlab-exporter.enabled=false \
-    --set rbac.create=true \
     --set registry.enabled=false \
-    --set registry.storage.secret=gitlab-registry-storage \
-    --set registry.storage.key=connection &
-    # --set global.minio.enabled=false \
+    &
     # --set global.registry.bucket=gitlab-registry \
+    # --set rbac.create=true \
+#     --set registry.storage.secret=gitlab-registry-storage \
+#     --set registry.storage.key=connection    # --set global.minio.enabled=false \
     # --set global.appConfig.terraformState.enabled=true \
     # --set global.appConfig.object_store.enabled=true \
     # --set global.appConfig.object_store.proxy_download=true \

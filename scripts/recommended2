@@ -36,6 +36,7 @@ rm $HOME/.pic/expose-* || true
 # 
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
 
+( time ./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)
 FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
 while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
     sleep 2
