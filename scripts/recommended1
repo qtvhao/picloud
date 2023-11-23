@@ -1,0 +1,72 @@
+#!/bin/bash
+source .env
+if [ -z $DOMAIN ]; then
+    echo "DOMAIN is empty. Please specify in .env file"
+    exit 1
+fi
+if [ -z $EMAIL ]; then
+    echo "EMAIL is empty. Please specify in .env file"
+    exit 1
+fi
+set -e -o pipefail
+stat ~/.ssh/id_rsa.pub || ssh-keygen
+args=("$@")
+IDENTIFY_FILE=${args[0]}
+echo "IDENTIFY_FILE: $IDENTIFY_FILE"
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
+    echo "Usage: ./pic recommended IDENTIFY_FILE"
+    exit 1
+fi
+if [ ! -f $IDENTIFY_FILE ]; then
+    echo "$IDENTIFY_FILE does not exist. Please create a ssh key pair in order to connect to the new machine."
+    echo "If you've already booted machines use ./pic FAI (Fully Automatic Installation), please upload ./id_rsa in your github account into the current directory"
+    echo "Usage: ./pic recommended IDENTIFY_FILE"
+    exit 1
+fi
+
+stat "$PIC_DIR"/gitlab.json || \
+jq -n \
+    --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" \
+    '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > "$PIC_DIR"/gitlab.json
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
+echo "Installing recommended packages"
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+rm $HOME/.pic/expose-* || true
+# 
+echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
+
+FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
+while ! ./pic pull-image busybox $FIRST_NODE_NAME; do
+    sleep 2
+done
+time ./pic pull-images "$FIRST_NODE_NAME" &
+time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
+(   ( time ./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log) && \
+    ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
+wait
+timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
+timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true
+
+# 
+time (./pic redis | tee $LOGS_DIR/redis.log) &
+time (./pic install-minio | tee $LOGS_DIR/s3.log) &
+wait
+
+TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
+TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
+
+./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
+while true; do
+    echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin && break;
+    echo "Retrying to login to harbor"
+    sleep 2
+done
+
+# 
+echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .;rm busybox.Dockerfile
+while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
+    echo "Retrying to push to harbor"
+    sleep 2
+done

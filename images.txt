@@ -55,4 +55,5 @@ quay.io/prometheus-operator/prometheus-config-reloader:v0.62.0
 docker.io/rancher/klipper-lb:v0.4.4
 docker.io/library/alpine:3.12
 docker.io/rancher/mirrored-library-busybox@sha256:63076c8f0f69f51039938332f32c3afbbc04685a932d2491dc0ecfd5e0b8bc10
+docker.io/rancher/mirrored-library-busybox:1.36.1
 docker.io/rancher/mirrored-pause:3.6
