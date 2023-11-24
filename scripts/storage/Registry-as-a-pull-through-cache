@@ -9,14 +9,18 @@ if [ -z "$NODE_IP" ]; then
     echo "Usage: ./pic Registry-as-a-pull-through-cache IDENTIFY_FILE NODE_IP REGISTRY_PROXY_REMOTEURL CONTAINER_NAME IP_ADDRESS MIRROR_NAME"
     exit 1
 fi
+source .env
 REGISTRY_PROXY_REMOTEURL=${args[2]}
 if [ -z "$REGISTRY_PROXY_REMOTEURL" ]; then
+    DOMAIN_SED=$(echo $DOMAIN | sed 's/\./\-/g')
     echo "mirrors:"                             >  $HOME/registries.yaml
-    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry-1.docker.io"      "registry-1-docker-io"      "203.0.113.2" "docker.io"               | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://quay.io"                   "quay-io"                   "203.0.113.3" "quay.io"                 | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.gitlab.com"       "registry-gitlab-com"       "203.0.113.4" "registry.gitlab.com"     | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"           "registry-k8s-io"           "203.0.113.5" "registry.k8s.io"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
-    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://gcr.io"                    "gcr-io"                    "203.0.113.6" "gcr.io"                  | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry-1.docker.io"                              "registry-1-docker-io"                              "203.0.113.2" "docker.io"                                           | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://quay.io"                                           "quay-io"                                           "203.0.113.3" "quay.io"                                             | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.gitlab.com"                               "registry-gitlab-com"                               "203.0.113.4" "registry.gitlab.com"                                 | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"                                   "registry-k8s-io"                                   "203.0.113.5" "registry.k8s.io"                                     | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://gcr.io"                                            "gcr-io"                                            "203.0.113.6" "gcr.io"                                              | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://http-harbor-registry-harbor-ns-5000.$DOMAIN"       "http-harbor-registry-harbor-ns-5000-$DOMAIN_SED"   "203.0.113.7" "http-harbor-registry-harbor-ns-5000.$DOMAIN"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    # 
     ssh -i $IDENTIFY_FILE \
         -o PasswordAuthentication=no \
         "$NODE_IP" "mkdir -p /etc/rancher/k3s/"
