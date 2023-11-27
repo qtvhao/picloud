@@ -45,11 +45,12 @@ time ( docker buildx build \
     --push \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
     --cache-to type=registry,ref=docker.io/$GITHUB_USERNAME/picloud:branch-cache,mode=max \
-    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .) \
+    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config . && \
+    docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config)
+(cat /root/.docker/config.json | grep index.docker.io ) \
     || time ( docker buildx build \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
     -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .)
-docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config
 
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
@@ -61,12 +62,12 @@ docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker logs fai-config -f &
-timeout 30 docker exec fai-config apt-get install task-xfce-desktop -y || \
+time 30 docker exec fai-config apt-get install openssh-server -y || \
     (echo "fai-config failed to start. Check the logs above." && exit 1)
-docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
- timeout 600 docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log
-echo "Fai-setup finished"
 exit 0
+docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
+ timeout 480 docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log
+echo "Fai-setup finished"
  # 2055 lines
 echo "Fai-setup finished"
 # docker stop fai-config || true
