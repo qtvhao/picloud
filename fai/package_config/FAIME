@@ -1,5 +1,7 @@
 PACKAGES install-norec
 xrdp
+xorg
+xorgxrdp
 curl
 wget
 git
