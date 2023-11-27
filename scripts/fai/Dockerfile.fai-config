@@ -106,7 +106,10 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --downlo
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only python3-minimal python3-ntp python3.11 python3.11-minimal rdate && rm -rf /var/cache/apt/archives/*
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only reiserfsprogs rpcbind rsync runit-helper smartmontools ssh startpar && rm -rf /var/cache/apt/archives/*
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime && rm -rf /var/cache/apt/archives/*
+
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only xfsdump xfsprogs xz-utils zile && rm -rf /var/cache/apt/archives/*
+# 941.34 MB
+
 RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
