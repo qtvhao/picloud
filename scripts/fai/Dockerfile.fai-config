@@ -73,7 +73,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y wait-for-it
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y task-xfce-desktop
-# apt install task-xfce-desktop -y
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y  dracut-core
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y  fai-client fai-setup-storage file iputils-arping
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    syslinux-efi zstd 
 
 RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
