@@ -2,10 +2,11 @@ KEYMAP=us
 TIMEZONE=UTC
 locales="en_US"
 ROOTPW=''
-username=debian
+username=picloud
 USERPW='$6$AicjViLEvxJIKVLy$0vfsIUIQ698aA7IMOx1fwK4Y4l8rm9J28Yhz0XjcGHPZOUy0HCVXSWRC8q1ndcxk0OSTd0F4YcAa1wwK4mHyB/'
 release=bookworm
 secsuite=bookworm-security
 bpo=
 postinst=mac.sh
 rclocal=1
+repo="deb [trusted=yes] https://download.docker.com/linux/debian bookworm stable"
