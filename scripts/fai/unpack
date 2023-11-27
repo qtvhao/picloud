@@ -1,1 +1,16 @@
 #!/bin/bash
+set -xeo pipefail
+args=("$@")
+URL=${args[0]}
+
+if [ -z "$URL" ]; then
+    echo "URL is empty. Specify a URL to download."
+    echo "Usage: ./pic download URL"
+    exit 1
+fi
+wget -c $URL
+
+mv $(basename $URL) ./fai/
+echo "Downloaded $URL to ./fai/$(basename $URL)"
+
+(cd ./fai/ && tar -xvf $(basename $URL))
