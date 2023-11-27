@@ -19,4 +19,5 @@ while read node; do
     ssh-keyscan "$node" >> /root/.ssh/known_hosts
     ( time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log) &
 done < NODES
-wait
+
+wait $(jobs -p)
