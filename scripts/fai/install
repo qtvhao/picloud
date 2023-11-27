@@ -35,14 +35,20 @@ docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
 
 (docker buildx ls | grep docker.sock) || docker buildx create --use
+notes=" (optional, you can skip this step if you don't want to push the image to docker.io, press Ctrl+C to skip)"
 (cat /root/.docker/config.json | grep index.docker.io) || \
-    ( echo "Login to docker.io as $GITHUB_USERNAME: https://hub.docker.com/settings/security?generateToken=true" && \
-    docker login -u $GITHUB_USERNAME)
-time docker buildx build \
+    ( echo "Login to docker.io as $GITHUB_USERNAME $notes: https://hub.docker.com/settings/security?generateToken=true" && \
+    docker login -u $GITHUB_USERNAME) || true
+# if .docker/config.json auths to index.docker.io exists
+(cat /root/.docker/config.json | grep index.docker.io ) && \
+time ( docker buildx build \
     --push \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
     --cache-to type=registry,ref=docker.io/$GITHUB_USERNAME/picloud:branch-cache,mode=max \
-    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .
+    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .) \
+    || time ( docker buildx build \
+    --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
+    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .)
 docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config
 
 echo "Dockerfile.fai-config built"
@@ -54,8 +60,14 @@ docker run --name fai-config \
 docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
+docker logs fai-config
+# check $cl matched "GNOME"
+timeout 10 docker exec -it fai-config bash -c "apt install task-xfce-desktop -y" || \
+    (echo "fai-config failed to start. Check the logs above." && exit 1)
+exit 0
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
  time ( ( docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
+exit 0
  # 2055 lines
 echo "Fai-setup finished"
 # docker stop fai-config || true
