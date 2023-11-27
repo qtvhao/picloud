@@ -1,6 +1,8 @@
 PACKAGES install-norec
 xrdp
 xorg
+nvidia-detect
+nvidia-tesla-470-driver
 xorgxrdp
 curl
 wget
