@@ -60,13 +60,12 @@ docker run --name fai-config \
 docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
-docker logs fai-config
-# check $cl matched "GNOME"
-timeout 10 docker exec -it fai-config bash -c "apt install task-xfce-desktop -y" || \
+docker logs fai-config -f &
+timeout 5 docker exec fai-config apt-get install task-xfce-desktop -y || \
     (echo "fai-config failed to start. Check the logs above." && exit 1)
-exit 0
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
  time ( ( docker exec -it fai-config bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
+echo "Fai-setup finished"
 exit 0
  # 2055 lines
 echo "Fai-setup finished"
