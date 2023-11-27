@@ -17,5 +17,6 @@ echo "Downloaded $URL to ./fai/$(basename $URL)"
 sed -i 's/mirror.netcologne.de/127.0.0.1:9999/' ./fai/fai-bookworm/apt/sources.list
 sed -i 's/mirror.netcologne.de/127.0.0.1:9999/' ./fai/fai-bookworm/nfsroot.conf
 sed -i 's/\/srv\/fai\/nfsroot-bookworm/\/srv\/fai\/nfsroot/' ./fai/fai-bookworm/nfsroot.conf
+sed -i 's/,createvt//' ./fai/grub.cfg.install-only
 sed -i 's/,createvt//' ./fai/fai-bookworm/grub.cfg
 sed -i 's/,createvt//' ./fai/fai-bookworm/grub.cfg.autodiscover
