@@ -1,4 +1,8 @@
 PACKAGES install-norec
+docker-ce
+docker-ce-cli
+containerd.io
+docker-buildx-plugin
 xrdp
 xorg
 nvidia-detect

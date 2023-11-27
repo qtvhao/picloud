@@ -4,7 +4,7 @@ RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gp
 RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
 RUN echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list
 RUN echo "" >> /etc/apt/sources.list
-RUN apt update && apt install -y fai-quickstart apt-cacher-ng
+RUN apt update && apt-get install -y fai-quickstart apt-cacher-ng
 RUN fai-mk-configspace
 # Thanks to https://raw.githubusercontent.com/ricardobranco777/docker-fai/master/Dockerfile
 
@@ -69,66 +69,39 @@ RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
 RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y adduser apt apt-cacher-ng base-files base-passwd bash binutils binutils-common:amd64 binutils-x86-64-linux-gnu bsdutils ca-certificates coreutils curl dash dbus dbus-bin dbus-daemon dbus-session-bus-common dbus-system-bus-common debconf 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y debconf-utils debian-archive-keyring debianutils debootstrap diffutils dirmngr dmsetup dns-root-data dnsmasq dnsmasq-base dosfstools dpkg e2fsprogs fai-client fai-doc fai-quickstart fai-server file findutils
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y gcc-12-base:amd64 gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm gpgv grep gzip hostname init-system-helpers iproute2 isc-dhcp-server keyutils libacl1:amd64 libapparmor1:amd64 libapt-pkg6.0:amd64 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libarchive13:amd64 libassuan0:amd64 libattr1:amd64 libaudit-common libaudit1:amd64 libbinutils:amd64 libblkid1:amd64 libbpf1:amd64 libbrotli1:amd64 libbsd0:amd64 libburn4:amd64 libbz2-1.0:amd64 libc-ares2:amd64 libc-bin libc6:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libcap-ng0:amd64 libcap2:amd64 libcap2-bin libcbor0.8:amd64 libcom-err2:amd64 libcrypt1:amd64 libctf-nobfd0:amd64 libctf0:amd64 libcurl4:amd64 libdb5.3:amd64 libdbus-1-3:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libdebconfclient0:amd64 libdevmapper1.02.1:amd64 libedit2:amd64 libelf1:amd64 libevent-2.1-7:amd64 libevent-core-2.1-7:amd64 libevent-pthreads-2.1-7:amd64 libexpat1:amd64 libext2fs2:amd64 libffi8:amd64 libfido2-1:amd64 libfile-lchown-perl libfuse2:amd64 libgcc-s1:amd64 libgcrypt20:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libgdbm-compat4:amd64 libgdbm6:amd64 libgmp10:amd64 libgnutls30:amd64 libgpg-error0:amd64 libgpgme11:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libgprofng0:amd64 libgssapi-krb5-2:amd64 libhogweed6:amd64 libicu72:amd64 libidn2-0:amd64 libisoburn1:amd64 libisofs6:amd64 libjansson4:amd64 libjte2:amd64 libk5crypto3:amd64 libkeyutils1:amd64 libkrb5-3:amd64 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libkrb5support0:amd64 libksba8:amd64 libldap-2.5-0:amd64 liblz4-1:amd64 liblzma5:amd64 liblzo2-2:amd64 libmagic-mgc libmagic1:amd64 libmd0:amd64 libmnl0:amd64 libmount1:amd64 libncursesw6:amd64 libnetfilter-conntrack3:amd64 libnettle8:amd64 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libnfnetlink0:amd64 libnfsidmap1:amd64 libnftables1:amd64 libnftnl11:amd64 libnghttp2-14:amd64 libnpth0:amd64 libnsl2:amd64 libp11-kit0:amd64 libpam-modules:amd64 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libpam-modules-bin libpam-runtime libpam0g:amd64 libpcre2-8-0:amd64 libperl5.36:amd64 libproc2-0:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libpsl5:amd64 libpython3-stdlib:amd64 libpython3.11-minimal:amd64 libpython3.11-stdlib:amd64 libreadline8:amd64 librtmp1:amd64 libsasl2-2:amd64 libsasl2-modules-db:amd64 libseccomp2:amd64 libselinux1:amd64 libsemanage-common libsemanage2:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libsepol2:amd64 libsmartcols1:amd64 libsqlite3-0:amd64 libss2:amd64
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libssh2-1:amd64 libssl3:amd64 libstdc++6:amd64 libsystemd0:amd64 libtasn1-6:amd64 libtinfo6:amd64 libtirpc-common libtirpc3:amd64 libudev1:amd64 libunistring2:amd64 libuuid1:amd64 libwrap0:amd64 libxml2:amd64 libxtables12:amd64 libxxhash0:amd64 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libzstd1:amd64 login logsave lsb-release mawk media-types mount mtools ncurses-base ncurses-bin netbase nfs-common nfs-kernel-server openbsd-inetd openssh-client openssl passwd perl perl-base perl-modules-5.36 pinentry-curses procps publicsuffix python3 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y python3-minimal python3.11 python3.11-minimal readline-common reprepro rpcbind runit-helper sed sensible-utils squashfs-tools sysvinit-utils tar tcpd tftpd-hpa tzdata ucf update-inetd usr-is-merged util-linux util-linux-extra wait-for-it wget xorriso xz-utils zlib1g:amd64 zstd
-# set DEBIAN_FRONTEND
 ARG DEBIAN_FRONTEND=noninteractive
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y debconf-utils
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y dracut-core
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y fai-client fai-setup-storage
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y file iputils-arping
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y syslinux-efi zstd
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y console-data
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y cryptsetup-bin dmeventd gettext-base gpgconf grub-common \
-  grub-pc-bin grub2-common initscripts insserv keyutils libaio1 libassuan0 \
-  libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3 libdevmapper-event1.02.1 \
-  libefiboot1 libefivar1 libevent-core-2.1-7 libexpat1 libfido2-1 libfreetype6 \
-  libfuse2 libgee-0.8-2 libglib2.0-0 libhd21 libicu72 libinih1 libldap-2.5-0 \
-  liblinear4 liblua5.3-0 liblvm2cmd2.03 libncurses6 libnfsidmap1 libnghttp2-14
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libnsl2 libnuma1 libnvme1 libpcap0.8 libpci3 libpcre3 libpng16-16 libpsl5 \
-  libpython3-stdlib libpython3.11-minimal libpython3.11-stdlib librtmp1 \
-  libsasl2-2 libsasl2-modules-db libsqlite3-0 libssh2-1 libudns0 liburcu8 \
-  libusb-1.0-0 libwrap0 libx86emu3 linux-base linux-image-6.1.0-13-amd64 \
-  lua-lpeg media-types nmap-common ntpsec-ntpdig openssh-client openssh-server \
-  openssh-sftp-server openssl pci.ids python3 python3-minimal python3-ntp \
-  python3.11 python3.11-minimal runit-helper startpar sysv-rc ucf uuid-runtime
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-2048 gnome-accessibility-themes \
-  gnome-backgrounds gnome-bluetooth-3-common gnome-bluetooth-sendto \
-  gnome-browser-connector gnome-calculator gnome-calendar gnome-characters
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-chess gnome-clocks gnome-color-manager gnome-contacts \
-  gnome-control-center gnome-control-center-data gnome-core \
-  gnome-desktop3-data gnome-disk-utility gnome-font-viewer gnome-games \
-  gnome-icon-theme gnome-initial-setup gnome-keyring gnome-keyring-pkcs11 \
-  gnome-klotski gnome-logs gnome-mahjongg gnome-maps gnome-menus gnome-mines
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   gnome-music gnome-nibbles gnome-online-accounts gnome-remote-desktop \
-  gnome-robots gnome-session gnome-session-bin gnome-session-common \
-  gnome-settings-daemon gnome-settings-daemon-common gnome-shell \
-  gnome-shell-common gnome-shell-extension-prefs gnome-shell-extensions \
-  gnome-software gnome-software-common gnome-sound-recorder gnome-sudoku \
-  gnome-sushi gnome-system-monitor gnome-taquin gnome-terminal \
-  gnome-terminal-data gnome-tetravex gnome-text-editor gnome-themes-extra \
-  gnome-themes-extra-data gnome-tweaks gnome-user-docs gnome-user-share \
-  gnome-video-effects gnome-weather gnupg gnupg-l10n gnupg-utils gpg gpg-agent
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   syslinux pv
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y   rdate reiserfsprogs smartmontools openssh-client openssh-server usbutils xfsdump zile
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y wait-for-it
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only task-xfce-desktop
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only dracut-core
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only fai-client fai-setup-storage file iputils-arping
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-efi zstd 
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only btrfs-progs ca-certificates console-common console-data cryptsetup
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only cryptsetup-bin curl dialog dmeventd dosfstools dracut dump efibootmgr
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only gettext-base gpg gpgconf grub-common grub-efi-amd64-bin grub-pc grub-pc-bin
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only grub2-common hdparm hwinfo initscripts insserv kbd keyutils lftp libaio1
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libassuan0 libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libdevmapper-event1.02.1 libefiboot1 libefivar1 libevent-core-2.1-7
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libexpat1 libfido2-1 libfreetype6 libfuse2 libgee-0.8-2 libglib2.0-0 libhd21
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libicu72 libinih1 libldap-2.5-0 liblinear4 liblua5.3-0 liblvm2cmd2.03
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libncurses6 libnfsidmap1 libnghttp2-14 libnsl2 libnuma1 libnvme1 libpcap0.8
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libpci3 libpcre3 libpng16-16 libpsl5 libpython3-stdlib libpython3.11-minimal
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libpython3.11-stdlib librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libssh2-1 libudns0 liburcu8 libusb-1.0-0 libwrap0 libx86emu3 linux-base
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only linux-image-6.1.0-13-amd64 linux-image-amd64 lshw lua-lpeg lvm2 mdadm
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only media-types netcat-traditional netselect nfs-common nmap nmap-common
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only ntpsec-ntpdate ntpsec-ntpdig numactl nvme-cli openssh-client openssh-server
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only openssh-sftp-server openssl pci.ids pciutils pigz procinfo psmisc python3
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only python3-minimal python3-ntp python3.11 python3.11-minimal rdate
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only reiserfsprogs rpcbind rsync runit-helper smartmontools ssh startpar
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only xfsdump xfsprogs xz-utils zile
 RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
@@ -143,7 +116,7 @@ COPY fai/hooks /srv/fai/config/hooks
 COPY fai/package_config /srv/fai/config/package_config
 COPY fai/scripts /srv/fai/config/scripts
 
-# RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
+# RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
 CMD	test -n "pa.archive.ubuntu.com" && \
 	/etc/init.d/apt-cacher-ng start && \
 	/bin/bash
