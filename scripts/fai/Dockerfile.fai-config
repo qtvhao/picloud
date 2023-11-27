@@ -4,7 +4,7 @@ RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gp
 RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
 RUN echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list
 RUN echo "" >> /etc/apt/sources.list
-RUN apt update && apt install -y fai-quickstart apt-cacher-ng
+RUN apt update && apt-get install -y fai-quickstart apt-cacher-ng
 RUN fai-mk-configspace
 # Thanks to https://raw.githubusercontent.com/ricardobranco777/docker-fai/master/Dockerfile
 
@@ -71,36 +71,37 @@ RUN cp /etc/apt/sources.list /etc/fai/apt/
 # 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y wait-for-it
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y task-xfce-desktop
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y wait-for-it
 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y  dracut-core
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y  fai-client fai-setup-storage file iputils-arping
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y    syslinux-efi zstd 
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only task-xfce-desktop
 
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y btrfs-progs ca-certificates console-common console-data cryptsetup
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y cryptsetup-bin curl dialog dmeventd dosfstools dracut dump efibootmgr
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y gettext-base gpg gpgconf grub-common grub-efi-amd64-bin grub-pc grub-pc-bin
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y grub2-common hdparm hwinfo initscripts insserv kbd keyutils lftp libaio1
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libassuan0 libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libdevmapper-event1.02.1 libefiboot1 libefivar1 libevent-core-2.1-7
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libexpat1 libfido2-1 libfreetype6 libfuse2 libgee-0.8-2 libglib2.0-0 libhd21
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libicu72 libinih1 libldap-2.5-0 liblinear4 liblua5.3-0 liblvm2cmd2.03
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libncurses6 libnfsidmap1 libnghttp2-14 libnsl2 libnuma1 libnvme1 libpcap0.8
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libpci3 libpcre3 libpng16-16 libpsl5 libpython3-stdlib libpython3.11-minimal
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libpython3.11-stdlib librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y libssh2-1 libudns0 liburcu8 libusb-1.0-0 libwrap0 libx86emu3 linux-base
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y linux-image-6.1.0-13-amd64 linux-image-amd64 lshw lua-lpeg lvm2 mdadm
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y media-types netcat-traditional netselect nfs-common nmap nmap-common
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y ntpsec-ntpdate ntpsec-ntpdig numactl nvme-cli openssh-client openssh-server
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y openssh-sftp-server openssl pci.ids pciutils pigz procinfo psmisc python3
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y python3-minimal python3-ntp python3.11 python3.11-minimal rdate
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y reiserfsprogs rpcbind rsync runit-helper smartmontools ssh startpar
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y xfsdump xfsprogs xz-utils zile
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only dracut-core
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only fai-client fai-setup-storage file iputils-arping
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-efi zstd 
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only btrfs-progs ca-certificates console-common console-data cryptsetup
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only cryptsetup-bin curl dialog dmeventd dosfstools dracut dump efibootmgr
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only gettext-base gpg gpgconf grub-common grub-efi-amd64-bin grub-pc grub-pc-bin
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only grub2-common hdparm hwinfo initscripts insserv kbd keyutils lftp libaio1
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libassuan0 libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libdevmapper-event1.02.1 libefiboot1 libefivar1 libevent-core-2.1-7
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libexpat1 libfido2-1 libfreetype6 libfuse2 libgee-0.8-2 libglib2.0-0 libhd21
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libicu72 libinih1 libldap-2.5-0 liblinear4 liblua5.3-0 liblvm2cmd2.03
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libncurses6 libnfsidmap1 libnghttp2-14 libnsl2 libnuma1 libnvme1 libpcap0.8
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libpci3 libpcre3 libpng16-16 libpsl5 libpython3-stdlib libpython3.11-minimal
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libpython3.11-stdlib librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libssh2-1 libudns0 liburcu8 libusb-1.0-0 libwrap0 libx86emu3 linux-base
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only linux-image-6.1.0-13-amd64 linux-image-amd64 lshw lua-lpeg lvm2 mdadm
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only media-types netcat-traditional netselect nfs-common nmap nmap-common
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only ntpsec-ntpdate ntpsec-ntpdig numactl nvme-cli openssh-client openssh-server
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only openssh-sftp-server openssl pci.ids pciutils pigz procinfo psmisc python3
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only python3-minimal python3-ntp python3.11 python3.11-minimal rdate
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only reiserfsprogs rpcbind rsync runit-helper smartmontools ssh startpar
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only xfsdump xfsprogs xz-utils zile
 RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
 RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
 # 
@@ -115,7 +116,7 @@ COPY fai/hooks /srv/fai/config/hooks
 COPY fai/package_config /srv/fai/config/package_config
 COPY fai/scripts /srv/fai/config/scripts
 
-# RUN /etc/init.d/apt-cacher-ng start && apt update && apt install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
+# RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
 CMD	test -n "pa.archive.ubuntu.com" && \
 	/etc/init.d/apt-cacher-ng start && \
 	/bin/bash
