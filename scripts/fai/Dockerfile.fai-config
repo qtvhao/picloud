@@ -85,9 +85,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 # # # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only task-xfce-desktop
 # # # 1.48 GB
 
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/*
-# # # 841.09 MB, this is the size after removing the cache
-
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg && \
 	cp fai-project.gpg /etc/apt/trusted.gpg.d/ && \
 	echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list && \
@@ -121,7 +118,14 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-ins
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only xfsdump xfsprogs xz-utils zile && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
-# # # 941.34 MB
+# 462 MB
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only lightdm && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only tasksel && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only xfce4 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only task-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+# 595 MB, this is the size after removing the cache
 
 # # 
 # RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
