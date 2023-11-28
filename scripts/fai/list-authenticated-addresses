@@ -7,11 +7,14 @@ if [ -z "$IDENTIFY_FILE" ]; then
     exit 1
 fi
 chmod 600 "$IDENTIFY_FILE"
-./pic list-authenticated-addresses $IDENTIFY_FILE | while read -r IP_ADDRESS; do
+LIST_IP_ADDRESSES=$(./pic list-ssh-addresses)
+while IFS= read -r IP_ADDRESS; do
     if [ -z "$IP_ADDRESS" ]; then
         continue
     fi
-    ./pic print-available-node "$IP_ADDRESS" "$IDENTIFY_FILE" &
-done
+    (timeout 2 ssh -T -i "$IDENTIFY_FILE" \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+            "$IP_ADDRESS" > /dev/null 2>&1 && echo "$IP_ADDRESS") &
+done <<< "$LIST_IP_ADDRESSES"
 wait
-echo

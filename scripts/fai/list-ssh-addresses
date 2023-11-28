@@ -1,0 +1,10 @@
+#!/bin/bash
+
+LIST_IP_ADDRESSES=$(./pic list-ip-addresses)
+while IFS= read -r IP_ADDRESS; do
+    if [ -z "$IP_ADDRESS" ]; then
+        continue
+    fi
+    (timeout 1 nc -z $IP_ADDRESS 22 > /dev/null 2>&1 && echo "$IP_ADDRESS") &
+done <<< "$LIST_IP_ADDRESSES"
+wait
