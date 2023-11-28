@@ -85,12 +85,15 @@ else
 fi
 ENCRYPTED_FAI_ROOTPW=$(echo $FAI_ROOTPW | openssl passwd -stdin -6)
 SANITIZED_FAI_ROOTPW=$(echo $ENCRYPTED_FAI_ROOTPW | sed 's/\//\\\//g')
-sed -i "s/FAI_ROOTPW=.*/FAI_ROOTPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/fai-bookworm/nfsroot.conf
-sed -i "s/USERPW=.*/USERPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/class/FAIME.var
+FAIME_VAR_FILE="/srv/fai/config/class/FAIME.var"
+NFS_ROOT_CONF_FILE="/srv/fai/config/fai-bookworm/nfsroot.conf"
+
 docker rm -f fai-setup
 docker run --name fai-setup \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+docker exec -it fai-setup bash -c "sed -i 's/FAI_ROOTPW=.*/FAI_ROOTPW=\"$SANITIZED_FAI_ROOTPW\"/g' $NFS_ROOT_CONF_FILE"
+docker exec -it fai-setup bash -c "sed -i 's/USERPW=.*/USERPW=\"$SANITIZED_FAI_ROOTPW\"/g' $FAIME_VAR_FILE"
 docker cp fai-setup:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-setup.log
 (docker exec -it fai-setup bash -c "rm -rf /srv/fai/nfsroot")
 FAI_SETUP_IMAGE_ID=$(docker image inspect fai-setup-base | jq -r ".[0].Id")
@@ -106,7 +109,6 @@ time docker build -t fai-setup -f Dockerfile.fai-setup .
 echo "Dockerfile.fai-setup built"
 rm Dockerfile.fai-setup
 docker run --name fai \
-    -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
 docker cp fai:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-fai.log
 FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/^sha256://g')
@@ -124,7 +126,6 @@ docker tag $FAI_CD_BASE fai-cd-base
 # 
 echo "Copying ssh key to fai container"
 docker run --net host --name fai \
-    -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
     -v ./dvd/:/dvd/ \
     -v /var/www/html/:/var/www/html/ \
     -v ./fai/pxelinux.cfg/:/srv/tftp/fai/pxelinux.cfg/ \
