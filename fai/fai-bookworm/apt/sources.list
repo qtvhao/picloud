@@ -6,3 +6,4 @@ deb http://127.0.0.1:9999/debian-security bookworm-security main contrib non-fre
 
 # repository that may contain newer fai packages for bookworm
 deb http://fai-project.org/download bookworm koeln
+deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] http://127.0.0.1:9999/mirrors.cloud.tencent.com/docker-ce/linux/debian bookworm stable
