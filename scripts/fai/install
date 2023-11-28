@@ -86,6 +86,7 @@ fi
 ENCRYPTED_FAI_ROOTPW=$(echo $FAI_ROOTPW | openssl passwd -stdin -6)
 SANITIZED_FAI_ROOTPW=$(echo $ENCRYPTED_FAI_ROOTPW | sed 's/\//\\\//g')
 sed -i "s/FAI_ROOTPW=.*/FAI_ROOTPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/fai-bookworm/nfsroot.conf
+sed -i "s/USERPW=.*/USERPW='$SANITIZED_FAI_ROOTPW'/g" ./fai/class/FAIME.var
 docker rm -f fai-setup
 docker run --name fai-setup \
     -v ./fai/fai-bookworm/:/srv/fai/config/fai-bookworm/ \
