@@ -152,7 +152,7 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin
 
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends wait-for-it && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends logsave lsb-release mawk media-types mount mtools netbase nfs-common nfs-kernel-server openbsd-inetd openssh-client openssl passwd && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends logsave lsb-release dosfstools media-types mount mtools netbase nfs-common nfs-kernel-server openbsd-inetd openssh-client openssl passwd && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 
 # # 
 # RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
