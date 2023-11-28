@@ -65,17 +65,16 @@ docker logs fai-config -f &
 timeout 30 docker exec fai-config apt-get install -y --download-only task-xfce-desktop || \
     (echo "fai-config failed to start. Check the logs above." && exit 1)
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
- timeout 480 docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log
+ time docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log
 docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 echo "Fai-setup finished"
 
 docker stop fai-config || true
-docker pull $FAI_SETUP_BASE || true
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-config $FAI_SETUP_BASE
-docker push $FAI_SETUP_BASE
+IMAGE_SIZE=$(docker image inspect $FAI_SETUP_BASE | jq -r ".[0].Size")
+echo "Fai-setup committed: $FAI_SETUP_BASE, size: $IMAGE_SIZE"
 docker rm -f fai-config || true
 echo "Fai-setup committed: $FAI_SETUP_BASE"
-exit 0
 docker tag $FAI_SETUP_BASE fai-setup-base
 # 
 if [ -f "$HOME/.pic/fai-rootpw.json" ]; then
