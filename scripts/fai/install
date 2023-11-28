@@ -181,19 +181,21 @@ echo "All data on the first disk will be overridden without any further confirma
 echo "Ready to burn."
 echo "Rung following command to start PXE server and boot the machine from network."
 echo "    ./pic pxe \$IDENTITY_FILE \$MAC_ADDRESS [\$IP_ADDRESS]"
-
-NODES=$(./pic list-nodename $IDENTITY_FILE)
-for NODE in $NODES; do
+./pic list-nodename $IDENTITY_FILE | while read -r NODE; do
+    if [ -z "$NODE" ]; then
+        continue;
+    fi
     IP_ADDRESS=$(echo $NODE | awk '{print $1}')
     PRODUCT_NAME=$(echo $NODE | awk '{print $3}')
-    echo "IP_ADDRESS: $IP_ADDRESS"
-    echo "PRODUCT_NAME: $PRODUCT_NAME"
+    # echo "IP_ADDRESS: $IP_ADDRESS"
+    # echo "PRODUCT_NAME: $PRODUCT_NAME"
     NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
+    # echo "NETWORK_INTERFACES: $NETWORK_INTERFACES"
     for NETWORK_INTERFACE in $NETWORK_INTERFACES; do
         MAC_ADDRESS=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "cat /sys/class/net/$NETWORK_INTERFACE/address")
         MACHINE_HOSTNAME=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "hostname")
         echo "  - To start PXE server and boot the \"$PRODUCT_NAME\" ($MACHINE_HOSTNAME)."
-        echo "      ./pic pxe \"$IDENTITY_FILE\" \"$MAC_ADDRESS\" \"$IP_ADDRESS\""
+        echo "      ./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
     done
 done
 echo
