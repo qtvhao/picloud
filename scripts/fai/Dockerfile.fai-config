@@ -175,6 +175,7 @@ RUN echo "bpo=" >> /srv/fai/config/class/FAIME.var
 RUN echo "postinst=mac.sh" >> /srv/fai/config/class/FAIME.var
 RUN echo "rclocal=1" >> /srv/fai/config/class/FAIME.var
 RUN echo "repo=\"deb [trusted=yes] https://download.docker.com/linux/debian bookworm stable\"" >> /srv/fai/config/class/FAIME.var
+COPY fai/fai-bookworm/ /srv/fai/config/fai-bookworm/
 COPY fai/debconf /srv/fai/config/debconf
 COPY fai/disk_config /srv/fai/config/disk_config
 COPY fai/files/etc/ /srv/fai/config/files/etc/
