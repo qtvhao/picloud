@@ -187,16 +187,10 @@ echo "    ./pic pxe \$IDENTITY_FILE \$MAC_ADDRESS [\$IP_ADDRESS]"
     fi
     IP_ADDRESS=$(echo $NODE | awk '{print $1}')
     PRODUCT_NAME=$(echo $NODE | awk '{print $3}')
-    # echo "IP_ADDRESS: $IP_ADDRESS"
-    # echo "PRODUCT_NAME: $PRODUCT_NAME"
     NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
-    # echo "NETWORK_INTERFACES: $NETWORK_INTERFACES"
-    for NETWORK_INTERFACE in $NETWORK_INTERFACES; do
-        MAC_ADDRESS=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "cat /sys/class/net/$NETWORK_INTERFACE/address")
-        MACHINE_HOSTNAME=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "hostname")
-        echo "  - To start PXE server and boot the \"$PRODUCT_NAME\" ($MACHINE_HOSTNAME)."
-        echo "      ./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
-    done
+    MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
+    echo "  - To start PXE server and boot the \"$PRODUCT_NAME\" ($IP_ADDRESS)."
+    echo "      ./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
 done
 echo
 echo "Run the following command to burn the image to a USB stick:"
