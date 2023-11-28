@@ -2,6 +2,7 @@ FROM fai-setup-base
 
 RUN mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/
 RUN mkdir -p /srv/fai/nfsroot/usr/share/keyrings/
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /srv/fai/nfsroot/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
 RUN curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
 RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
