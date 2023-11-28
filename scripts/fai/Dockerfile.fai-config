@@ -21,9 +21,17 @@ RUN apt-get update && \
 	apt-get install --no-install-recommends -y \
 		binutils binutils-common binutils-x86-64-linux-gnu debconf-utils debootstrap \
 		dirmngr dmsetup file gnupg \
-		gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf \
+		gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin
+
+RUN apt-get update && \
+	apt-get install --no-install-recommends -y \
 		gpgsm iproute2 isc-dhcp-server keyutils libarchive13 libassuan0 libbinutils \
-		libbpf1 libbsd0 libburn4 libcap2-bin libctf-nobfd0 libctf0 \
+		libbpf1 libbsd0 libburn4 libcap2-bin libctf-nobfd0 libctf0 && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin
+
+RUN apt-get update && \
+	apt-get install --no-install-recommends -y \
 		libdevmapper1.02.1 libelf1 libevent-2.1-7 libevent-core-2.1-7 \
 		libfile-lchown-perl libgdbm-compat4 libgpgme11 libgprofng0 libicu72 && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin
