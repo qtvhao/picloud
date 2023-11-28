@@ -128,24 +128,24 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-ins
 # 595 MB, this is the size after removing the cache
 
 # # 
-# RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
-# RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
-# RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
-# RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
-# RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
-# # 
-# COPY fai/basefiles /srv/fai/config/basefiles
-# COPY fai/class /srv/fai/config/class
-# COPY fai/debconf /srv/fai/config/debconf
-# COPY fai/disk_config /srv/fai/config/disk_config
-# COPY fai/files/etc/ /srv/fai/config/files/etc/
-# COPY fai/files/postinst /srv/fai/config/files/postinst
-# COPY fai/grub.cfg.install-only /srv/fai/config/grub.cfg.install-only
-# COPY fai/hooks /srv/fai/config/hooks
-# COPY fai/package_config /srv/fai/config/package_config
-# COPY fai/scripts /srv/fai/config/scripts
+RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
+RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
+RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
+RUN echo "" > /var/log/apt-cacher-ng/apt-cacher.log
+RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
+# 
+COPY fai/basefiles /srv/fai/config/basefiles
+COPY fai/class /srv/fai/config/class
+COPY fai/debconf /srv/fai/config/debconf
+COPY fai/disk_config /srv/fai/config/disk_config
+COPY fai/files/etc/ /srv/fai/config/files/etc/
+COPY fai/files/postinst /srv/fai/config/files/postinst
+COPY fai/grub.cfg.install-only /srv/fai/config/grub.cfg.install-only
+COPY fai/hooks /srv/fai/config/hooks
+COPY fai/package_config /srv/fai/config/package_config
+COPY fai/scripts /srv/fai/config/scripts
 
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
-# CMD	test -n "pa.archive.ubuntu.com" && \
-# 	/etc/init.d/apt-cacher-ng start && \
-# 	/bin/bash
+# RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y nfs-common rpcbind rsync lshw procinfo dump reiserfsprogs xfsprogs xfsdump btrfs-progs hwinfo hdparm smartmontools nvme-cli rdate zile numactl udns-utils netcat-traditional nmap pxelinux syslinux-common ca-certificates usbutils pciutils ssh netselect mdadm live-boot- initramfs-tools- -generic sysvinit-core systemd-sysv- curl lftp less ntpdate dosfstools lvm2 psmisc dialog console-common kbd xz-utils pigz grub-pc grub-efi-amd64-bin efibootmgr linux-image-amd64 fdisk gpg
+CMD	test -n "pa.archive.ubuntu.com" && \
+	/etc/init.d/apt-cacher-ng start && \
+	/bin/bash
