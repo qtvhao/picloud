@@ -66,28 +66,16 @@ RUN apt-get update && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin
 
 # Configuration
-RUN rm /etc/apt/sources.list.d/debian.sources
-RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list
-RUN echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list
-RUN echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list
-RUN echo "deb http://fai-project.org/download bookworm koeln" >> /etc/apt/sources.list
-# find and replace deb.debian.org with 127.0.0.1:9999 in 
-RUN	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
+RUN rm /etc/apt/sources.list.d/debian.sources && \
+	echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs) 				main" > /etc/apt/sources.list && \
+	echo "deb http://127.0.0.1:9999/debian/ 			$(lsb_release -cs)-updates 		main" >> /etc/apt/sources.list && \
+	echo "deb http://127.0.0.1:9999/debian-security/ 	$(lsb_release -cs)-security 	main" >> /etc/apt/sources.list && \
+	echo "deb http://fai-project.org/download bookworm koeln" >> /etc/apt/sources.list && \
+	sed -ri 's/^(# )?Port:3142/Port:9999/' /etc/apt-cacher-ng/acng.conf && \
 	sed -ri 's/^Remap-(gentoo|sfnet):/#&/' /etc/apt-cacher-ng/acng.conf && \
-	echo "http://deb.debian.org/debian" > /etc/apt-cacher-ng/backends_debian
-	#  && \
-	# sed -ri "s%^(FAI_DEBOOTSTRAP)=.*%\1=\"\"%" /etc/fai/nfsroot.conf && \
-	# cp /etc/apt/sources.list /etc/fai/apt/
-	#  && \
-	# sed -i 's%http://%&127.0.0.1:9999/%' /etc/fai/apt/sources.list && \
-	# mkdir -p /etc/fai/faimirror/apt && \
-	# cp /etc/fai/fai.conf /etc/fai/faimirror && \
-	# cp /etc/fai/nfsroot.conf /etc/fai/faimirror
-    #  && \
-	# chmod +x /etc/fai/nfsroot-hooks/* && \
-	# chmod +x /usr/local/bin/*
-RUN sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf
-RUN cp /etc/apt/sources.list /etc/fai/apt/
+	echo "http://deb.debian.org/debian" > /etc/apt-cacher-ng/backends_debian && \
+	sed -i 's%^\(FAI_DEBOOTSTRAP\)=.*%\1="'$(lsb_release -cs)' http://127.0.0.1:9999/debian"%' /etc/fai/nfsroot.conf && \
+	cp /etc/apt/sources.list /etc/fai/apt/
 # 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -97,37 +85,42 @@ ARG DEBIAN_FRONTEND=noninteractive
 # # # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only task-xfce-desktop
 # # # 1.48 GB
 
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/*
+# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/*
 # # # 841.09 MB, this is the size after removing the cache
 
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only dracut-core && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only fai-client fai-setup-storage file iputils-arping && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-efi zstd 
+RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg && \
+	cp fai-project.gpg /etc/apt/trusted.gpg.d/ && \
+	echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list && \
+	echo "" >> /etc/apt/sources.list
 
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only btrfs-progs ca-certificates console-common console-data cryptsetup && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only cryptsetup-bin curl dialog dmeventd dosfstools dracut dump efibootmgr && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only gettext-base gpg gpgconf grub-common grub-efi-amd64-bin grub-pc grub-pc-bin && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only grub2-common hdparm hwinfo initscripts insserv kbd keyutils lftp libaio1 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libassuan0 libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libdevmapper-event1.02.1 libefiboot1 libefivar1 libevent-core-2.1-7 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libexpat1 libfido2-1 libfreetype6 libfuse2 libgee-0.8-2 libglib2.0-0 libhd21 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libicu72 libinih1 libldap-2.5-0 liblinear4 liblua5.3-0 liblvm2cmd2.03 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libncurses6 libnfsidmap1 libnghttp2-14 libnsl2 libnuma1 libnvme1 libpcap0.8 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libpci3 libpcre3 libpng16-16 libpsl5 libpython3-stdlib libpython3.11-minimal && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libpython3.11-stdlib librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only libssh2-1 libudns0 liburcu8 libusb-1.0-0 libwrap0 libx86emu3 linux-base && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only linux-image-6.1.0-13-amd64 linux-image-amd64 lshw lua-lpeg lvm2 mdadm && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only media-types netcat-traditional netselect nfs-common nmap nmap-common && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only ntpsec-ntpdate ntpsec-ntpdig numactl nvme-cli openssh-client openssh-server && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only openssh-sftp-server openssl pci.ids pciutils pigz procinfo psmisc python3 && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only python3-minimal python3-ntp python3.11 python3.11-minimal rdate && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only reiserfsprogs rpcbind rsync runit-helper smartmontools ssh startpar && rm -rf /var/cache/apt/archives/*
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime && rm -rf /var/cache/apt/archives/*
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only dracut-core && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only fai-client fai-setup-storage file iputils-arping && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libperl5.36 parted patch perl perl-modules-5.36 pxelinux squashfs-tools && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only syslinux-efi zstd 
 
-# # RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --download-only xfsdump xfsprogs xz-utils zile && rm -rf /var/cache/apt/archives/*
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only btrfs-progs ca-certificates console-common console-data cryptsetup && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only cryptsetup-bin curl dialog dmeventd dosfstools dracut dump efibootmgr && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only gettext-base gpg gpgconf grub-common grub-efi-amd64-bin grub-pc grub-pc-bin && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only grub2-common hdparm hwinfo initscripts insserv kbd keyutils lftp libaio1 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libassuan0 libblas3 libbrotli1 libcbor0.8 libcurl4 libdbus-1-3 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libdevmapper-event1.02.1 libefiboot1 libefivar1 libevent-core-2.1-7 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libexpat1 libfido2-1 libfreetype6 libfuse2 libgee-0.8-2 libglib2.0-0 libhd21 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libicu72 libinih1 libldap-2.5-0 liblinear4 liblua5.3-0 liblvm2cmd2.03 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libncurses6 libnfsidmap1 libnghttp2-14 libnsl2 libnuma1 libnvme1 libpcap0.8 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libpci3 libpcre3 libpng16-16 libpsl5 libpython3-stdlib libpython3.11-minimal && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libpython3.11-stdlib librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only libssh2-1 libudns0 liburcu8 libusb-1.0-0 libwrap0 libx86emu3 linux-base && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only linux-image-6.1.0-13-amd64 linux-image-amd64 lshw lua-lpeg lvm2 mdadm && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only media-types netcat-traditional netselect nfs-common nmap nmap-common && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only ntpsec-ntpdate ntpsec-ntpdig numactl nvme-cli openssh-client openssh-server && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only openssh-sftp-server openssl pci.ids pciutils pigz procinfo psmisc python3 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only python3-minimal python3-ntp python3.11 python3.11-minimal rdate && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only reiserfsprogs rpcbind rsync runit-helper smartmontools ssh startpar && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only syslinux-common sysv-rc sysvinit-core ucf udns-utils usbutils uuid-runtime && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only xfsdump xfsprogs xz-utils zile && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 # # # 941.34 MB
 
 # # 
