@@ -29,7 +29,7 @@ rm ./dvd/$HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
 docker rm -f fai || true
-export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,GNOME,FAIME,GRUB_PC,GRUB_EFI,AMD64"
+export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,HALT,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 docker rm -f apt-cacher-ng || true
 # warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
@@ -62,7 +62,7 @@ docker run --name fai-config \
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker logs fai-config -f &
-timeout 30 docker exec fai-config apt-get install -y --download-only task-xfce-desktop || \
+docker exec fai-config bash -c "apt update && timeout 30 apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean" || \
     (echo "fai-config failed to start. Check the logs above." && exit 1)
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
  time docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log

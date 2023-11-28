@@ -3,11 +3,7 @@ docker-ce
 docker-ce-cli
 containerd.io
 docker-buildx-plugin
-xrdp
-xorg
-nvidia-detect
-nvidia-tesla-470-driver
-xorgxrdp
+task-xfce-desktop
 curl
 wget
 git
