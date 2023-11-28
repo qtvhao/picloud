@@ -10,6 +10,15 @@ rm fai-setup.log > /dev/null 2>&1 || true
 args=("$@")
 HOSTNAME=${args[0]}
 GITHUB_USERNAME=${args[1]}
+IDENTITY_FILE=${args[2]}
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty"
+    exit 1
+fi
+if [ ! -f "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE does not exist"
+    exit 1
+fi
 if [ -z "$GITHUB_USERNAME" ]; then
     echo "In order to connect to machines, you need to add your public ssh key to github."
     echo "Visit https://github.com/settings/keys to add your public ssh key."
@@ -171,7 +180,19 @@ echo "This image will do an unattended installation of Debian and the selected a
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
 echo "Rung following command to start PXE server and boot the machine from network."
-echo "    ./pic pxe \$MAC_ADDRESS \$IDENTITY_FILE [\$IP_ADDRESS]"
+echo "    ./pic pxe \$IDENTITY_FILE \$MAC_ADDRESS [\$IP_ADDRESS]"
+
+NODES=$(./pic list-nodename $IDENTITY_FILE | awk '{print $1}')
+for NODE in $NODES; do
+    NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE root@$NODE "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
+    for NETWORK_INTERFACE in $NETWORK_INTERFACES; do
+        MAC_ADDRESS=$(ssh -i $IDENTITY_FILE root@$NODE "cat /sys/class/net/$NETWORK_INTERFACE/address")
+        MACHINE_HOSTNAME=$(ssh -i $IDENTITY_FILE root@$NODE "hostname")
+        echo "  - Run following command to start PXE server and boot the \"$MACHINE_HOSTNAME\" machine"
+        echo "      ./pic pxe \"$IDENTITY_FILE\" \"$MAC_ADDRESS\" \"$NODE\""
+    done
+done
+echo
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"
