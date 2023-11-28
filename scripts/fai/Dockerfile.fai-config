@@ -88,7 +88,7 @@ RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gp
 	echo "" >> /etc/apt/sources.list
 
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only docker-ce docker-ce-cli containerd.io docker-buildx-plugin && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
-RUN /etc/init.d/apt-cacher-ng start && apt update && apt1-get install -y --no-install-recommends --download-only dracut-core && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only dracut-core && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only fai-client fai-setup-storage file iputils-arping && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only kpartx libfile-lchown-perl libgdbm-compat4 libgdbm6 liblinux-lvm-perl && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only liblzo2-2 libmagic-mgc libmagic1 libparse-recdescent-perl libparted2 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
