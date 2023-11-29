@@ -1,0 +1,30 @@
+#!/bin/bash
+set -eo pipefail
+args=("$@")
+IDENTITY_FILE=${args[0]}
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty. Specify a identify file for the new machine."
+    echo "Usage: ./pic print-available-node IDENTIFY_FILE"
+    exit 1
+fi
+if [ ! -f "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE does not exist. Specify a identify file for the new machine."
+    echo "Usage: ./pic print-available-node IDENTIFY_FILE"
+    exit 1
+fi
+hostnameI=$(hostname -I | awk '{print $1}')
+echo "hostnameI: $hostnameI"
+./pic list-nodename $IDENTITY_FILE | while read -r NODE; do
+    if [ -z "$NODE" ]; then
+        continue;
+    fi
+    IP_ADDRESS=$(echo $NODE | awk '{print $1}')
+    PRODUCT_NAME=$(echo $NODE | awk '{print $3}')
+    if [ "$IP_ADDRESS" == "$hostnameI" ]; then
+        continue;
+    fi
+    NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
+    MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
+    echo "./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
+    ./pic pxe "$MAC_ADDRESS" "$IDENTITY_FILE" "$IP_ADDRESS"
+done
