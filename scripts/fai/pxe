@@ -35,7 +35,7 @@ echo "Provisioning on metal machine"
 # echo "/srv/fai/config $hostnameI/16(async,ro,no_subtree_check)" > ./exports
 # echo "/srv/fai/nfsroot $hostnameI/16(async,ro,no_subtree_check,no_root_squash)" >> ./exports
 # docker cp ./exports fai:/etc/exports
-SQUASH_IMG_FILESIZE_HUMAN=$( docker exec -it fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}' )
+SQUASH_IMG_FILESIZE_HUMAN=$( docker exec fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}' )
 if [ -f "./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER" ]; then
     mkdir -p ./fai/pxelinux.cfg/ || true
     URL="https://raw.githubusercontent.com/qtvhao/picloud/main/fai/pxelinux.cfg/default"
