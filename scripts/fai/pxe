@@ -70,8 +70,8 @@ else
     echo "Squash.img is not ready. Waiting for it to be ready: $SQUASH_IMG_URL"
     exit 1
 fi
-docker exec -it fai bash -c "rm /tmp/dnsmasq.log || true"
-docker exec -it fai bash -c "dnsmasq"
+docker exec fai bash -c "rm /tmp/dnsmasq.log || true"
+docker exec fai bash -c "dnsmasq"
 echo "Shutting down node"
 if [ -z "$IP_ADDRESS_TO_TURN_OFF" ]; then
     echo "IP_ADDRESS_TO_TURN_OFF is empty"
