@@ -13,10 +13,11 @@ if [ ! -f "$IDENTITY_FILE" ]; then
     exit 1
 fi
 hostnameI=$(hostname -I | awk '{print $1}')
-echo "hostnameI: $hostnameI"
-LIST_NODENAME=$(./pic list-nodename $IDENTITY_FILE)
-echo "LIST_NODENAME: $LIST_NODENAME"
-while IFS= read -r NODE; do
+# echo "hostnameI: $hostnameI"
+LIST_NODENAME=$(./pic list-nodename $IDENTITY_FILE | grep -v $hostnameI | awk '{print $1}')
+echo;
+for NODE in $LIST_NODENAME; do
+    echo "NODE: $NODE"
     if [ -z "$NODE" ]; then
         continue;
     fi
@@ -27,9 +28,10 @@ while IFS= read -r NODE; do
     fi
     NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
     MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
+    echo "MAC_ADDRESS: $MAC_ADDRESS"
     # echo "./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
     ./pic pxe "$MAC_ADDRESS" "$IDENTITY_FILE" "$IP_ADDRESS" || true
-done <<< "$LIST_NODENAME"
+done
 echo;echo;
 ./pic list-nodename $IDENTITY_FILE
 echo "Done"
