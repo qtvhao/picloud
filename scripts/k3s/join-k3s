@@ -21,9 +21,12 @@ if [ ! -f $IDENTIFY_FILE ]; then
 fi
 set -xeo pipefail
 REGISTRY_FOLDER="/var/lib/registry/"
-ssh -i $IDENTIFY_FILE $IP_ADDRESS "rm -rf $REGISTRY_FOLDER" || true
-ssh -i $IDENTIFY_FILE $IP_ADDRESS "mkdir -p $REGISTRY_FOLDER" || true
-time rsync -avzP -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $IP_ADDRESS:$REGISTRY_FOLDER
+# if $REGISTRY_FOLDER exists
+if [ -d "$REGISTRY_FOLDER" ]; then
+    ssh -i $IDENTIFY_FILE $NODE_IP "rm -rf $REGISTRY_FOLDER" || true
+    ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
+    time rsync -avzP -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
+fi
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
