@@ -2,11 +2,11 @@
 set -x -e -o pipefail
 args=("$@")
 MAC_ADDRESS=${args[0]}
+hostnameI=$(hostname -I | awk '{print $1}')
 if [ -z "$MAC_ADDRESS" ]; then
     echo "MAC_ADDRESS is empty"
     docker rm -f fai-nginx || true
     docker run -d -p 8080:80 --name fai-nginx -v ./dvd/:/usr/share/nginx/html:ro nginx
-    hostnameI=$(hostname -I | awk '{print $1}')
     ISO_FILES=$(ls ./dvd/)
     echo
     for ISO_FILE in $ISO_FILES; do
@@ -22,6 +22,10 @@ fi
 IP_ADDRESS_TO_TURN_OFF=${args[2]}
 if [ -z "$IP_ADDRESS_TO_TURN_OFF" ]; then
     echo "IP_ADDRESS_TO_TURN_OFF is empty"
+fi
+if [ $IP_ADDRESS_TO_TURN_OFF == $hostnameI ]; then
+    echo "IP_ADDRESS_TO_TURN_OFF is the same as PXE server. Exiting"
+    exit 1
 fi
 warp-cli disconnect || true
 # echo "ISO_FILE: $ISO_FILE"
@@ -92,8 +96,10 @@ wakeonlan $MAC_ADDRESS
 IP_ADDRESS_FILE="$HOME/.pic/$MAC_ADDRESS-IP_ADDRESS.txt"
 IP_ADDRESS=$(cat $IP_ADDRESS_FILE)
 REGISTRY_FOLDER="/var/lib/registry/"
-ssh -i $IDENTITY_FILE root@$IP_ADDRESS "rm -rf $REGISTRY_FOLDER" || true
-time rsync -avP -e "ssh -i $IDENTITY_FILE" $REGISTRY_FOLDER $IP_ADDRESS:$REGISTRY_FOLDER
+ssh -i $IDENTITY_FILE $IP_ADDRESS "rm -rf $REGISTRY_FOLDER" || true
+ssh -i $IDENTITY_FILE $IP_ADDRESS "mkdir -p $REGISTRY_FOLDER" || true
+time rsync -avzP -e "ssh -i $IDENTITY_FILE" $REGISTRY_FOLDER $IP_ADDRESS:$REGISTRY_FOLDER
+
 # with avP, the -P option is implied, which is --partial --progress ( --partial enables resuming partial transfers)
 echo
 ssh -i $IDENTITY_FILE root@$IP_ADDRESS "cat /etc/os-release"
