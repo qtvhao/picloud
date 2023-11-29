@@ -25,6 +25,6 @@ echo "hostnameI: $hostnameI"
     fi
     NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
     MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
-    echo "./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
+    # echo "./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
     ./pic pxe "$MAC_ADDRESS" "$IDENTITY_FILE" "$IP_ADDRESS"
 done
