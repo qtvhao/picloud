@@ -11,14 +11,7 @@ args=("$@")
 HOSTNAME=${args[0]}
 GITHUB_USERNAME=${args[1]}
 IDENTITY_FILE=${args[2]}
-if [ -z "$IDENTITY_FILE" ]; then
-    echo "IDENTITY_FILE is empty"
-    exit 1
-fi
-if [ ! -f "$IDENTITY_FILE" ]; then
-    echo "IDENTITY_FILE does not exist"
-    exit 1
-fi
+
 if [ -z "$GITHUB_USERNAME" ]; then
     echo "In order to connect to machines, you need to add your public ssh key to github."
     echo "Visit https://github.com/settings/keys to add your public ssh key."
@@ -181,17 +174,19 @@ echo "All data on the first disk will be overridden without any further confirma
 echo "Ready to burn."
 echo "Rung following command to start PXE server and boot the machine from network."
 echo "    ./pic pxe \$IDENTITY_FILE \$MAC_ADDRESS [\$IP_ADDRESS]"
-./pic list-nodename $IDENTITY_FILE | while read -r NODE; do
-    if [ -z "$NODE" ]; then
-        continue;
-    fi
-    IP_ADDRESS=$(echo $NODE | awk '{print $1}')
-    PRODUCT_NAME=$(echo $NODE | awk '{print $3}')
-    NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
-    MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
-    echo "  - To start PXE server and boot the \"$PRODUCT_NAME\" ($IP_ADDRESS)."
-    echo "      ./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
-done
+if [ ! -z "$IDENTITY_FILE" ]; then
+    ./pic list-nodename $IDENTITY_FILE | while read -r NODE; do
+        if [ -z "$NODE" ]; then
+            continue;
+        fi
+        IP_ADDRESS=$(echo $NODE | awk '{print $1}')
+        PRODUCT_NAME=$(echo $NODE | awk '{print $3}')
+        NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
+        MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
+        echo "  - To start PXE server and boot the \"$PRODUCT_NAME\" ($IP_ADDRESS)."
+        echo "      ./pic pxe \"$MAC_ADDRESS\" \"$IDENTITY_FILE\" \"$IP_ADDRESS\""
+    done
+fi
 echo
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
