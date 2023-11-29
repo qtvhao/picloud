@@ -42,4 +42,6 @@ BOOT_TIME=$(ssh \
     -i "$IDENTIFY_FILE" \
     -o PasswordAuthentication=no \
     $IP_ADDRESS "stat -c %W /var/log/fai/localhost/last/boot.log")
-echo "$IP_ADDRESS $BOOT_TIME $PRODUCT_NAME"
+HUMAN_DIFF_SECONDS=$(echo "$(date +%s) - $BOOT_TIME" | bc)
+# echo "HUMAN_DIFF_SECONDS: $HUMAN_DIFF_SECONDS"
+echo "$IP_ADDRESS "$HUMAN_DIFF_SECONDS"_seconds_ago $PRODUCT_NAME"
