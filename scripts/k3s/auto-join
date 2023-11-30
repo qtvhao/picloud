@@ -8,6 +8,7 @@ if [ -z "$IDENTIFY_FILE" ]; then
     echo "Usage: ./pic auto-join IDENTIFY_FILE"
     exit 1
 fi
+LOGS_DIR="$HOME/.pic/logs"
 if [ ! -f "NODES" ]; then
     ./pic discover-nodes $IDENTIFY_FILE
 fi
