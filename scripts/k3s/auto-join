@@ -21,7 +21,7 @@ cat NODES | while IFS= read -r node; do
     ssh-keygen -R "$node" > /dev/null 2>&1 || true
     ssh-keyscan "$node" >> /root/.ssh/known_hosts 2>&1
     echo "Joining node $node"
-    ( time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log)
+    ./pic join-k3s "$node" "$IDENTIFY_FILE"
     JOINED_NODES="$JOINED_NODES $node"
 done
 echo "All nodes are joined: $JOINED_NODES"
