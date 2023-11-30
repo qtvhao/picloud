@@ -129,6 +129,7 @@ TUNNEL_FILE="$HOME/.cloudflared/$TUNNEL_ID.json"
 if [ ! -f "$TUNNEL_FILE" ]; then
     # remove old tunnel
     echo "Deleting old tunnel $TUNNEL_NAME"
+    kubectl delete deploy -n $TUNNEL_NAMESPACE $CONTAINER_TUNNEL_NAME || true
     cloudflared tunnel delete $TUNNEL_NAME
     echo "Tunnel $TUNNEL_NAME deleted because it was not found in $TUNNEL_FILE"
     ./pic expose $TUNNEL_PROTOCOL $TUNNEL_HOSTNAME $TUNNEL_PORT
