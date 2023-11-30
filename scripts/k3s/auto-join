@@ -21,7 +21,7 @@ cat NODES | while IFS= read -r node; do
     echo "Joining node $node"
     ( time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log) &
 done
-wait $(jobs -p)
+wait
 cat NODES | while IFS= read -r node; do
     if [ -z "$node" ]; then
         continue
