@@ -20,8 +20,10 @@ kubectl get secret --namespace loki grafana || \
     kubectl create secret generic grafana --namespace loki --from-literal=admin-password=$PASSWORD --from-literal=admin-user=$USERNAME --from-literal=ldap-toml=""
 # helm install grafana grafana/grafana --namespace=loki
 helm upgrade --install --namespace loki promtail grafana/promtail
-helm upgrade --install --namespace loki loki grafana/loki \
-    --set "loki.persistence.storageClassName=local-path"
+helm upgrade --install --namespace loki loki grafana/loki           \
+    --set       "loki.persistence.storageClassName=local-path"      \
+    --set       "backend.persistence.storageClassName=local-path"   \
+    --set       "write.persistence.storageClassName=local-path"
 helm upgrade --install --set "admin.existingSecret=grafana" --namespace loki grafana grafana/grafana
 PASSWORD=$(kubectl get secret --namespace loki grafana -o jsonpath="{.data.admin-password}" | base64 --decode)
 echo "Grafana admin password: $PASSWORD"
