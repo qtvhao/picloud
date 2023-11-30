@@ -37,7 +37,7 @@ docker rm -f apt-cacher-ng || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
 
 (docker buildx ls | grep docker.sock) || docker buildx create --use
-notes=" (optional, you can skip this step if you don't want to push the image to docker.io, press Ctrl+C to skip)"
+notes=" (optional, you can skip this step if you don't want to push the image to docker.io, press Enter to skip)"
 (cat /root/.docker/config.json | grep index.docker.io) || \
     ( echo "Login to docker.io as $GITHUB_USERNAME $notes: https://hub.docker.com/settings/security?generateToken=true" && \
     docker login -u $GITHUB_USERNAME) || true
