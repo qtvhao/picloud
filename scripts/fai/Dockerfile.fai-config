@@ -81,6 +81,8 @@ RUN rm /etc/apt/sources.list.d/debian.sources && \
 # http://mirrors.cloud.tencent.com/docker-ce/linux/debian/dists/bookworm/stable/
 # http://mirrors.huaweicloud.com/docker-ce/linux/debian/dists/bookworm/stable/
 ARG DEBIAN_FRONTEND=noninteractive
+RUN mkdir -p /etc/apt/keyrings/
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg && \
 	cp fai-project.gpg /etc/apt/trusted.gpg.d/ && \
@@ -123,6 +125,7 @@ RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-ins
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only xfce4 && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only task-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
+RUN /etc/init.d/apt-cacher-ng start && apt update && apt-get install -y --no-install-recommends --download-only nodejs && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean
 # 595 MB, this is the size after removing the cache
 
 
