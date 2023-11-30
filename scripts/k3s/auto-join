@@ -13,6 +13,7 @@ if [ ! -f "NODES" ]; then
     ./pic discover-nodes $IDENTIFY_FILE
 fi
 echo "" >> NODES
+JOINED_NODES=""
 cat NODES | while IFS= read -r node; do
     if [ -z "$node" ]; then
         continue
@@ -21,9 +22,10 @@ cat NODES | while IFS= read -r node; do
     ssh-keyscan "$node" >> /root/.ssh/known_hosts 2>&1
     echo "Joining node $node"
     ( time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log)
+    JOINED_NODES="$JOINED_NODES $node"
 done
-wait
-echo "All nodes are joined"
+echo "All nodes are joined: $JOINED_NODES"
+echo
 cat NODES | while IFS= read -r node; do
     if [ -z "$node" ]; then
         continue
