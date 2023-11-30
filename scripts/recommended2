@@ -34,6 +34,12 @@ echo "Installing recommended packages 1"
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 rm $HOME/.pic/expose-* || true
 # 
+if [ -f NODES ]; then
+    while IFS= read -r line; do
+        timeout 5 ssh -i $IDENTIFY_FILE $line "Node $line is ready." || \
+            (echo "Node $line is not ready. Please check your network connection and try again." && exit 1)
+    done < NODES
+fi
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
 
 FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
