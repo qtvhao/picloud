@@ -11,6 +11,8 @@ fi
 set -e -o pipefail
 stat ~/.ssh/id_rsa.pub || ssh-keygen
 args=("$@")
+PIC_DIR="$HOME/.pic"
+
 IDENTIFY_FILE=${args[0]}
 echo "IDENTIFY_FILE: $IDENTIFY_FILE"
 if [ -z "$IDENTIFY_FILE" ]; then
@@ -36,6 +38,9 @@ rm $HOME/.pic/expose-* || true
 # 
 if [ -f NODES ]; then
     while IFS= read -r line; do
+        if [ -z "$line" ]; then
+            continue
+        fi
         timeout 5 ssh -i $IDENTIFY_FILE -o StrictHostKeyChecking=no -o ConnectTimeout=5 "$line" echo "Node $line is ready" || \
             (echo "Node $line is not ready. Please check your network connection and try again." && exit 1)
     done < NODES
