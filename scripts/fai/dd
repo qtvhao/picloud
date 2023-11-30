@@ -35,10 +35,12 @@ echo "Cluster size: 8192 bytes (default)"
 # Create extended label and icon files
 (dd if=/dev/zero of=$USB_DEVICE bs=512 count=1 conv=notrunc && sync)
 # Create partition table
+echo "Creating partition table"
 parted -s $USB_DEVICE mklabel gpt
 parted -s $USB_DEVICE mkpart primary fat32 0% 100%
 # mkfs.vfat -F 32 -n "FAI" -I $USB_DEVICE
 # set partition bootable
+echo "Setting partition bootable"
 parted -s $USB_DEVICE set 1 boot on
 # parted -s $USB_DEVICE set 1 lba on
 echo
