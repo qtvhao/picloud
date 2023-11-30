@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -xeo pipefail
+PIC_DIR="$HOME/.pic"
+LOGS_DIR="$PIC_DIR/logs/"
+IDENTIFY_FILE="$HOME/id_rsa"
+echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
+( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log))
+( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log))
+GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
+( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log)
