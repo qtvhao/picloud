@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -xeo pipefail
+PIC_DIR="$HOME/.pic"
+LOGS_DIR="$PIC_DIR/logs/"
+IDENTIFY_FILE="$HOME/id_rsa"
+time ./pic recommended1 $HOME/id_rsa | tee recommended.log
+GITLAB_ROOT_GENERATED_PASSWORD=$(openssl rand -hex 16)
+( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log)
