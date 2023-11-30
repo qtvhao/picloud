@@ -25,7 +25,8 @@ REGISTRY_FOLDER="/var/lib/registry/"
 if [ -d "$REGISTRY_FOLDER" ]; then
     ssh -i $IDENTIFY_FILE $NODE_IP "rm -rf $REGISTRY_FOLDER" || true
     ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
-    time rsync -avzP -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
+    time rsync -avz -q -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
+    # set quite mode, set -q
 fi
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
@@ -117,4 +118,4 @@ echo "Joined worker node to this cluster"
 #     fi
 #     sleep 5
 # done
-echo "Node $NODE_NAME is ready"
+echo "Node $K3S_NODE_NAME is ready"

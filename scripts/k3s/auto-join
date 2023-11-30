@@ -11,13 +11,14 @@ fi
 if [ ! -f "NODES" ]; then
     ./pic discover-nodes $IDENTIFY_FILE
 fi
-while read node; do
+echo "" >> NODES
+cat NODES | while IFS= read -r node; do
     if [ -z "$node" ]; then
         continue
     fi
     ssh-keygen -R "$node" || true
     ssh-keyscan "$node" >> /root/.ssh/known_hosts
     ( time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log) &
-done < NODES
-
+done
 wait $(jobs -p)
+echo "All nodes are ready"
