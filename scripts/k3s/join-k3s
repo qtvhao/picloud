@@ -88,5 +88,7 @@ while true; do
     sleep 10
     kubectl label node $K3S_NODE_NAME --overwrite added-numberth=add-$COUNT_NODES && break || echo "Retrying to label node"
 done
+(kubectl get node -o wide | grep "$NODE_IP") || (echo "Node $NODE_IP is not ready" && exit 1)
+(kubectl get node -o wide | grep "$K3S_NODE_NAME") || (echo "Node $K3S_NODE_NAME is not ready" && exit 1)
 
 echo "Node $K3S_NODE_NAME is ready"

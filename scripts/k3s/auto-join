@@ -14,7 +14,7 @@ if [ ! -f "NODES" ]; then
 fi
 echo "" >> NODES
 JOINED_NODES=""
-cat NODES | while IFS= read -r node; do
+while IFS= read -r node; do
     if [ -z "$node" ]; then
         continue
     fi
@@ -23,14 +23,6 @@ cat NODES | while IFS= read -r node; do
     echo "Joining node $node"
     ./pic join-k3s "$node" "$IDENTIFY_FILE"
     JOINED_NODES="$JOINED_NODES $node"
-done
+done < NODES
 echo "All nodes are joined: $JOINED_NODES"
-echo
-cat NODES | while IFS= read -r node; do
-    if [ -z "$node" ]; then
-        continue
-    fi
-    (kubectl get node -o wide | grep "$node") || (echo "Node $node is not ready" && exit 1)
-    echo "Node $node is ready"
-done
 echo "All nodes are ready"
