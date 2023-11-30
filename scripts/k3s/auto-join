@@ -16,9 +16,17 @@ cat NODES | while IFS= read -r node; do
     if [ -z "$node" ]; then
         continue
     fi
-    ssh-keygen -R "$node" || true
-    ssh-keyscan "$node" >> /root/.ssh/known_hosts
+    ssh-keygen -R "$node" > /dev/null 2>&1 || true
+    ssh-keyscan "$node" >> /root/.ssh/known_hosts 2>&1
+    echo "Joining node $node"
     ( time (./pic join-k3s "$node" $IDENTIFY_FILE) | tee $LOGS_DIR/join-k3s.log) &
 done
 wait $(jobs -p)
+cat NODES | while IFS= read -r node; do
+    if [ -z "$node" ]; then
+        continue
+    fi
+    (kubectl get node -o wide | grep "$node") || (echo "Node $node is not ready" && exit 1)
+    echo "Node $node is ready"
+done
 echo "All nodes are ready"
