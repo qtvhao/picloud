@@ -6,14 +6,15 @@ if [ -z "$DOMAIN" ]; then
     exit 1
 fi
 echo "Installing S3"
-curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/operator-5.0.10.tgz
-curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/tenant-5.0.10.tgz
+VERSION="5.0.11"
+curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/operator-$VERSION.tgz
+curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/tenant-$VERSION.tgz
 # helm uninstall minio-operator -n minio-operator || true
 helm upgrade --install \
     --namespace minio-operator \
     --create-namespace \
-    minio-operator operator-5.0.10.tgz
-rm operator-5.0.10.tgz
+    minio-operator operator-$VERSION.tgz
+rm operator-$VERSION.tgz
 kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Secret
@@ -47,12 +48,12 @@ helm upgrade --install \
     --namespace tenant-ns \
     --create-namespace \
     --set 'tenant.buckets[0].name=gitlab-registry,tenant.buckets[1].name=gitlab-lfs-storage,tenant.buckets[2].name=gitlab-artifacts-storage,tenant.buckets[3].name=gitlab-uploads-storage,tenant.buckets[4].name=gitlab-packages-storage,tenant.buckets[5].name=gitlab-external-diffs,tenant.buckets[6].name=gitlab-terraform-state,tenant.buckets[7].name=gitlab-dependency-proxy,tenant.buckets[8].name=gitlab-backup-upload,tenant.buckets[9].name=gitlab-tmp-storage,tenant.buckets[10].name=gitlab-cache' \
-    --set "tenant.pools[0].storageClassName=local-path,tenant.pools[0].servers=2,tenant.name=tenant-picloud" \
+    --set "tenant.pools[0].storageClassName=longhorn,tenant.pools[0].servers=1,tenant.name=tenant-picloud" \
     --set "tenant.certificate.requestAutoCert=false" \
     --set "secrets.accessKey=$ACCESS_KEY_ID" \
     --set "secrets.secretKey=$SECRET_ACCESS_KEY" \
-    tenant-picloud tenant-5.0.10.tgz
-rm tenant-5.0.10.tgz
+    tenant-picloud tenant-$VERSION.tgz
+rm tenant-$VERSION.tgz
 while true; do
     kubectl -n tenant-ns get svc tenant-picloud-hl && break || sleep 5
 done

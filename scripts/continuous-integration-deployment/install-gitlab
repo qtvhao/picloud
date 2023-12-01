@@ -78,7 +78,7 @@ echo "  runners:"                                                               
 echo "    config: |"                                                            >> $RUNNER_CACHE_YAML
 echo "      [[runners]]"                                                        >> $RUNNER_CACHE_YAML
 echo "        [runners.kubernetes]"                                             >> $RUNNER_CACHE_YAML
-echo "          image = \"ubuntu:18.04\""                                       >> $RUNNER_CACHE_YAML
+echo "          image = \"ubuntu:22.04\""                                       >> $RUNNER_CACHE_YAML
 echo "          [runners.cache]"                                                >> $RUNNER_CACHE_YAML
 echo "            Type = \"s3\""                                                >> $RUNNER_CACHE_YAML
 echo "            Path = \"gitlab-runner\""                                     >> $RUNNER_CACHE_YAML
@@ -97,6 +97,7 @@ kubectl get pods -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs k
 kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs kubectl delete job -n gitlab-ns || true
 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
+# we need to use external object storage for gitlab due to terraform state file.
 helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.6.0.tgz \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
