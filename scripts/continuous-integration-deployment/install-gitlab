@@ -1,8 +1,8 @@
 #!/bin/bash
-set -xeo pipefail
+set -eo pipefail
 LOGS_DIR="$HOME/.pic/logs"
+kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 ./pic install-minio | tee $LOGS_DIR/s3.log
-set -e -o pipefail
 source .env
 if [ -z "$DOMAIN" ]; then
     echo "Please set DOMAIN in .env"
@@ -23,7 +23,6 @@ PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Setting password to $PASSWORD"
 # helm repo add gitlab https://charts.gitlab.io/ || echo ""
 
-kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 helm uninstall gitlab --namespace gitlab-ns || true
 
 NUM_SECRET=$(kubectl get secrets --namespace gitlab-ns -o name | wc -l)
