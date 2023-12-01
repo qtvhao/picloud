@@ -1,0 +1,157 @@
+#!/bin/bash
+set -e -o pipefail
+echo
+source .env
+args=("$@")
+REPO_URL=${args[0]}
+IDENTITY_FILE=${args[1]}
+CLONE_DIR=${args[2]}
+if [ -z "$REPO_URL" ]; then
+    echo "REPO_URL is empty"
+    exit 1
+fi
+if [ -z "$IDENTITY_FILE" ]; then
+    echo "IDENTITY_FILE is empty"
+    exit 1
+fi
+if [ ! -f $IDENTITY_FILE ]; then
+    echo "$IDENTITY_FILE does not exist"
+    exit 1
+fi
+REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
+REPO_NAME_IN_LOWER_CASE=$(echo $REPO_NAME | tr '[:upper:]' '[:lower:]')
+REPO_URL_ENDS_WITH_GIT="x"$(echo $REPO_URL | grep '\.git$' | wc -l) || true
+if [ "x0" != "$REPO_URL_ENDS_WITH_GIT" ]; then
+    REPO_NAME=$(echo $REPO_URL | sed 's/.*\///' | sed 's/\.git$//')
+else
+    echo "REPO_URL does not end with .git"
+    exit 1
+fi
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION=$(echo $REPO_NAME_IN_LOWER_CASE | sed 's/\.git$//')
+PAYLOAD=$(jq --null-input \
+    --arg path "$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" \
+    --arg import_url "$REPO_URL" \
+    --argjson mirror true \
+    '{import_url: $import_url, mirror: $mirror, path: $path}')
+
+echo "PAYLOAD: $PAYLOAD"
+POST_PROJECT=$(curl --request POST \
+    --header "Authorization: Bearer $GITLAB_TOKEN" \
+    --header "Content-Type: application/json" \
+    --data "$PAYLOAD" \
+    --silent \
+    --url "https://$FQDN_ADDRESS/api/v4/projects/")
+echo "POST_PROJECT: $POST_PROJECT"
+MESSAGE=$(echo $POST_PROJECT | jq -r ".message")
+MESSAGE_BASE=$(echo $MESSAGE | jq -r ".base")
+MESSAGE_NAME=$(echo $MESSAGE | jq -r ".name")
+if [ "null" != "$MESSAGE_NAME" ]; then
+    echo "MESSAGE_NAME: $MESSAGE_NAME"
+    echo "MESSAGE: $MESSAGE"
+    exit 1
+fi
+if [ "null" != "$MESSAGE_BASE" ]; then
+    echo "MESSAGE_BASE: $MESSAGE_BASE"
+    echo "MESSAGE: $MESSAGE"
+    exit 1
+fi
+if [ "403 Forbidden" == "$MESSAGE" ]; then
+    echo "You need to create a personal access token with api scope in order to create a project"
+    echo "https://$FQDN_ADDRESS/profile/personal_access_tokens"
+    exit 1
+fi
+echo $POST_PROJECT
+exit 1
+PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
+# echo "GitLab root password: $PASSWORD"
+# rm -rf pic-repos || true
+# mkdir pic-repos
+# echo "Cloning $REPO_NAME from $REPO_URL"
+# HEAD=$(git rev-parse --abbrev-ref HEAD)
+# # export GIT_SSH_COMMAND="ssh -o ProxyCommand=\"cloudflared access ssh --hostname %h\""
+# REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE.git"
+# echo "REMOTE_REPO: $REMOTE_REPO"
+# echo "HEAD: $HEAD"
+IDENTITY_FILE=$(realpath $IDENTITY_FILE)
+SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
+# IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT="x"$(echo $REPO_URL | grep -E "github|bitbucket|codecommit" | wc -l) || true
+# if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
+#     echo "IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT: $IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT"
+#     # REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//') # which return github.com:qtvhao
+#     REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//' | sed 's/:.*//') # which return github.com
+#     echo "REMOTE_DOMAIN: $REMOTE_DOMAIN"
+#     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
+#     ssh-keyscan -H "$REMOTE_DOMAIN" >> ~/.ssh/known_hosts
+# fi
+# while true; do
+#     echo "Cloning $REPO_NAME from $REPO_URL"
+#     (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME) && break || true
+#     sleep 5
+# done
+# 
+# current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
+# max=$(cd "pic-repos/$REPO_NAME" && git rev-list --count HEAD)
+# (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
+# for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD"`; do
+#     echo "Checkout $branch"
+#     # Create Local Branches for Each Remote Branch
+#     branch=$(echo $branch | sed 's/origin\///')
+#     (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git checkout -b $branch origin/$branch) || true
+# done
+# (cd pic-repos/$REPO_NAME \
+#     && git remote rename origin old-origin \
+#     && git remote add origin $REMOTE_REPO \
+# )
+
+# echo "current_branch: $current_branch"
+# echo "max: $max"
+# max=$((max-1))
+# for i in $(seq 1 +10 $max); do
+#     echo "Checking out $i (increasing 1 to $max)"
+#     (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i) > /dev/null 2>&1 || true
+# done;
+# i=$((i-10))
+# echo
+# for i in $(seq $i -10 1) ""; do
+#     if [ -z "$i" ]; then
+#         refspec="$current_branch"
+#     else
+#         refspec="$current_branch~$i"
+#     fi
+#     (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
+#     echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
+# done;
+
+# while true; do
+#     echo "Pushing $REPO_NAME to $REMOTE_REPO"
+#     (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
+#         git pull --set-upstream origin $current_branch && \
+#         timeout 60 git push --set-upstream origin --all -o ci.skip) && break || true
+#     sleep 5
+# done
+CI_REGISTRY="harbor-registry.harbor-ns:5000"
+CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY           "$CI_REGISTRY"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_IMAGE     "$CI_REGISTRY_IMAGE"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_PASSWORD  "$PASSWORD"
+./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root" "*" false
+rm -rf pic-repos
+
+# ./pic create-pipeline root%2F$REPO_NAME $current_branch
+./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
+    ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
+./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success"
+
+./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
+# SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
+export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
+    -o StrictHostKeyChecking=no \
+    -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no"
+if [ ! -z "$CLONE_DIR" ]; then
+    echo "CLONE_DIR: $CLONE_DIR/$REPO_NAME"
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$SSH_FQDN_ADDRESS"
+    git clone $REMOTE_REPO $CLONE_DIR/$REPO_NAME || \
+        (cd $CLONE_DIR/$REPO_NAME && echo "Updating $CLONE_DIR/$REPO_NAME" && git config pull.rebase false && git pull)
+fi
