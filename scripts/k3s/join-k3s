@@ -23,7 +23,6 @@ set -xeo pipefail
 REGISTRY_FOLDER="/var/lib/registry/"
 # if $REGISTRY_FOLDER exists
 if [ -d "$REGISTRY_FOLDER" ]; then
-    ssh -i $IDENTIFY_FILE $NODE_IP "rm -rf $REGISTRY_FOLDER" || true
     ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
     time rsync -avz -q -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
     # set quite mode, set -q
