@@ -73,13 +73,18 @@ echo "current_branch: $current_branch"
 echo "max: $max"
 # max=$((max-1))
 for i in $(seq 1 +10 $max); do
-    echo "Checking out $i"
+    echo "Checking out $i (increasing 1 to $max)"
     (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i) > /dev/null 2>&1 || true
 done;
 i=$((i-10))
 echo
-for i in $(seq $i -100 1) ""; do
-    (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i && timeout 60 git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
+for i in $(seq $i -10 1) ""; do
+    if [ -z "$i" ]; then
+        refspec="$current_branch"
+    else
+        refspec="$current_branch~$i"
+    fi
+    (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
     echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
 done;
 
@@ -99,9 +104,9 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE"
 rm -rf pic-repos
 
 # ./pic create-pipeline root%2F$REPO_NAME $current_branch
-./pic create-pipeline root%2F$REPO_NAME master
-./pic create-pipeline root%2F$REPO_NAME main
-./pic create-pipeline root%2F$REPO_NAME develop
+./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
+    ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
+./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success"
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
 SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"

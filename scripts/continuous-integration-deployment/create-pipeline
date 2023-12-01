@@ -5,6 +5,7 @@ FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 args=("$@")
 PROJECT_NAME=${args[0]}
 ref=${args[1]}
+option2=${args[2]}
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/pipeline"
 PAYLOAD=$(jq --arg ref $ref '.ref = $ref' <<<'{}')
 echo "PAYLOAD: $PAYLOAD"
@@ -13,4 +14,12 @@ MIRROR=$(curl -s --request POST \
     --header "Content-Type: application/json" \
     --header "Authorization: Bearer $GITLAB_TOKEN" \
     $URL)
-echo $MIRROR | jq
+echo $MIRROR | jq -e ".detailed_status.text"
+
+if [ "wait-for-success" == "$option2" ]; then
+    while true; do
+        ./pic succeed-pipeline $PROJECT_NAME $ref && break || true
+        echo "Waiting for pipeline to succeed"
+        sleep 15
+    done
+fi
