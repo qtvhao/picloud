@@ -1,4 +1,7 @@
 #!/bin/bash
+set -xeo pipefail
+LOGS_DIR="$HOME/.pic/logs"
+./pic install-minio | tee $LOGS_DIR/s3.log
 set -e -o pipefail
 source .env
 if [ -z "$DOMAIN" ]; then

@@ -8,7 +8,7 @@ set -e -o pipefail
 IDENTIFY_FILE="$HOME/id_rsa"
 ./pic recommended2 $IDENTIFY_FILE
 # rm -rf $LOGS_DIR/gitlab.log
-./pic git-folk git@github.com:qtvhao/picloud.git "$IDENTIFY_FILE"
+./pic git-folk https://github.com/qtvhao/picloud.git "$IDENTIFY_FILE"
 echo "Folk and push to gitlab successfully"
 while ! ./pic succeed-pipeline root%2Fpicloud main; do
     echo "Waiting for gitlab runner to be ready"

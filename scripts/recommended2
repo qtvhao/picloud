@@ -53,8 +53,7 @@ while ! ./pic pull-image docker.io/cloudflare/cloudflared:latest $FIRST_NODE_NAM
 done
 ( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log))
 ( time (./pic pull-images "$FIRST_NODE_NAME")) &
-( time (./pic install-minio | tee $LOGS_DIR/s3.log) && \
-    time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)) &
+( time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log)) &
 wait $(jobs -p)
 time (./pic install-harbor | tee $LOGS_DIR/harbor.log) &
 ( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
