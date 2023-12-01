@@ -1,0 +1,17 @@
+#!/bin/bash
+set -xeo pipefail
+source .env
+args=("$@")
+SETTINGS=${args[0]}
+if [ -z "$SETTINGS" ]; then
+    echo "SETTINGS is empty"
+    exit 1
+fi
+
+PIC_DIR="$HOME/.pic"
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+
+curl -X PUT \
+    --header "Authorization: Bearer $GITLAB_TOKEN" \
+    "https://$FQDN_ADDRESS/api/v4/application/settings?$SETTINGS"
