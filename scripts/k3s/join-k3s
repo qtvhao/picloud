@@ -24,8 +24,10 @@ REGISTRY_FOLDER="/var/lib/registry/"
 # if $REGISTRY_FOLDER exists
 if [ -d "$REGISTRY_FOLDER" ]; then
     ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
+    time rsync -avz -q -e "ssh -i $IDENTIFY_FILE" $NODE_IP:$REGISTRY_FOLDER $REGISTRY_FOLDER
+    # this command will copy $REGISTRY_FOLDER from $NODE_IP to local machine
     time rsync -avz -q -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
-    # set quite mode, set -q
+    # this command will copy $REGISTRY_FOLDER from local machine to $NODE_IP
 fi
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
