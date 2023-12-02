@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -xe -o pipefail
 echo
 source .env
 args=("$@")
@@ -19,6 +19,7 @@ if [ ! -f $IDENTITY_FILE ]; then
     exit 1
 fi
 REPO_NAME=$(echo $REPO_URL | sed 's/.*\///')
+REPO_NAME_IN_LOWER_CASE=$(echo $REPO_NAME | tr '[:upper:]' '[:lower:]')
 REPO_URL_ENDS_WITH_GIT="x"$(echo $REPO_URL | grep '\.git$' | wc -l) || true
 if [ "x0" != "$REPO_URL_ENDS_WITH_GIT" ]; then
     REPO_NAME=$(echo $REPO_URL | sed 's/.*\///' | sed 's/\.git$//')
@@ -26,6 +27,77 @@ else
     echo "REPO_URL does not end with .git"
     exit 1
 fi
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION=$(echo $REPO_NAME_IN_LOWER_CASE | sed 's/\.git$//')
+PAYLOAD=$(jq --null-input \
+    --arg path "$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" \
+    '{path: $path}')
+
+echo "PAYLOAD: $PAYLOAD"
+while true; do
+    POST_PROJECT=$(curl --request POST \
+        --header "Authorization: Bearer $GITLAB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "$PAYLOAD" \
+        --silent \
+        --url "https://$FQDN_ADDRESS/api/v4/projects/")
+    echo "POST_PROJECT: $POST_PROJECT"
+    MESSAGE=$(echo $POST_PROJECT | jq -r ".message")
+    MESSAGE_BASE=$(echo $MESSAGE | jq -r ".base")
+    MESSAGES_NAME=$(echo $MESSAGE | jq -r ".name")
+    if [ "null" != "$MESSAGES_NAME" ]; then
+        echo "MESSAGES_NAME: $MESSAGES_NAME"
+        echo "MESSAGE: $MESSAGE"
+        # if [ "has already been taken" == "$MESSAGES_NAME" ]; then
+        if [ "has already been taken" == "$(echo $MESSAGES_NAME | jq -r ".[0]")" ]; then
+            echo "Project $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION already exists"
+        else
+            continue;
+        fi
+    fi
+    if [ "null" != "$MESSAGE_BASE" ]; then
+        echo "MESSAGE_BASE: $MESSAGE_BASE"
+        echo "MESSAGE: $MESSAGE"
+        continue;
+    fi
+    if [ "403 Forbidden" == "$MESSAGE" ]; then
+        echo "You need to create a personal access token with api scope in order to create a project"
+        echo "https://$FQDN_ADDRESS/profile/personal_access_tokens"
+        continue;
+    fi
+    break;
+done
+
+# curl -X POST --data "url=$REPO_URL&enabled=true" \
+#     --header "Authorization: Bearer $GITLAB_TOKEN" \
+#     --url "https://$FQDN_ADDRESS/api/v4/projects/root%2F$REPO_NAME/remote_mirrors"
+
+# while true; do
+#     PUT_PROJECT=$(curl --request PUT \
+#         --header "Authorization: Bearer $GITLAB_TOKEN" \
+#         --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+#         --url "https://$FQDN_ADDRESS/api/v4/projects/root%2F$REPO_NAME/" \
+#         --data "mirror=true&import_url=$REPO_URL")
+
+#     PUT_MESSAGE=$(echo $PUT_PROJECT | jq -r ".message")
+#     if [ "null" != "$PUT_MESSAGE" ]; then
+#         echo "PUT_MESSAGE: $PUT_MESSAGE"
+#         echo "PUT_PROJECT: $PUT_PROJECT"
+#         sleep 5
+#         continue;
+#     fi
+#     break;
+# done
+# exit 1
+# curl -X POST \
+#     --header "Authorization: Bearer $GITLAB_TOKEN" \
+#     --header "Content-Type: application/json" \
+#     --silent \
+#     --url "https://$FQDN_ADDRESS/api/v4/projects/root%2F$REPO_NAME/mirror/pull"
+
+# exit 1
+# echo $POST_PROJECT
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 rm -rf pic-repos || true
@@ -33,9 +105,7 @@ mkdir pic-repos
 echo "Cloning $REPO_NAME from $REPO_URL"
 HEAD=$(git rev-parse --abbrev-ref HEAD)
 # export GIT_SSH_COMMAND="ssh -o ProxyCommand=\"cloudflared access ssh --hostname %h\""
-REPO_NAME_IN_LOWER_CASE=$(echo $REPO_NAME | tr '[:upper:]' '[:lower:]')
-FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
-REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE.git"
+REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION.git"
 echo "REMOTE_REPO: $REMOTE_REPO"
 # echo "HEAD: $HEAD"
 IDENTITY_FILE=$(realpath $IDENTITY_FILE)
@@ -46,8 +116,14 @@ if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
     # REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//') # which return github.com:qtvhao
     REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//' | sed 's/:.*//') # which return github.com
     echo "REMOTE_DOMAIN: $REMOTE_DOMAIN"
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
-    ssh-keyscan -H "$REMOTE_DOMAIN" >> ~/.ssh/known_hosts
+    if [ "https" == "$REMOTE_DOMAIN" ]; then
+        # REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*:\/\///' | sed 's/\/.*//' | sed 's/:.*//') # which return github.com
+        # echo "REMOTE_DOMAIN: $REMOTE_DOMAIN"
+        echo "Using https"
+    else
+        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
+        ssh-keyscan -H "$REMOTE_DOMAIN" >> ~/.ssh/known_hosts
+    fi
 fi
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
@@ -78,12 +154,13 @@ for i in $(seq 1 +10 $max); do
 done;
 i=$((i-10))
 echo
-for i in $(seq $i -10 1) ""; do
+for i in $(seq $i -50 1) ""; do
     if [ -z "$i" ]; then
         refspec="$current_branch"
     else
         refspec="$current_branch~$i"
     fi
+    sleep 5
     (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
     echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
 done;
@@ -109,7 +186,7 @@ rm -rf pic-repos
 ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success"
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
-SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
+# SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
 export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
     -o StrictHostKeyChecking=no \
     -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no"
