@@ -1,8 +1,16 @@
 #!/bin/bash
 set -eo pipefail
-LOGS_DIR="$HOME/.pic/logs"
+
+PIC_DIR="$HOME/.pic"
+LOGS_DIR="$PIC_DIR/logs/"
+time (./pic install-harbor | tee $LOGS_DIR/harbor.log)
+
+time (./pic install-minio | tee $LOGS_DIR/s3.log)
+
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
-./pic install-minio | tee $LOGS_DIR/s3.log
+
+S3_HOST="minio.tenant-ns" #$(hostname -I | awk '{print $1}')":9000"
+# 
 source .env
 if [ -z "$DOMAIN" ]; then
     echo "Please set DOMAIN in .env"
@@ -51,7 +59,7 @@ SECRET_ACCESS_KEY=$(cat $PIC_DIR/s3.json | jq -r '.SECRET_ACCESS_KEY')
 echo "aws_access_key_id: $ACCESS_KEY_ID"                                    >> $RAILS_MINIO_YAML
 echo "aws_secret_access_key: $SECRET_ACCESS_KEY"                            >> $RAILS_MINIO_YAML
 # echo "endpoint: https://http-tenant-picloud-hl-tenant-ns-9000.$DOMAIN"     >> $RAILS_MINIO_YAML
-echo "endpoint: http://tenant-picloud-hl.tenant-ns:9000"     >> $RAILS_MINIO_YAML
+echo "endpoint: http://$S3_HOST"                                            >> $RAILS_MINIO_YAML
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
 kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
 # 
@@ -59,7 +67,7 @@ kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
 echo "s3:"                                                                          >  $REGISTRY_MINIO_YAML
 echo "  v4auth: true"                                                               >> $REGISTRY_MINIO_YAML
-echo "  regionendpoint: http://tenant-picloud-hl.tenant-ns:9000"                    >> $REGISTRY_MINIO_YAML
+echo "  regionendpoint: http://$S3_HOST"                                            >> $REGISTRY_MINIO_YAML
 echo "  secure: false"                                                              >> $REGISTRY_MINIO_YAML
 echo "  pathstyle: true"                                                            >> $REGISTRY_MINIO_YAML
 echo "  region: minio"                                                              >> $REGISTRY_MINIO_YAML
@@ -86,7 +94,7 @@ echo "            Type = \"s3\""                                                
 echo "            Path = \"gitlab-runner\""                                     >> $RUNNER_CACHE_YAML
 echo "            Shared = true"                                                >> $RUNNER_CACHE_YAML
 echo "            [runners.cache.s3]"                                           >> $RUNNER_CACHE_YAML
-echo "              ServerAddress = \"tenant-picloud-hl.tenant-ns:9000\""       >> $RUNNER_CACHE_YAML
+echo "              ServerAddress = \"$S3_HOST\""                               >> $RUNNER_CACHE_YAML
 echo "              BucketName = \"gitlab-cache\""                              >> $RUNNER_CACHE_YAML
 echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
 echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
@@ -100,7 +108,10 @@ kubectl get jobs -n gitlab-ns -o json | jq -r '.items[].metadata.name' | xargs k
 
 kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-password --from-literal=password="$PASSWORD"
 # we need to use external object storage for gitlab due to terraform state file.
-helm upgrade --install gitlab https://gitlab-charts.s3.amazonaws.com/gitlab-7.6.0.tgz \
+
+helm repo add gitlab https://charts.gitlab.io/
+helm repo update
+helm upgrade --install gitlab gitlab/gitlab \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
@@ -108,7 +119,6 @@ global.hosts.kas.name=tcp-gitlab-kas-gitlab-ns-8150."$DOMAIN",\
 global.hosts.gitlab.name=http-gitlab-webservice-default-gitlab-ns-8181."$DOMAIN",\
 global.hosts.registry.name=http-gitlab-registry-gitlab-ns-5000."$DOMAIN",\
 global.hosts.ssh=tcp-gitlab-webservice-default-gitlab-ns-22."$DOMAIN",\
-global.edition=ce,\
 global.kas.enabled=true,\
 gitlab.toolbox.enabled=true,\
 gitlab-runner.install=true,\
@@ -184,6 +194,14 @@ if [ -f $IDENTIFY_FILE ]; then
     ./pic add-ssh-key-gitlab "$SSH_PUB_KEY"
 fi
 ./pic add-ssh-key-gitlab "$(cat ~/.ssh/id_rsa.pub)"
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
-./pic applications-settings "import_sources[]=github&import_sources[]=bitbucket&import_sources[]=bitbucket_server&import_sources[]=git&import_sources[]=gitlab_project"
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    40
+GITLAB_SETTINGS="import_sources[]=github&import_sources[]=bitbucket&import_sources[]=bitbucket_server&import_sources[]=git&import_sources[]=gitlab_project"
+while true; do
+    ./pic applications-settings $GITLAB_SETTINGS && break || true
+    sleep 2
+done
 
+while true; do
+    ./pic applications-settings "signup_enabled=false" && break || true
+    sleep 2
+done
