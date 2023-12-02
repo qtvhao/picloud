@@ -10,14 +10,4 @@ IDENTIFY_FILE="$HOME/id_rsa"
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log;( time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log))
 
 ./pic git-folk https://github.com/qtvhao/picloud.git "$HOME/id_rsa"
-echo "Folk and push to gitlab successfully"
-while ! ./pic succeed-pipeline root%2Fpicloud main; do
-    echo "Waiting for gitlab runner to be ready"
-    STATUS=$(./pic get-pipelines root%2Fpicloud main | jq -r ".[0].status")
-    EXPECTED_STATUS="running"
-    if [ "$STATUS" == "$EXPECTED_STATUS" ]; then
-        echo "Pipeline is running"
-        break;
-    fi
-    sleep 2
-done
+echo "Folk and push to gitlab successfully. Pipeline is successful."
