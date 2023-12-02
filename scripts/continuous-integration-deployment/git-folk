@@ -36,6 +36,15 @@ PAYLOAD=$(jq --null-input \
 
 echo "PAYLOAD: $PAYLOAD"
 kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
+# 
+while true; do
+    HTTP_CODE_API_V4_PROJECTS=$(curl -X GET --url https://$FQDN_ADDRESS/api/v4/projects/ --write-out "%{http_code}\n" --silent --output /dev/null)
+    echo "HTTP_CODE_API_V4_PROJECTS: $HTTP_CODE_API_V4_PROJECTS"
+    if [ "200" == "$HTTP_CODE_API_V4_PROJECTS" ]; then
+        break;
+    fi
+    sleep 2
+done
 while true; do
     POST_PROJECT=$(curl --request POST \
         --header "Authorization: Bearer $GITLAB_TOKEN" \
