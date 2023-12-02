@@ -35,6 +35,7 @@ PAYLOAD=$(jq --null-input \
     '{path: $path}')
 
 echo "PAYLOAD: $PAYLOAD"
+kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
 while true; do
     POST_PROJECT=$(curl --request POST \
         --header "Authorization: Bearer $GITLAB_TOKEN" \
@@ -68,6 +69,7 @@ while true; do
     fi
     break;
 done
+(kubectl logs statefulset/gitlab-gitaly -n gitlab-ns -f > ./gitlab-gitaly.log) &
 
 # curl -X POST --data "url=$REPO_URL&enabled=true" \
 #     --header "Authorization: Bearer $GITLAB_TOKEN" \
@@ -155,6 +157,15 @@ done;
 i=$((i-10))
 echo
 for i in $(seq $i -50 1) ""; do
+    while true; do
+        HTTP_CODE_REMOTE_REPO=$(curl --write-out "%{http_code}\n" --silent --output /dev/null $REMOTE_REPO)
+        echo "HTTP_CODE_REMOTE_REPO: $HTTP_CODE_REMOTE_REPO"
+        if [ "302" == "$HTTP_CODE_REMOTE_REPO" ]; then
+            echo "HTTP_CODE_REMOTE_REPO: $HTTP_CODE_REMOTE_REPO"
+            break;
+        fi
+        sleep 8
+    done
     if [ -z "$i" ]; then
         refspec="$current_branch"
     else
@@ -196,3 +207,4 @@ if [ ! -z "$CLONE_DIR" ]; then
     git clone $REMOTE_REPO $CLONE_DIR/$REPO_NAME || \
         (cd $CLONE_DIR/$REPO_NAME && echo "Updating $CLONE_DIR/$REPO_NAME" && git config pull.rebase false && git pull)
 fi
+kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
