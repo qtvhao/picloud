@@ -183,4 +183,5 @@ if [ ! -z "$CLONE_DIR" ]; then
             echo "Updating $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" && \
             git config pull.rebase false && git pull)
 fi
+./pic create-remote-mirrors "$REPO_URL"
 kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
