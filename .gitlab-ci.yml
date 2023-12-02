@@ -54,6 +54,7 @@ cache:
   when: manual
 
 stages:
+  - build
   - validate
   - test
   - build-develop
