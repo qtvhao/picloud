@@ -71,35 +71,6 @@ while true; do
 done
 (kubectl logs statefulset/gitlab-gitaly -n gitlab-ns -f > ./gitlab-gitaly.log) &
 
-# curl -X POST --data "url=$REPO_URL&enabled=true" \
-#     --header "Authorization: Bearer $GITLAB_TOKEN" \
-#     --url "https://$FQDN_ADDRESS/api/v4/projects/root%2F$REPO_NAME/remote_mirrors"
-
-# while true; do
-#     PUT_PROJECT=$(curl --request PUT \
-#         --header "Authorization: Bearer $GITLAB_TOKEN" \
-#         --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-#         --url "https://$FQDN_ADDRESS/api/v4/projects/root%2F$REPO_NAME/" \
-#         --data "mirror=true&import_url=$REPO_URL")
-
-#     PUT_MESSAGE=$(echo $PUT_PROJECT | jq -r ".message")
-#     if [ "null" != "$PUT_MESSAGE" ]; then
-#         echo "PUT_MESSAGE: $PUT_MESSAGE"
-#         echo "PUT_PROJECT: $PUT_PROJECT"
-#         sleep 5
-#         continue;
-#     fi
-#     break;
-# done
-# exit 1
-# curl -X POST \
-#     --header "Authorization: Bearer $GITLAB_TOKEN" \
-#     --header "Content-Type: application/json" \
-#     --silent \
-#     --url "https://$FQDN_ADDRESS/api/v4/projects/root%2F$REPO_NAME/mirror/pull"
-
-# exit 1
-# echo $POST_PROJECT
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
 rm -rf pic-repos || true
@@ -194,7 +165,7 @@ rm -rf pic-repos
 # ./pic create-pipeline root%2F$REPO_NAME $current_branch
 ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
     ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
-./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success"
+./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
 # SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
