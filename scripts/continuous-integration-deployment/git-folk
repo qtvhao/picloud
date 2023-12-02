@@ -127,32 +127,35 @@ for i in $(seq 1 +10 $max); do
 done;
 i=$((i-10))
 echo
-for i in $(seq $i -50 1) ""; do
+wait_http_code_remote_repo() {
+    EXPECTED_HTTP_CODE_REMOTE_REPO=$1
     while true; do
         HTTP_CODE_REMOTE_REPO=$(curl --write-out "%{http_code}\n" --silent --output /dev/null $REMOTE_REPO)
         echo "HTTP_CODE_REMOTE_REPO: $HTTP_CODE_REMOTE_REPO"
-        if [ "302" == "$HTTP_CODE_REMOTE_REPO" ]; then
+        if [ "$EXPECTED_HTTP_CODE_REMOTE_REPO" == "$HTTP_CODE_REMOTE_REPO" ]; then
             echo "HTTP_CODE_REMOTE_REPO: $HTTP_CODE_REMOTE_REPO"
             break;
         fi
         sleep 8
     done
+}
+for i in $(seq $i -50 1) ""; do
+    wait_http_code_remote_repo 302
     if [ -z "$i" ]; then
         refspec="$current_branch"
     else
         refspec="$current_branch~$i"
     fi
-    sleep 5
     (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
     echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
 done;
 
 while true; do
+    wait_http_code_remote_repo 302
     echo "Pushing $REPO_NAME to $REMOTE_REPO"
     (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
         git pull --set-upstream origin $current_branch && \
         timeout 60 git push --set-upstream origin --all -o ci.skip) && break || true
-    sleep 5
 done
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
 CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE"
@@ -167,15 +170,17 @@ rm -rf pic-repos
     ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
 ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
 
-./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE
+./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
 # SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
 export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
     -o StrictHostKeyChecking=no \
     -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no"
 if [ ! -z "$CLONE_DIR" ]; then
-    echo "CLONE_DIR: $CLONE_DIR/$REPO_NAME"
+    echo "CLONE_DIR: $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$SSH_FQDN_ADDRESS"
-    git clone $REMOTE_REPO $CLONE_DIR/$REPO_NAME || \
-        (cd $CLONE_DIR/$REPO_NAME && echo "Updating $CLONE_DIR/$REPO_NAME" && git config pull.rebase false && git pull)
+    git clone $REMOTE_REPO $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION || \
+        (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
+            echo "Updating $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" && \
+            git config pull.rebase false && git pull)
 fi
 kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
