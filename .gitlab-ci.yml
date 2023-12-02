@@ -1,11 +1,3 @@
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Kaniko.gitlab-ci.yml
-
-# Build and publish a tag/branch to Gitlab Docker Registry using Kaniko and Gitlab Docker executor.
-# Kaniko can build Docker images without using Docker-In-Docker and it's permission
-# drawbacks. No additional configuration required.
 image:
   name: "$CI_TEMPLATE_REGISTRY_HOST/gitlab-org/terraform-images/releases/1.4:v1.0.0"
 
@@ -53,6 +45,78 @@ cache:
   script:
     - gitlab-terraform apply
   resource_group: ${TF_STATE_NAME}
+
+.terraform:destroy:
+  stage: cleanup
+  script:
+    - gitlab-terraform destroy
+  resource_group: ${TF_STATE_NAME}
+  when: manual
+
+stages:
+  - validate
+  - test
+  - build-develop
+  - deploy-develop
+  - build-production
+  - deploy-production
+  - cleanup
+
+fmt:
+  extends: .terraform:fmt
+  variables:
+    TF_ROOT: terraform
+  needs: []
+
+validate:
+  extends: .terraform:validate
+  variables:
+    TF_ROOT: terraform
+  needs: []
+
+build-develop:
+  extends: .terraform:build
+  stage: build-develop
+  variables:
+    TF_STATE_NAME: develop
+  environment:
+    name: develop
+    action: prepare
+
+deploy-develop:
+  extends: .terraform:deploy
+  stage: deploy-develop
+  variables:
+    TF_STATE_NAME: develop
+  dependencies:
+    - build-develop
+  environment:
+    name: develop
+    action: start
+
+build-production:
+  extends: .terraform:build
+  stage: build-production
+  variables:
+    TF_STATE_NAME: production
+  environment:
+    name: production
+    action: prepare
+
+deploy-production:
+  extends: .terraform:deploy
+  stage: deploy-production
+  variables:
+    TF_STATE_NAME: production
+  dependencies:
+    - build-production
+  environment:
+    name: production
+    action: start
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $TF_AUTO_DEPLOY == "true"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 kaniko-build:
   variables:
