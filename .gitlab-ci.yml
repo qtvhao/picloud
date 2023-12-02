@@ -6,6 +6,54 @@
 # Build and publish a tag/branch to Gitlab Docker Registry using Kaniko and Gitlab Docker executor.
 # Kaniko can build Docker images without using Docker-In-Docker and it's permission
 # drawbacks. No additional configuration required.
+image:
+  name: "$CI_TEMPLATE_REGISTRY_HOST/gitlab-org/terraform-images/releases/1.4:v1.0.0"
+
+variables:
+  TF_ROOT: terraform
+  TF_STATE_NAME: default      # The name of the state file used by the GitLab Managed Terraform state backend
+
+cache:
+  key: "${TF_ROOT}"
+  paths:
+    - ${TF_ROOT}/.terraform/
+
+.terraform:fmt:
+  stage: validate
+  variables:
+    TF_ROOT: terraform
+  script:
+    - gitlab-terraform fmt
+  allow_failure: true
+
+.terraform:validate:
+  stage: validate
+  variables:
+    TF_ROOT: terraform
+  script:
+    - gitlab-terraform validate
+
+.terraform:build:
+  stage: build
+  script:
+    - gitlab-terraform plan
+    - gitlab-terraform plan-json
+  resource_group: ${TF_STATE_NAME}
+  artifacts:
+    # The next line, which disables public access to pipeline artifacts, may not be available everywhere.
+    # See: https://docs.gitlab.com/ee/ci/yaml/#artifactspublic
+    public: false
+    paths:
+      - ${TF_ROOT}/plan.cache
+    reports:
+      terraform: ${TF_ROOT}/plan.json
+
+.terraform:deploy:
+  stage: deploy
+  script:
+    - gitlab-terraform apply
+  resource_group: ${TF_STATE_NAME}
+
 kaniko-build:
   variables:
     # Additional options for Kaniko executor.
