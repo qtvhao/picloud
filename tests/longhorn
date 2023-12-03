@@ -1,7 +1,7 @@
 #!/bin/bash
-set -e -o pipefail
+set -xe -o pipefail
 
 IDENTIFY_FILE="$HOME/id_rsa"
-./pic reinstall-k3s $IDENTIFY_FILE
-./pic auto-join $IDENTIFY_FILE
-time ( ./pic install-longhorn $IDENTIFY_FILE)
+time (./pic recommended2 $HOME/id_rsa | tee recommended.log)
+timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
+timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true

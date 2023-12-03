@@ -4,12 +4,11 @@ set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 PIC_DIR="$HOME/.pic"
+LOGS_DIR="$PIC_DIR/logs"
 echo "Installing k3s recommended packages 1"
 ./pic recommended2 $IDENTIFY_FILE
-timeout 600 ./pic wait deploy pic-test-csi-s3 default Available
-timeout 20 kubectl logs deploy/pic-test-csi-s3 -f || true
+( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log))
 
-# 
 time (./pic redis | tee $LOGS_DIR/redis.log)
 
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
