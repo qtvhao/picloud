@@ -1,5 +1,10 @@
 #!/bin/bash
 
+which bc > /dev/null 2>&1 || {
+    apt-get update > /dev/null 2>&1
+    apt-get install -y bc > /dev/null 2>&1
+}
+
 IDENTIFY_FILE="$HOME/id_rsa"
 echo "" > NODES
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
