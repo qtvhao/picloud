@@ -7,24 +7,14 @@ PIC_DIR="$HOME/.pic"
 LOGS_DIR="$PIC_DIR/logs"
 echo "Installing k3s recommended packages 1"
 ./pic recommended2 $IDENTIFY_FILE
-( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log))
 
-time (./pic redis | tee $LOGS_DIR/redis.log)
+( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log)) &
+( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
+
+time (./pic redis | tee $LOGS_DIR/redis.log) &
+wait $(jobs -p)
 
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
 
 ./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
-GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
-while true; do
-    echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin && break;
-    echo "Retrying to login to harbor"
-    sleep 2
-done
-
-# 
-echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .;rm busybox.Dockerfile
-while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
-    echo "Retrying to push to harbor"
-    sleep 2
-done

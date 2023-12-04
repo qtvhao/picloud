@@ -14,7 +14,7 @@ if [ -z "$IMAGE_NAME" ]; then
     exit 1
 fi
 RANDOM_CONTAINER_NAME=$(openssl rand -hex 16)
-echo "Pull image $IMAGE_NAME to local registry"
+# echo "Pull image $IMAGE_NAME to local registry"
 
 (kubectl run \
     --image="$IMAGE_NAME" "pull-$RANDOM_CONTAINER_NAME" \

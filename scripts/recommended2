@@ -47,13 +47,13 @@ if [ -f NODES ]; then
 fi
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
 rm NODES || true
-( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log))
 
 FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
 while ! ./pic pull-image docker.io/cloudflare/cloudflared:latest $FIRST_NODE_NAME; do
     sleep 2
 done
-exit 0
-( time (./pic pull-images "$FIRST_NODE_NAME") || exit 1) &
+( time (./pic pull-images "$FIRST_NODE_NAME")) &
+echo "Pulled images for the first node"
+# use this command to reduce the time of pulling images (from 19m25.985s to 18m35.825s)
+# exit 0
 ( time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log) || exit 1)
-

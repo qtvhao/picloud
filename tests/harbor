@@ -1,0 +1,15 @@
+#!/bin/bash
+
+GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
+while true; do
+    echo $GITLAB_ROOT_GENERATED_PASSWORD | docker login http-harbor-registry-harbor-ns-5000.$DOMAIN --username root --password-stdin && break;
+    echo "Retrying to login to harbor"
+    sleep 2
+done
+
+# 
+echo "FROM scratch" > busybox.Dockerfile;docker build -t http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox -f busybox.Dockerfile .;rm busybox.Dockerfile
+while ! docker push http-harbor-registry-harbor-ns-5000.$DOMAIN/busybox; do
+    echo "Retrying to push to harbor"
+    sleep 2
+done
