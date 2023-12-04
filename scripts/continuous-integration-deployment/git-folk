@@ -6,6 +6,10 @@ args=("$@")
 REPO_URL=${args[0]}
 IDENTITY_FILE=${args[1]}
 CLONE_DIR=${args[2]}
+PIPELINE_OPTIONS=${args[3]}
+if [ -z "$PIPELINE_OPTIONS" ]; then
+    PIPELINE_OPTIONS=""
+fi
 if [ -z "$REPO_URL" ]; then
     echo "REPO_URL is empty"
     exit 1
@@ -175,9 +179,11 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE"
 rm -rf pic-repos
 
 # ./pic create-pipeline root%2F$REPO_NAME $current_branch
-./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
-    ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
-./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
+if [ "no-create-pipelibe" != "$PIPELINE_OPTIONS" ]; then
+    ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
+        ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
+    ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
+fi
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
 # SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"

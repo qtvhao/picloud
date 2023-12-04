@@ -31,20 +31,6 @@ full_names=$(curl -s -X GET -u "$ORG_NAME:$PAT" "$API_URL")
 full_names=$(echo $full_names | jq -r '.[] | select(.archived == false)')
 #  | jq -r '.[] | .full_name'
 full_names=$(echo $full_names | jq -r '.full_name')
-for EXCLUDE in $EXCLUDES; do
-    PATH_TO_EXCLUDE="$ORG_NAME/$EXCLUDE"
-    full_names_new=""
-    for REPO in  $full_names;
-    do
-        if [[ "$REPO" == "$PATH_TO_EXCLUDE" ]]; then
-            echo "Skip $REPO"
-            continue
-        fi
-        full_names_new="$full_names_new $REPO"
-    done
-    full_names="$full_names_new"
-done
-# echo "full_names: $full_names"
 ssh-keygen -R github.com
 ssh-keyscan -t rsa github.com >> $HOME/.ssh/known_hosts
 MSG=$(ssh -T -i "$IDENTITY_FILE" git@github.com 2>&1 || true)
@@ -68,7 +54,15 @@ do
         continue
     fi
     echo "PROJECT_NAME: $PROJECT_NAME"
-    while ! ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" ".."; do
+    PIPELINE_OPTIONS=""
+    for EXCLUDE in $EXCLUDES; do
+        PATH_TO_EXCLUDE="$ORG_NAME/$EXCLUDE"
+        if [ "$PATH_TO_EXCLUDE" == "$REPO" ]; then
+            PIPELINE_OPTIONS="no-create-pipelibe"
+        fi
+    done
+    
+    while ! ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" ".." "$PIPELINE_OPTIONS"; do
         echo "Retrying..."
         sleep 60
     done
