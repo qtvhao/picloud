@@ -3,11 +3,27 @@
 set -e -o pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
-NODE_IP=${args[1]}
-if [ -z "$NODE_IP" ]; then
-    echo "NODE_IP is empty. Specify a node ip for the new machine."
+if [ -z "$IDENTIFY_FILE" ]; then
+    echo "IDENTIFY_FILE is empty. Specify a node ip for the new machine."
     echo "Usage: ./pic Registry-as-a-pull-through-cache IDENTIFY_FILE NODE_IP REGISTRY_PROXY_REMOTEURL CONTAINER_NAME IP_ADDRESS MIRROR_NAME"
     exit 1
+fi
+NODE_IP=${args[1]}
+if [ -z "$NODE_IP" ]; then
+    nodes=$(./pic list-nodename "$IDENTIFY_FILE" | awk '{print $1}')
+    # loop through lines in $nodes, echo
+    for line in $nodes; do
+        if [ -z "$line" ]; then
+            continue
+        fi
+        # echo "line: $line"
+        echo "Registry-as-a-pull-through-cache $IDENTIFY_FILE $line"
+        ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$line"
+        echo "Done"
+    done
+    # echo "NODE_IP is empty. Specify a node ip for the new machine."
+    # echo "Usage: ./pic Registry-as-a-pull-through-cache IDENTIFY_FILE NODE_IP REGISTRY_PROXY_REMOTEURL CONTAINER_NAME IP_ADDRESS MIRROR_NAME"
+    exit 0
 fi
 source .env
 REGISTRY_PROXY_REMOTEURL=${args[2]}
@@ -39,6 +55,7 @@ ssh -i $IDENTIFY_FILE \
     docker network create --subnet 203.0.113.0/24 --gateway 203.0.113.254 iptastic; \
     docker rm -f $CONTAINER_NAME ; docker run -d \
     -e REGISTRY_PROXY_REMOTEURL=$REGISTRY_PROXY_REMOTEURL \
+    --restart=always \
     -v /var/lib/registry:/var/lib/registry \
     --name $CONTAINER_NAME \
     --net iptastic --ip $IP_ADDRESS registry:2" &
