@@ -3,11 +3,13 @@
 - [x] Automated bare metal installation with PXE boot or USB boot
 - [x] Automated Kubernetes installation and management with [k3s](https://k3s.io/)
 - [x] Expose services to the internet securely with [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
-- [x] GitLab CI/CD integration
+- [x] GitLab installation and many utilities
 - [x] Distributed block storage system with [Longhorn](https://longhorn.io/)
 - [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
 - [x] Registry as a pull through cache with [Docker Registry](https://docs.docker.com/registry/)
-- [x] Manage Terraform state and environment on GitLab (see [terraform state on gitlab](https://docs.gitlab.com/ee/user/infrastructure/iac/terraform_state.html))
+- [x] Terraform HTTP backend and manage your environment on GitLab (see [Terraform HTTP backend](https://docs.gitlab.com/ee/user/infrastructure/iac/terraform_state.html))
+- [x] Harbor installation for private Docker registry
+
 # Installation
 ```bash
 curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +x pic
