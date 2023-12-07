@@ -24,6 +24,9 @@ for NODE in $NODES; do
             $NODE_IP "k3s-agent-uninstall.sh" || true
         (ssh -i $IDENTIFY_FILE -o PasswordAuthentication=no \
             $NODE_IP "k3s-uninstall.sh" | tee k3s-uninstall.log) || true
+# delete pods use crictl, use: crictl rmp -af
+# delete containers use crictl, use: crictl rm -af
+
         rm k3s-uninstall.log || true
         kubectl delete node $NODE
     fi
@@ -35,6 +38,9 @@ echo "k3s-agent-uninstall.sh"
 k3s-agent-uninstall.sh || true
 echo "k3s-uninstall.sh"
 k3s-uninstall.sh > k3s-uninstall.log || true
+# delete pods use crictl, use: crictl rmp -af
+# delete containers use crictl, use: crictl rm -af
+
 rm k3s-uninstall.log || true
 echo "systemctl disable k3s-agent"
 systemctl disable k3s-agent || true

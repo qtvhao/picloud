@@ -71,6 +71,9 @@ for node in $NODES_IP; do
     echo "Uninstalling k3s from $node"
     FIRST_IP_OF_NODE=$(echo $node | cut -d, -f1)
     (ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $FIRST_IP_OF_NODE "timeout 120 k3s-uninstall.sh" || true) &
+# delete pods use crictl, use: crictl rmp -af
+# delete containers use crictl, use: crictl rm -af
+
 done
 wait
 #
@@ -105,6 +108,9 @@ echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 rm -rf /var/lib/rancher/ || true
 k3s-killall.sh || true
 k3s-uninstall.sh || true
+# delete pods use crictl, use: crictl rmp -af
+# delete containers use crictl, use: crictl rm -af
+
 time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init && time systemctl restart k3s) &
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
 while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
