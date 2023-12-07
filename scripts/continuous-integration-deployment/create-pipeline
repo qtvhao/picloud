@@ -9,13 +9,15 @@ option2=${args[2]}
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/pipeline"
 PAYLOAD=$(jq --arg ref $ref '.ref = $ref' <<<'{}')
 echo "PAYLOAD: $PAYLOAD"
-MIRROR=$(curl -s --request POST \
-    --data "$PAYLOAD" \
-    --header "Content-Type: application/json" \
-    --header "Authorization: Bearer $GITLAB_TOKEN" \
-    $URL)
-echo $MIRROR | jq -e ".detailed_status.text"
-
+while true; do
+    curl -s --request POST \
+        --data "$PAYLOAD" \
+        --header "Content-Type: application/json" \
+        --header "Authorization: Bearer $GITLAB_TOKEN" \
+        $URL && break || true
+    echo "Retrying to create pipeline"
+    sleep 12
+done
 if [ "wait-for-success" == "$option2" ]; then
     while true; do
         ./pic succeed-pipeline $PROJECT_NAME $ref && break || true
