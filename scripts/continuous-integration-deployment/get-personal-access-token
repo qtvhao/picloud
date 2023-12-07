@@ -1,0 +1,30 @@
+set -e -o pipefail
+source .env
+GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
+args=("$@")
+
+URL="https://$FQDN_ADDRESS/api/v4/users/1/personal_access_tokens"
+PAYLOAD=$(jq --arg name "picloud-$(date +%s)" \
+    --arg scopes "api,read_user,read_api,read_repository,write_repository,read_registry,write_registry,sudo,admin_mode,create_runner,ai_features,k8s_proxy" \
+    '.name = $name | .scopes = $scopes' <<<'{}')
+echo "PAYLOAD: $PAYLOAD"
+PAT=`curl -s --request POST \
+    --data "$PAYLOAD" \
+    --header "Content-Type: application/json" \
+    --header "Authorization: Bearer $GITLAB_TOKEN" \
+    $URL`
+echo $PAT | jq > $HOME/.pic/gitlab-personal-access-token.json
+# Scope	Access
+# api	Grants complete read/write access to the API, including all groups and projects, the container registry, the dependency proxy, and the package registry.
+# read_user	Grants read-only access to the authenticated user’s profile through the /user API endpoint, which includes username, public email, and full name. Also grants access to read-only API endpoints under /users.
+# read_api	Grants read access to the API, including all groups and projects, the container registry, and the package registry. (Introduced in GitLab 12.10.)
+# read_repository	Grants read-only access to repositories on private projects using Git-over-HTTP or the Repository Files API.
+# write_repository	Grants read-write access to repositories on private projects using Git-over-HTTP (not using the API).
+# read_registry	Grants read-only (pull) access to container registry images if a project is private and authorization is required. Available only when the container registry is enabled.
+# write_registry	Grants read-write (push) access to container registry images if a project is private and authorization is required. Available only when the container registry is enabled. (Introduced in GitLab 12.10.)
+# sudo	Grants permission to perform API actions as any user in the system, when authenticated as an administrator.
+# admin_mode	Grants permission to perform API actions as an administrator, when Admin Mode is enabled. (Introduced in GitLab 15.8.)
+# create_runner	Grants permission to create runners.
+# ai_features	Grants permission to perform API actions for GitLab Duo.
+# k8s_proxy	Grants permission to perform Kubernetes API calls using the agent for Kubernetes.
