@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -xe -o pipefail
 echo
 source .env
 FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
@@ -20,8 +20,18 @@ GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 PROJECT="root%2F"$REPO_NAME
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT/remote_mirrors"
 echo "URL: $URL"
+ENV_CREDS=".env.creds"
+if [ -f "$ENV_CREDS" ]; then
+    source $ENV_CREDS
+fi
+REPO_URL_IS_SSH="x"$(echo $REPO_URL | grep '^git@github.com' | wc -l) || true
+if [ "x0" != "$REPO_URL_IS_SSH" ]; then
+    echo "REPO_URL is SSH"
+    HTTP_REPO_URL="https://$PAT@github.com/"$(echo $REPO_URL | sed "s/git@github.com://g")
+    echo "HTTP_REPO_URL: $HTTP_REPO_URL"
+fi
 MIRROR=$(curl -s --request POST \
-    --data "url=$REPO_URL" \
+    --data "url=$HTTP_REPO_URL" \
     --data "enabled=true" \
     --header "Authorization: Bearer $GITLAB_TOKEN" \
     $URL)

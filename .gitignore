@@ -15,3 +15,4 @@ dvd/
 NODES
 awscliv2.zip
 install-docker.sh
+.env.creds
