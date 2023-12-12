@@ -10,11 +10,20 @@ URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/pipeline"
 PAYLOAD=$(jq --arg ref $ref '.ref = $ref' <<<'{}')
 echo "PAYLOAD: $PAYLOAD"
 while true; do
-    curl -s --request POST \
+    PIPELINE=`curl -s --request POST \
         --data "$PAYLOAD" \
         --header "Content-Type: application/json" \
         --header "Authorization: Bearer $GITLAB_TOKEN" \
-        $URL && break || true
+        $URL` || continue;
+    echo "PIPELINE: $PIPELINE"
+    InternalServerErrorMessage="500 Internal Server Error"
+    PIPELINE_MESSAGE=$(echo $PIPELINE | jq -r ".message")
+    if [ "$InternalServerErrorMessage" == "$PIPELINE_MESSAGE" ]; then
+        echo "Internal Server Error"
+        sleep 2
+        continue
+    fi
+    break;
     echo "Retrying to create pipeline"
     sleep 12
 done
