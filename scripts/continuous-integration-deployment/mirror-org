@@ -21,6 +21,11 @@ if [ ! -f "$IDENTITY_FILE" ]; then
     echo "IDENTITY_FILE does not exist"
     exit 1
 fi
+ENV_CREDS_FILE=".env.creds"
+if [ ! -f "$ENV_CREDS_FILE" ]; then
+    echo "ENV_CREDS_FILE does not exist. It should contain the following variable "PAT" in order to create a mirror push"
+    exit 1
+fi
 EXCLUDES=${args[3]}
 if [ -z "$EXCLUDES" ]; then
     EXCLUDES=""
@@ -31,6 +36,24 @@ full_names=$(curl -s -X GET -u "$ORG_NAME:$PAT" "$API_URL")
 full_names=$(echo $full_names | jq -r '.[] | select(.archived == false)')
 #  | jq -r '.[] | .full_name'
 full_names=$(echo $full_names | jq -r '.full_name')
+THIS_REPO=$ORG_NAME"/"`(cd .. && basename $(git rev-parse --show-toplevel))` || true
+FILTERED_FULL_NAMES=""
+if [ ! -z "$THIS_REPO" ]; then
+    # echo "full_names: $full_names"
+    # echo "THIS_REPO: $THIS_REPO"
+    GITHUB_PRIVATE=$ORG_NAME"/.github-private"
+    # remove this repo from the list
+    for REPO in $full_names; do
+        if [ "$GITHUB_PRIVATE" == "$REPO" ]; then
+            continue
+        fi
+        if [ "$REPO" != "$THIS_REPO" ]; then
+            FILTERED_FULL_NAMES="$FILTERED_FULL_NAMES $REPO"
+        fi
+    done
+fi
+full_names=$FILTERED_FULL_NAMES
+echo "full_names: $full_names"
 ssh-keygen -R github.com
 ssh-keyscan -t rsa github.com >> $HOME/.ssh/known_hosts
 MSG=$(ssh -T -i "$IDENTITY_FILE" git@github.com 2>&1 || true)
