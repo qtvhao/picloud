@@ -12,7 +12,7 @@ while IFS= read -r IP_ADDRESS; do
     if [ -z "$IP_ADDRESS" ]; then
         continue
     fi
-    (timeout 2 ssh -T -i "$IDENTIFY_FILE" \
+    (timeout 8 ssh -T -i "$IDENTIFY_FILE" \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
             "$IP_ADDRESS" > /dev/null 2>&1 && echo "$IP_ADDRESS") &
