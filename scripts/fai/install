@@ -166,13 +166,29 @@ docker exec -it fai bash -c "stat -c '%s' /srv/fai/config/files/root-ssh-key"
 echo "Fai-cd started"
 cat fai-cd.log | tail -n50
 rm  fai-cd.log || true
+docker rm -f fai-nginx || true
+docker run -d -p 8080:80 --name fai-nginx -v ./dvd/:/usr/share/nginx/html:ro nginx
+docker rm -f tryc-fai || true;
+ADDRESS_8080="ADDRESS=172.17.0.1:8080"
+VOLUME_DOCKER_SOCK="/var/run/docker.sock:/var/run/docker.sock"
+docker run -e $ADDRESS_8080 -it \
+    --name tryc-fai \
+    -v $VOLUME_DOCKER_SOCK \
+    ghcr.io/qtvhao/trycloudflare-docker:main tryc-fai
+docker rm -f tryc-fai
+docker run -e $ADDRESS_8080 -it \
+    --name tryc-fai \
+    -v $VOLUME_DOCKER_SOCK \
+    ghcr.io/qtvhao/trycloudflare-docker:main tryc-fai
+TUNNEL=$(docker logs tryc-fai -f | head -n1 | tr -d '\r')
+echo
 
 echo
 echo
 echo "This image will do an unattended installation of Debian and the selected applications. No network connection is needed, since all packages are on the installation media. You can write this image to an USB stick or CD. Legacy BIOS and UEFI are supported."
 echo "All data on the first disk will be overridden without any further confirmation."
 echo "Ready to burn."
-echo "Rung following command to start PXE server and boot the machine from network."
+echo "Run following command to start PXE server and boot the machine from network."
 echo "    ./pic pxe \$IDENTITY_FILE \$MAC_ADDRESS [\$IP_ADDRESS]"
 if [ ! -z "$IDENTITY_FILE" ]; then
     ./pic list-nodename $IDENTITY_FILE | while read -r NODE; do
@@ -188,6 +204,8 @@ if [ ! -z "$IDENTITY_FILE" ]; then
     done
 fi
 echo
+echo "Download the iso file at:"
+echo "    https://$TUNNEL/$HOSTNAME-fai-cd.iso"
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"
