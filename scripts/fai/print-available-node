@@ -29,7 +29,7 @@ PRODUCT_NAME=$(ssh \
 if [ -z "$PRODUCT_NAME" ]; then
     exit 0
 fi
-BOOT_TIME=$(ssh \
+BOOT_TIME=$(ssh -T \
     -o ConnectTimeout=0 \
     -i "$IDENTIFY_FILE" \
     -o PasswordAuthentication=no \
