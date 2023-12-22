@@ -78,7 +78,7 @@ ssh -i $IDENTIFY_FILE \
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "stat \$HOME/k3s || \
-    (wget "https://github.com/k3s-io/k3s/releases/download/v1.27.7+k3s1/k3s" -O \$HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1);
+    (wget "https://github.com/k3s-io/k3s/releases/download/v1.28.4+k3s2/k3s" -O \$HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1);
     cp \$HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s;" || exit 1
 
 ( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
