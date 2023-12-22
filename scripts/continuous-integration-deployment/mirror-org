@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -xeo pipefail
 args=("$@")
 ORG_NAME=${args[0]}
 PAT=${args[1]}
@@ -39,17 +39,15 @@ full_names=$(echo $full_names | jq -r '.full_name')
 THIS_REPO=$ORG_NAME"/"`(cd .. && basename $(git rev-parse --show-toplevel))` || true
 FILTERED_FULL_NAMES=""
 if [ ! -z "$THIS_REPO" ]; then
-    # echo "full_names: $full_names"
-    # echo "THIS_REPO: $THIS_REPO"
     GITHUB_PRIVATE=$ORG_NAME"/.github-private"
     # remove this repo from the list
     for REPO in $full_names; do
         if [ "$GITHUB_PRIVATE" == "$REPO" ]; then
             continue
         fi
-        if [ "$REPO" != "$THIS_REPO" ]; then
-            FILTERED_FULL_NAMES="$FILTERED_FULL_NAMES $REPO"
-        fi
+        # if [ "$REPO" != "$THIS_REPO" ]; then
+        FILTERED_FULL_NAMES="$FILTERED_FULL_NAMES $REPO"
+        # fi
     done
 fi
 full_names=$FILTERED_FULL_NAMES
@@ -85,9 +83,14 @@ do
         fi
     done
     
-    while ! ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" ".." "$PIPELINE_OPTIONS"; do
+    if [ "$REPO" != "$THIS_REPO" ]; then
+        CLONE_DIR=".."
+    else
+        CLONE_DIR=""
+    fi
+    while ! ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" "$CLONE_DIR" "$PIPELINE_OPTIONS"; do
         echo "Retrying..."
         sleep 60
     done
 done
-echo "Done"
+echo "Mirror org $ORG_NAME successfully"

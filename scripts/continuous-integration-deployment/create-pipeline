@@ -17,7 +17,13 @@ while true; do
         $URL` || continue;
     echo "PIPELINE: $PIPELINE"
     InternalServerErrorMessage="500 Internal Server Error"
+    ProjectNotFoundMessage="404 Project Not Found"
     PIPELINE_MESSAGE=$(echo $PIPELINE | jq -r ".message")
+    if [ "$ProjectNotFoundMessage" == "$PIPELINE_MESSAGE" ]; then
+        echo "Project not found"
+        sleep 2
+        continue
+    fi
     if [ "$InternalServerErrorMessage" == "$PIPELINE_MESSAGE" ]; then
         echo "Internal Server Error"
         sleep 2
