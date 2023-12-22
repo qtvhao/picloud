@@ -1,6 +1,8 @@
 #!/bin/bash
 
-LIST_IP_ADDRESSES=$(./pic list-ip-addresses)
+LIST_IP_ADDRESSES=$(./pic list-ip-addresses 2>/dev/null)
+echo "LIST_IP_ADDRESSES: $LIST_IP_ADDRESSES" >&2
+echo
 while IFS= read -r IP_ADDRESS; do
     if [ -z "$IP_ADDRESS" ]; then
         continue
