@@ -7,7 +7,9 @@ if [ -z "$IDENTIFY_FILE" ]; then
     exit 1
 fi
 chmod 600 "$IDENTIFY_FILE"
-LIST_AUTHENTICATED_ADDRESSES=$(./pic list-authenticated-addresses $IDENTIFY_FILE)
+LIST_AUTHENTICATED_ADDRESSES=$(time ./pic list-authenticated-addresses $IDENTIFY_FILE)
+echo "LIST_AUTHENTICATED_ADDRESSES: $LIST_AUTHENTICATED_ADDRESSES" >&2
+echo
 for IP_ADDRESS in $LIST_AUTHENTICATED_ADDRESSES; do
     if [ -z "$IP_ADDRESS" ]; then
         continue
@@ -15,7 +17,6 @@ for IP_ADDRESS in $LIST_AUTHENTICATED_ADDRESSES; do
     ssh-keygen -R $IP_ADDRESS > /dev/null 2>&1 || true
     ssh-keyscan $IP_ADDRESS >> ~/.ssh/known_hosts 2>&1 || true
     # echo "IP_ADDRESS: $IP_ADDRESS"
-    ./pic print-available-node "$IP_ADDRESS" "$IDENTIFY_FILE"
+    ./pic print-available-node "$IP_ADDRESS" "$IDENTIFY_FILE" &
 done
-
-echo
+wait

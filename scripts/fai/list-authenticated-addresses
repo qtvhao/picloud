@@ -15,6 +15,7 @@ while IFS= read -r IP_ADDRESS; do
         continue
     fi
     (timeout 30 ssh -T -i "$IDENTIFY_FILE" \
+        -o ConnectTimeout=0 \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
             "$IP_ADDRESS" > /dev/null 2>/dev/null && echo "$IP_ADDRESS") &

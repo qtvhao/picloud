@@ -3,6 +3,7 @@
 MAX=254
 for i in `seq 2 $MAX`; do
     IP_ADDRESS="192.168.1.$i"
-    (timeout .5 ping -c1 $IP_ADDRESS >&2 && echo $IP_ADDRESS) &
+    # set timeout 2 seconds for wireless network
+    (ping -c1 -w3 $IP_ADDRESS >/dev/null 2>/dev/null && echo $IP_ADDRESS) &
 done
 wait
