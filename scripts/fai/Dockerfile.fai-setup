@@ -8,6 +8,7 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmo
 RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /srv/fai/nfsroot/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
 RUN curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
 RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
+RUN echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bookworm contrib' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/virtualbox.list
 RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
 RUN mkdir -p /srv/fai/config/
 COPY fai/fai-bookworm/ /srv/fai/config/fai-bookworm/
