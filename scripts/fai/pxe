@@ -27,7 +27,7 @@ if [ $IP_ADDRESS_TO_TURN_OFF == $hostnameI ]; then
     echo "IP_ADDRESS_TO_TURN_OFF is the same as PXE server. Exiting"
     exit 1
 fi
-warp-cli disconnect || true
+# warp-cli disconnect || true
 # echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
 # docker exec -it fai bash -c "rm /etc/exports || true"
