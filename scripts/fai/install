@@ -42,18 +42,16 @@ notes=" (optional, you can skip this step if you don't want to push the image to
     ( echo "Login to docker.io as $GITHUB_USERNAME $notes: https://hub.docker.com/settings/security?generateToken=true" && \
     docker login -u $GITHUB_USERNAME) || true
 # if .docker/config.json auths to index.docker.io exists
-(cat /root/.docker/config.json | grep index.docker.io ) && \
 time ( docker buildx build \
     --push \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
     --cache-to type=registry,ref=docker.io/$GITHUB_USERNAME/picloud:branch-cache,mode=max \
     -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config . && \
-    docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config)
-(cat /root/.docker/config.json | grep index.docker.io ) \
-    || time ( docker buildx build \
+    docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config) || \
+time ( docker buildx build \
+    --load \
     --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
-    -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config .)
-
+    -t docker.io/$GITHUB_USERNAME/picloud:fai-config2 -f Dockerfile.fai-config .)
 echo "Dockerfile.fai-config built"
 rm Dockerfile.fai-config
 
