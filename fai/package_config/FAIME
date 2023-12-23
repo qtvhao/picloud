@@ -20,6 +20,7 @@ vnstat
 wakeonlan
 syslinux
 pv
+bc
 virtualbox-6.1
 
 PACKAGES install
