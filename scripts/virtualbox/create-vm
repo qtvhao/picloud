@@ -51,13 +51,16 @@ VBoxManage modifyvm $VM_NAME --nic1 bridged --bridgeadapter1 "$NETWORK_INTERFACE
 VBoxManage showvminfo $VM_NAME
 VBoxManage startvm $VM_NAME --type headless
 
-SCREENSHOT_PATH="$(pwd)/$VM_NAME.png"
+SCREENSHOT_PATH="$VM_FOLDER/$VM_NAME.png"
 wait_vm_for_ready() {
     while true; do
         if ! VBoxManage showvminfo $VM_NAME --machinereadable | grep -q "VMState=\"running\""; then
+            echo "VM is powered off"
             break
         fi
         VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
+        TESS=`tesseract "$SCREENSHOT_PATH" stdout -l eng --dpi 300`
+        echo "$TESS"
         sleep 5
     done
 }
