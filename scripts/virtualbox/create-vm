@@ -32,8 +32,8 @@ VBoxManage createvm --name $VM_NAME --ostype Debian_64 --register \
 VM_FOLDER="$BASE_FOLDER/$VM_NAME"
 echo "VM_NAME: $VM_NAME"
 VBoxManage storagectl $VM_NAME --name "IDE Controller for installation media" --add ide
-VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" \
-    --port 0 --device 0 --type dvddrive --medium "$ISO_PATH"
+# VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" \
+#     --port 0 --device 0 --type dvddrive --medium "$ISO_PATH"
 
 # Create a disk for the VM
 VBoxManage storagectl "$VM_NAME" --name "SATA Controller" --add sata --controller IntelAHCI
@@ -48,6 +48,9 @@ VBoxManage modifyvm $VM_NAME --cpus 1
 NETWORK_INTERFACE=$(ip route | grep default | awk '{print $5}')
 VBoxManage modifyvm $VM_NAME --nic1 bridged --bridgeadapter1 "$NETWORK_INTERFACE"
 # 
+./pic start-pxe-server
+VBoxManage modifyvm $VM_NAME --boot1 net --boot2 dvd --boot3 disk --boot4 none
+# VBoxManage modifyvm $VM_NAME --firmware efi
 VBoxManage showvminfo $VM_NAME
 VBoxManage startvm $VM_NAME --type headless
 
@@ -58,10 +61,11 @@ wait_vm_for_ready() {
             echo "VM is powered off"
             break
         fi
+        sleep 5
         VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
+        VBoxManage controlvm $VM_NAME screenshotpng `realpath vm.png`
         TESS=`tesseract "$SCREENSHOT_PATH" stdout -l eng --dpi 300`
         echo "$TESS"
-        sleep 5
     done
 }
 wait_vm_for_ready
