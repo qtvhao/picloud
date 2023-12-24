@@ -1,0 +1,70 @@
+#!/bin/bash
+
+set -xeo pipefail
+
+which VBoxManage || (echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bookworm contrib" | tee /etc/apt/sources.list.d/virtualbox.list && \
+    (wget -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | gpg --dearmor --yes --output /usr/share/keyrings/oracle-virtualbox-2016.gpg) && \
+    apt update && \
+    apt install -y virtualbox-6.1)
+
+args=("$@")
+
+ISO_PATH=${args[0]}
+if [ ! -f "$ISO_PATH" ]; then
+    echo "ISO file not found"
+    exit 1
+fi
+ISO_PATH=`realpath $ISO_PATH`
+ISO_FILE_NAME=$(basename "$ISO_PATH")
+ISO_FILE_NAME="${ISO_FILE_NAME%.*}"
+VM_NAME=""
+while true; do
+    i=$((i+1))
+    VM_NAME=${ISO_FILE_NAME}-$i
+    VBOX_COUNT=$(VBoxManage list vms | grep "$VM_NAME" | wc -l) || true
+    if [ "x$VBOX_COUNT" == "x0" ]; then
+        break
+    fi
+done
+BASE_FOLDER="$HOME/VirtualBox VMs"
+VBoxManage createvm --name $VM_NAME --ostype Debian_64 --register \
+    --basefolder "$BASE_FOLDER"
+VM_FOLDER="$BASE_FOLDER/$VM_NAME"
+echo "VM_NAME: $VM_NAME"
+VBoxManage storagectl $VM_NAME --name "IDE Controller for installation media" --add ide
+VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" \
+    --port 0 --device 0 --type dvddrive --medium "$ISO_PATH"
+
+# Create a disk for the VM
+VBoxManage storagectl "$VM_NAME" --name "SATA Controller" --add sata --controller IntelAHCI
+HARD_DISK_PATH="$VM_FOLDER/$VM_NAME.vdi"
+VBoxManage createhd --filename "$HARD_DISK_PATH" --size 10000 --format VDI
+VBoxManage storageattach $VM_NAME --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium "$HARD_DISK_PATH"
+
+VBoxManage modifyvm $VM_NAME --memory 2048 # 2GB
+VBoxManage modifyvm $VM_NAME --vram 32 # 32MB
+VBoxManage modifyvm $VM_NAME --cpus 1
+
+NETWORK_INTERFACE=$(ip route | grep default | awk '{print $5}')
+VBoxManage modifyvm $VM_NAME --nic1 bridged --bridgeadapter1 "$NETWORK_INTERFACE"
+# 
+VBoxManage showvminfo $VM_NAME
+VBoxManage startvm $VM_NAME --type headless
+
+SCREENSHOT_PATH="$(pwd)/$VM_NAME.png"
+wait_vm_for_ready() {
+    while true; do
+        if ! VBoxManage showvminfo $VM_NAME --machinereadable | grep -q "VMState=\"running\""; then
+            break
+        fi
+        VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
+        sleep 5
+    done
+}
+wait_vm_for_ready
+VBoxManage controlvm $VM_NAME poweroff
+VBoxManage storageattach $VM_NAME --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium none
+VBoxManage startvm $VM_NAME --type headless
+# sleep for 5 seconds to make sure the VM is ready
+sleep 5
+VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
