@@ -163,6 +163,9 @@ case "$arg1" in
     "auto-pxe"|"get-mac-address"|"list-authenticated-addresses"|"list-ssh-addresses"|"list-ip-addresses"|"unpack"|"print-available-node")
         SCRIPTS_SUBFOLDER="scripts/fai"
         ;;
+    "stop-vms"|"create-vm")
+        SCRIPTS_SUBFOLDER="scripts/virtualbox"
+        ;;
 esac
 if [ -n "$SCRIPTS_SUBFOLDER" ]; then
     set -e
