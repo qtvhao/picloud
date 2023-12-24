@@ -49,6 +49,7 @@ NETWORK_INTERFACE=$(ip route | grep default | awk '{print $5}')
 VBoxManage modifyvm $VM_NAME --nic1 bridged --bridgeadapter1 "$NETWORK_INTERFACE"
 # 
 ./pic start-pxe-server
+sleep 18
 VBoxManage modifyvm $VM_NAME --boot1 net --boot2 dvd --boot3 disk --boot4 none
 # VBoxManage modifyvm $VM_NAME --firmware efi
 VBoxManage showvminfo $VM_NAME
