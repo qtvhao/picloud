@@ -13,4 +13,6 @@ for VM_NAME in $RUNNING_VMS_NAMES; do
     # delete vm
     VBoxManage unregistervm $VM_NAME --delete
 done
+BASE_FOLDER="$HOME/VirtualBox VMs/"
+rm -rf "$BASE_FOLDER"
 echo "All VMs are stopped and deleted"
