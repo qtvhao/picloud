@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -xeo pipefail
+
+RUNNING_VMS_NAMES=`VBoxManage list runningvms | awk '{print $1}'`
+for VM_NAME in $RUNNING_VMS_NAMES; do
+    echo "VM_NAME: $VM_NAME"
+    VM_NAME=${VM_NAME//\"/}
+    VBoxManage controlvm $VM_NAME acpipowerbutton
+    # VBoxManage controlvm $VM_NAME poweroff
+done
+echo "All VMs are stopped"
