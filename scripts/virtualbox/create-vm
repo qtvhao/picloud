@@ -65,9 +65,10 @@ wait_vm_for_ready() {
     done
 }
 wait_vm_for_ready
-VBoxManage controlvm $VM_NAME poweroff
 VBoxManage storageattach $VM_NAME --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium none
 VBoxManage startvm $VM_NAME --type headless
 # sleep for 5 seconds to make sure the VM is ready
 sleep 5
 VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
+echo "VM is ready"
+
