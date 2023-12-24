@@ -22,6 +22,8 @@ syslinux
 pv
 bc
 virtualbox-6.1
+tesseract-ocr
+libtesseract-dev
 
 PACKAGES install
 task-english 
