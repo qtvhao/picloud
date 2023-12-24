@@ -63,14 +63,15 @@ wait_vm_for_ready() {
             break
         fi
         sleep 5
-        VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
-        VBoxManage controlvm $VM_NAME screenshotpng `realpath vm.png`
+        VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH" || true
+        VBoxManage controlvm $VM_NAME screenshotpng `realpath vm.png` || true
         TESS=`tesseract "$SCREENSHOT_PATH" stdout -l eng --dpi 300`
         echo "$TESS"
     done
 }
 wait_vm_for_ready
-VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" --port 0 --device 0 --type dvddrive --medium none
+docker restart fai
+# VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" --port 0 --device 0 --type dvddrive --medium none
 VBoxManage startvm $VM_NAME --type headless
 # sleep for 5 seconds to make sure the VM is ready
 sleep 5
