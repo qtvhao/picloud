@@ -42,15 +42,11 @@ if [ -f "./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER" ]; then
     curl $URL -o ./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER
 fi
 echo "  - squash.img size: $SQUASH_IMG_FILESIZE_HUMAN"
-MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
-MAC_ADDRESS_SED_LOWER=$(echo $MAC_ADDRESS_SED | tr '[:upper:]' '[:lower:]')
+# MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
+# MAC_ADDRESS_SED_LOWER=$(echo $MAC_ADDRESS_SED | tr '[:upper:]' '[:lower:]')
 # fai/pxelinux.cfg/01-2c-59-e5-04-c4-51
 # replace http://\d+\.\d+\.\d+\.\d+/squash.img with http://$hostnameI/squash.img
 # replace IP ADDRESS with hostnameI
-hostnameI=$(hostname -I | awk '{print $1}')
-sed -i "s/http:\/\/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+:8085\/squash.img/http:\/\/$hostnameI:8085\/squash.img/g" ./fai/pxelinux.cfg/default
-sed -i "s/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+,proxy/$hostnameI,proxy/g" ./dnsmasq.conf
-sed -i "s/pxeserver,[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/pxeserver,$hostnameI/g" ./dnsmasq.conf
 
 ./pic start-pxe-server
 
