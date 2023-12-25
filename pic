@@ -128,7 +128,7 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
             mkdir -p "$LOCAL_SCRIPTS_DIR"
         fi
         if [ ! -f "$LOCAL_SCRIPTS_DIR/$3" ]; then
-            wget -nc -P "$LOCAL_SCRIPTS_DIR" "$remoteUrl"
+            wget -nc -P "$LOCAL_SCRIPTS_DIR" -O "$LOCAL_SCRIPTS_DIR/$3" -o /dev/null "$remoteUrl"
             chmod +x "$LOCAL_SCRIPTS_DIR/$3"
         fi
         # wget -nc -P "$LOCAL_SCRIPTS_DIR" "$remoteUrl"
