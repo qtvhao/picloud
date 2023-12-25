@@ -207,5 +207,10 @@ echo "    https://$TUNNEL/$HOSTNAME-fai-cd.iso"
 echo "Run the following command to burn the image to a USB stick:"
 echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/USB_DEVICE_NAME"
 echo "USB device list:"
-lsblk -n -o NAME --nodeps | awk '{print $1}' | sed 's/^/    .\/pic dd .\/dvd\/'$HOSTNAME'-fai-cd.iso \/dev\//'
+USB_DEVICES=`lsblk -n -o NAME,SIZE --nodeps`
+echo "$USB_DEVICES" | while read -r USB_DEVICE; do
+    DEVICE_NAME=$(echo $USB_DEVICE | awk '{print $1}')
+    DEVICE_SIZE=$(echo $USB_DEVICE | awk '{print $2}')
+    echo "    ./pic dd ./dvd/$HOSTNAME-fai-cd.iso /dev/$DEVICE_NAME # $DEVICE_SIZE"
+done
 exit 0
