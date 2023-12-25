@@ -123,7 +123,18 @@ if [ "$arg1" == "exec-local-or-remote" ]; then
         # cp "$2/$3" "$scriptFile" || true
         "$2/$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     else
-        curl -s $remoteUrl -o - | bash -s -- "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+        LOCAL_SCRIPTS_DIR="$HOME/.pic/scripts/$PIC_VERSION/$2-$3"
+        if [ ! -d "$LOCAL_SCRIPTS_DIR" ]; then
+            mkdir -p "$LOCAL_SCRIPTS_DIR"
+        fi
+        if [ ! -f "$LOCAL_SCRIPTS_DIR/$3" ]; then
+            wget -nc -P "$LOCAL_SCRIPTS_DIR" "$remoteUrl"
+            chmod +x "$LOCAL_SCRIPTS_DIR/$3"
+        fi
+        # wget -nc -P "$LOCAL_SCRIPTS_DIR" "$remoteUrl"
+        # chmod +x "$LOCAL_SCRIPTS_DIR/$3"
+        "$LOCAL_SCRIPTS_DIR/$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
+        # curl -s $remoteUrl -o - | bash -s -- "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     fi
     exit 0
 fi
