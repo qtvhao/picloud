@@ -73,8 +73,11 @@ wakeonlan $MAC_ADDRESS
 ./pic wait-node-to-shutdown $MAC_ADDRESS $IDENTITY_FILE
 IP_ADDRESS_FILE="$HOME/.pic/$MAC_ADDRESS-IP_ADDRESS.txt"
 IP_ADDRESS=$(cat $IP_ADDRESS_FILE)
+# delete old images in registry folder
 REGISTRY_FOLDER="/var/lib/registry/"
-# if $REGISTRY_FOLDER exists
+EXPIRY_DAYS="28"
+find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS
+find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;
 if [ -d "$REGISTRY_FOLDER" ]; then
     ssh -i $IDENTITY_FILE $IP_ADDRESS "rm -rf $REGISTRY_FOLDER" || true
     ssh -i $IDENTITY_FILE $IP_ADDRESS "mkdir -p $REGISTRY_FOLDER" || true
