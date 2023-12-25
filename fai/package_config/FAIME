@@ -24,6 +24,7 @@ bc
 virtualbox-6.1
 tesseract-ocr
 libtesseract-dev
+parted
 
 PACKAGES install
 task-english 
