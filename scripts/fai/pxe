@@ -75,7 +75,7 @@ IP_ADDRESS_FILE="$HOME/.pic/$MAC_ADDRESS-IP_ADDRESS.txt"
 IP_ADDRESS=$(cat $IP_ADDRESS_FILE)
 # delete old images in registry folder
 REGISTRY_FOLDER="/var/lib/registry/"
-EXPIRY_DAYS="28"
+EXPIRY_DAYS="7"
 find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS
 find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;
 if [ -d "$REGISTRY_FOLDER" ]; then
