@@ -25,6 +25,8 @@ virtualbox-7.0
 tesseract-ocr
 libtesseract-dev
 parted
+build-essential
+linux-headers-amd64
 
 PACKAGES install
 task-english 
