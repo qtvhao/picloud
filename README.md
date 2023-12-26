@@ -31,12 +31,9 @@ docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename $IDENTITY_FILE
 
 
 ```bash
-host_name="z440" # set your own hostname
-usb_device="/dev/sdc" # set your own USB device
-github_username="qtvhao" # set your own github username
-./pic fai $host_name $github_username
-./pic dd $host_name $usb_device
-# Boot from USB and wait for installation to complete
+github_username="qtvhao" # set your own github username, this helps to download your public key from github
+./pic fai "hp-z440" "$github_username"
+./pic dd $host_name "/dev/sdc" # you can burn your ISO to USB device, or you can use pxe boot to install your machine (see below)
 ```
 
 ## Automated bare metal installation with PXE boot
@@ -44,7 +41,9 @@ github_username="qtvhao" # set your own github username
 [![asciicast](https://asciinema.org/a/616107.svg)](https://asciinema.org/a/616107)
 
 ```bash
-./pic pxe 8c:dc:d4:34:0c:f0 ./id_rsa 192.168.1.226
+./pic pxe "8c:dc:d4:34:0c:f0" ./id_rsa "192.168.1.226"
+# 
+./pic auto-pxe $IDENTITY_FILE # this will automatically discover all machines in the same network and install them with created ISO above
 ```
 
 ## Install/Reinstall Kubernetes cluster with k3s
@@ -54,11 +53,6 @@ The script will automatically install k3s-agent on the listed machines.
 ./pic reinstall-k3s $IDENTITY_FILE
 ```
 
-# Setup Registry as a pull through cache (useful for air-gapped environment)
-
-```bash
-./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP"
-```
 
 ## Install recommended packages
 
@@ -69,7 +63,13 @@ The script will automatically install k3s-agent on the listed machines.
 # - Redis
 # - Gitlab
 # - Grafana, Promtail and Loki
-# - Network-based mount over CSI plugin and Minio
+# - Longhorn storage
+```
+
+# Setup Registry as a pull through cache (useful for air-gapped environment)
+
+```bash
+./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP"
 ```
 
 # Usage
