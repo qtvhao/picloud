@@ -9,6 +9,7 @@
 - [x] Registry as a pull through cache with [Docker Registry](https://docs.docker.com/registry/)
 - [x] Terraform HTTP backend and manage your environment on GitLab (see [Terraform HTTP backend](https://docs.gitlab.com/ee/user/infrastructure/iac/terraform_state.html))
 - [x] Harbor installation for private Docker registry
+- [x] Virtual machine management with [VirtualBox](https://www.virtualbox.org/)
 
 # Installation
 ```bash
