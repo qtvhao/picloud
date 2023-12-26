@@ -49,7 +49,7 @@ NETWORK_INTERFACE=$(ip route | grep default | awk '{print $5}')
 VBoxManage modifyvm $VM_NAME --nic1 bridged --bridgeadapter1 "$NETWORK_INTERFACE"
 # 
 ./pic start-pxe-server
-sleep 18
+sleep 6
 VBoxManage modifyvm $VM_NAME --boot1 net --boot2 dvd --boot3 disk --boot4 none
 # VBoxManage modifyvm $VM_NAME --firmware efi
 VBoxManage showvminfo $VM_NAME
@@ -70,6 +70,7 @@ wait_vm_for_ready() {
     done
 }
 wait_vm_for_ready
+VBoxManage modifyvm $VM_NAME --boot1 dvd --boot2 disk --boot3 none --boot4 none
 docker restart fai
 # VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" --port 0 --device 0 --type dvddrive --medium none
 VBoxManage startvm $VM_NAME --type headless
