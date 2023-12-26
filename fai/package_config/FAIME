@@ -21,7 +21,7 @@ wakeonlan
 syslinux
 pv
 bc
-virtualbox-6.1
+virtualbox-7.0
 tesseract-ocr
 libtesseract-dev
 parted
