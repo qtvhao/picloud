@@ -205,3 +205,5 @@ while true; do
     ./pic applications-settings "signup_enabled=false" && break || true
     sleep 2
 done
+
+./pic get-personal-access-token
