@@ -64,10 +64,10 @@ wait_vm_for_ready() {
         fi
         sleep 5
         VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH" || true
-        ln -sf "$SCREENSHOT_PATH" vm.png
+        VBoxManage controlvm $VM_NAME screenshotpng "vm.png" || true
         # -s for silent mode, -f for force overwrite
         TESS=`tesseract "$SCREENSHOT_PATH" stdout -l eng --dpi 300`
-        echo "$TESS"
+        echo "$TESS" | tail -n 10
     done
 }
 wait_vm_for_ready
@@ -79,5 +79,18 @@ VBoxManage startvm $VM_NAME --type headless
 sleep 5
 VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH"
 tesseract "$SCREENSHOT_PATH" stdout -l eng --dpi 300
+while true; do
+    sleep 5
+    VBoxManage controlvm $VM_NAME screenshotpng "$SCREENSHOT_PATH" || true
+    VBoxManage controlvm $VM_NAME screenshotpng "vm.png" || true
+    cp "$SCREENSHOT_PATH" "vm.png"
+    TESS=`tesseract "$SCREENSHOT_PATH" stdout -l eng --dpi 300`
+    LOGGED_IN_MATCH="ip-192-168-1-"
+    if echo "$TESS" | grep -q "$LOGGED_IN_MATCH"; then
+        echo "VM is logged in"
+        break
+    fi
+    echo "$TESS"
+done
 echo "VM is ready"
 
