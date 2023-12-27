@@ -8,7 +8,8 @@ which bc > /dev/null 2>&1 || {
 IDENTIFY_FILE="$HOME/id_rsa"
 echo "" > NODES
 K8S_MASTER_NODE_IP=$(hostname -I | cut -d' ' -f1)
-nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | awk '{print $1}' | tr '\n' ' ')
+nodesOnLan=$(./pic list-nodename $IDENTIFY_FILE | grep -v virtualbox | awk '{print $1}' | tr '\n' ' ')
+echo "nodesOnLan: $nodesOnLan"
 for node in $nodesOnLan; do
     if [ "$K8S_MASTER_NODE_IP" == "$node" ]; then
         continue
@@ -16,6 +17,7 @@ for node in $nodesOnLan; do
     if [ -z "$node" ]; then
         continue
     fi
+    echo "Checking $node"
     echo "$node" >> NODES
     ssh-keygen -R "$node" || true
     ssh-keyscan "$node" >> /root/.ssh/known_hosts
