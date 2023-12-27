@@ -18,7 +18,7 @@ if [ -z "$KEY" ]; then
     exit 1
 fi
 if [ -z "$VALUE" ]; then
-    echo "VALUE is empty"
+    echo "VALUE for $KEY is empty"
     exit 1
 fi
 if [ -z "$ENVIRONMENT_SCOPE" ]; then
