@@ -2,7 +2,6 @@ KEYMAP=us
 TIMEZONE=UTC
 locales="en_US"
 ROOTPW=''
-username=picloud
 USERPW=''
 release=bookworm
 secsuite=bookworm-security
