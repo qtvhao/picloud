@@ -11,6 +11,7 @@ for VM_NAME in $RUNNING_VMS_NAMES; do
     fi
     # VBoxManage controlvm $VM_NAME acpipowerbutton
     # delete vm
+    VBoxManage controlvm $VM_NAME poweroff || true
     VBoxManage unregistervm $VM_NAME --delete
 done
 BASE_FOLDER="$HOME/VirtualBox VMs/"
