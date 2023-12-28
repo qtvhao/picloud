@@ -58,6 +58,7 @@ VBoxManage startvm $VM_NAME --type headless
 SCREENSHOT_PATH="$VM_FOLDER/$VM_NAME.png"
 wait_vm_for_ready() {
     while true; do
+        hostname -I
         if ! VBoxManage showvminfo $VM_NAME --machinereadable | grep -q "VMState=\"running\""; then
             echo "VM is powered off"
             break
