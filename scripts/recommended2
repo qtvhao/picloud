@@ -8,7 +8,7 @@ if [ -z $EMAIL ]; then
     echo "EMAIL is empty. Please specify in .env file"
     exit 1
 fi
-set -e -o pipefail
+set -xeo pipefail
 stat ~/.ssh/id_rsa.pub || ssh-keygen
 args=("$@")
 PIC_DIR="$HOME/.pic"
@@ -57,3 +57,4 @@ echo "Pulled images for the first node"
 # use this command to reduce the time of pulling images (from 19m25.985s to 18m35.825s)
 # exit 0
 ( time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log) || exit 1)
+echo "PiCloud has installed gitlab"

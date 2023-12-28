@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -xeo pipefail
 
 PIC_DIR="$HOME/.pic"
 LOGS_DIR="$PIC_DIR/logs/"
