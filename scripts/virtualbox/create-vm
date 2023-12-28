@@ -81,8 +81,12 @@ wait_vm_for_ready() {
 }
 wait_vm_for_ready
 VBoxManage modifyvm $VM_NAME --boot1 dvd --boot2 disk --boot3 none --boot4 none
-docker restart fai
-# VBoxManage storageattach $VM_NAME --storagectl "IDE Controller for installation media" --port 0 --device 0 --type dvddrive --medium none
+if [ "no-start-pxe" == "$OPTION_2" ]; then
+    echo "no-start-pxe"
+else
+    docker restart fai
+fi
+
 VBoxManage startvm $VM_NAME --type headless
 # sleep for 5 seconds to make sure the VM is ready
 sleep 5
