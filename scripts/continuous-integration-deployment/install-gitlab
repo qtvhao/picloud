@@ -177,8 +177,10 @@ time ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 time ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
 time ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 
+kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:gitlab-gitlab-runner || \
+    kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:gitlab-gitlab-runner
 kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
-    kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
+    kubectl create clusterrolebinding gitlab-default-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
