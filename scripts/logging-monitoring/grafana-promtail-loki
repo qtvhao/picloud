@@ -36,7 +36,7 @@ helm upgrade --install --namespace loki promtail grafana/promtail
 helm upgrade --install --namespace loki loki grafana/loki           \
     --set       "read.persistence.storageClass=local-path"      \
     --set       "backend.persistence.storageClass=local-path"   \
-    --set       "write.persistence.storageClass=local-path" --set "loki.auth.enabled=false"
+    --set       "write.persistence.storageClass=local-path" --set "loki.auth_enabled=false"
 cat <<EOF > ./grafana-values.yaml
 datasources:
   datasources.yaml:
