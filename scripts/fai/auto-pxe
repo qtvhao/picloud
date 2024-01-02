@@ -14,7 +14,7 @@ if [ ! -f "$IDENTITY_FILE" ]; then
 fi
 hostnameI=$(hostname -I | awk '{print $1}')
 # echo "hostnameI: $hostnameI"
-LIST_NODENAME=$(./pic list-nodename $IDENTITY_FILE | grep -v $hostnameI | awk '{print $1}')
+LIST_NODENAME=$(./pic list-nodename $IDENTITY_FILE | grep -v virtualbox | grep -v $hostnameI | awk '{print $1}')
 echo;
 for NODE in $LIST_NODENAME; do
     echo "NODE: $NODE"
