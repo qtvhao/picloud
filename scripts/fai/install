@@ -31,7 +31,7 @@ rm ./dvd/$HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
 docker rm -f fai || true
-export cl="DEBIAN,DEMO,FAIBASE,BOOKWORM,ONE,DEBIAN_DEVEL,SSH_SERVER,HALT,FAIME,GRUB_PC,GRUB_EFI,AMD64"
+export cl="DEBIAN,DEMO,FAIBASE,BOOKWORM,ONE,DEBIAN_DEVEL,SSH_SERVER,REBOOT,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 docker rm -f apt-cacher-ng || true
 # warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
