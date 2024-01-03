@@ -126,6 +126,7 @@ runners.privileged=true,\
 nginx-ingress.enabled=false,\
 gitlab-runner.runners.privileged=true \
     --set gitlab.gitaly.persistence.storageClass=local-path \
+    --set gitlab.sidekiq.concurrency=2 \
     --set postgresql.global.storageClass=local-path \
     --set minio.persistence.storageClass=local-path \
     --set redis.global.storageClass=local-path \
