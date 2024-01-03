@@ -14,9 +14,11 @@ export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 PAYLOAD=$(jq -c -n --arg SSH_PUB_KEY "$SSH_PUB_KEY" '{"title":"gitlab-ssh-key-'$(date +%s)'","key":$SSH_PUB_KEY}')
 echo $PAYLOAD > gitlab-ssh-key.json
 # cat gitlab-ssh-key.json
-curl -s --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
-    --header "Content-Type: application/json" \
-    --data "@gitlab-ssh-key.json" \
-    "https://$FQDN_RECORD/api/v4/user/keys" | jq ".title, .id"
+while true; do
+    (curl -s --request POST --header "Authorization: Bearer $GITLAB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "@gitlab-ssh-key.json" \
+        "https://$FQDN_RECORD/api/v4/user/keys" | jq ".title, .id") && break || sleep 5
+done
 rm gitlab-ssh-key.json
 echo
