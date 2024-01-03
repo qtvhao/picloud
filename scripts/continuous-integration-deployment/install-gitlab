@@ -180,6 +180,8 @@ time ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 
 kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:gitlab-gitlab-runner || \
     kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:gitlab-gitlab-runner
+kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:gitlab-certmanager-issuer || \
+    kubectl create clusterrolebinding gitlab-certmanager-issuer-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:gitlab-certmanager-issuer
 kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
     kubectl create clusterrolebinding gitlab-default-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:default
 

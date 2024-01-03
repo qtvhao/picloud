@@ -8,5 +8,5 @@ if [ -z "$IDENTIFY_FILE" ]; then
     exit 1
 fi
 
-curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/scripts/environment_check.sh | bash
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/deploy/longhorn.yaml
+curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/scripts/environment_check.sh | bash
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml

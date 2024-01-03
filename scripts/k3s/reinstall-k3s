@@ -49,12 +49,12 @@ done
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag || true
 
 echo "1. Deleting longhorn"
-timeout 120 kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/deploy/longhorn.yaml > /dev/null 2>&1 || true
+timeout 120 kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml > /dev/null 2>&1 || true
 
 echo "2. Uninstalling longhorn"
-kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/uninstall/uninstall.yaml > /dev/null 2>&1 || true
+kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/uninstall/uninstall.yaml > /dev/null 2>&1 || true
 
-kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.2/deploy/longhorn.yaml > /dev/null 2>&1 || true
+kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml > /dev/null 2>&1 || true
 
 echo "3. Waiting for longhorn to be uninstalled"
 (kubectl get job longhorn-uninstall -n longhorn-system && \
