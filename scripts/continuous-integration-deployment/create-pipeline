@@ -61,6 +61,10 @@ if [ "wait-for-success" == "$option2" ]; then
             echo "Pipeline succeeded"
             break
         fi
+        if [ "manual" == "$PIPELINE_STATUS" ]; then
+            echo "Pipeline requires manual action"
+            break
+        fi
         if [ "running" == "$PIPELINE_STATUS" ]; then
             echo "Pipeline is running"
                 CONDITIONS='.items[] | select(.metadata.annotations."project.runner.gitlab.com/id" == "'$PROJECT_ID'") | .metadata.name'
