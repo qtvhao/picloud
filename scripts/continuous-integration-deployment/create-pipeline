@@ -20,7 +20,7 @@ while true; do
         --header "Authorization: Bearer $GITLAB_TOKEN" \
         $URL` || continue;
     echo "PIPELINE: $PIPELINE"
-    PIPELINE_MESSAGE_BASE_0=$(echo $PIPELINE | jq -r ".message.base[0]")
+    PIPELINE_MESSAGE_BASE_0=$(echo $PIPELINE | jq -r ".message.base[0]") || true;
     if [ "Reference not found" == "$PIPELINE_MESSAGE_BASE_0" ]; then
         echo "Reference not found"
         exit 0
