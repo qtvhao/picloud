@@ -23,6 +23,10 @@ while true; do
     PIPELINE_ID=$(echo $PIPELINE | jq -r ".id")
     PROJECT_ID=$(echo $PIPELINE | jq -r ".project_id")
     echo "PROJECT_ID: $PROJECT_ID"
+    if [ -z "$PROJECT_ID" ]; then
+        echo "PROJECT_ID is empty"
+        exit 1
+    fi
     InternalServerErrorMessage="500 Internal Server Error"
     ProjectNotFoundMessage="404 Project Not Found"
     PIPELINE_MESSAGE=$(echo $PIPELINE | jq -r ".message")
