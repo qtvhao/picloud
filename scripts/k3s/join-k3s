@@ -21,16 +21,14 @@ if [ ! -f $IDENTIFY_FILE ]; then
 fi
 set -xeo pipefail
 REGISTRY_FOLDER="/var/lib/registry/"
-# if $REGISTRY_FOLDER exists
 if [ -d "$REGISTRY_FOLDER" ]; then
+    ssh -i $IDENTITY_FILE $NODE_IP "rm -rf $REGISTRY_FOLDER" || true
     ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
+    EXPIRY_DAYS="7"
+    ssh -i $IDENTITY_FILE $NODE_IP "find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;" || true
+    time rsync -avzP -e "ssh -i $IDENTITY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
     time rsync --info=progress2 -az --human-readable -e "ssh -i $IDENTIFY_FILE" $NODE_IP:$REGISTRY_FOLDER $REGISTRY_FOLDER
-    # this command will copy $REGISTRY_FOLDER from $NODE_IP to local machine
-    # --info=progress2-avz is for showing progress
-    # -a is for archive mode
-    # -z is for compress
     time rsync --info=progress2 -az --human-readable -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
-    # this command will copy $REGISTRY_FOLDER from local machine to $NODE_IP
 fi
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt

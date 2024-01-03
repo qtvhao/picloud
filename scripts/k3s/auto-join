@@ -14,6 +14,8 @@ if [ ! -f "NODES" ]; then
 fi
 echo "" >> NODES
 NODES=$(cat NODES)
+COUNT_NODES=$(echo "$NODES" | grep -v "^$" | wc -l)
+echo "Found $COUNT_NODES nodes to join"
 JOINED_NODES=""
 for node in $NODES; do
     if [ -z "$node" ]; then
