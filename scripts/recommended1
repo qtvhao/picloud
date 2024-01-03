@@ -8,7 +8,7 @@ LOGS_DIR="$PIC_DIR/logs"
 echo "Installing k3s recommended packages 1"
 ./pic recommended2 $IDENTIFY_FILE
 
-( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log)) &
+( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log))
 ( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
 
 time (./pic redis | tee $LOGS_DIR/redis.log) &

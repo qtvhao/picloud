@@ -24,7 +24,7 @@ for node in $NODES; do
     ssh-keygen -R "$node" > /dev/null 2>&1 || true
     ssh-keyscan "$node" >> /root/.ssh/known_hosts 2>&1
     echo "Joining node $node"
-    ./pic join-k3s "$node" "$IDENTIFY_FILE"
+    ./pic join-k3s "$node" "$IDENTIFY_FILE" 2>&1 | tee "$LOGS_DIR/$node.log"
     JOINED_NODES="$JOINED_NODES $node"
 done
 echo "All nodes are joined: $JOINED_NODES"
