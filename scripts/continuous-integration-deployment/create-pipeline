@@ -67,15 +67,19 @@ if [ "wait-for-success" == "$option2" ]; then
                 PODS=$(kubectl get pods -n gitlab-ns -o json | jq -r "$CONDITIONS")
                 echo "PODS: $PODS"
                 for pod in $PODS; do
-                    IS_PodInitializing=$(kubectl get pod -n gitlab-ns $pod -o json | jq -r '.status.containerStatuses[] | select(.name == "gitlab-runner") | .state.waiting.reason')
+                    IS_PodInitializing=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="PodInitializing")].status}')
                     if [ "PodInitializing" == "$IS_PodInitializing" ]; then
                         echo "Pod $pod is initializing"
                         continue
                     fi
                     echo "===================="
-                    kubectl logs -n gitlab-ns $pod --tail 12
+                    kubectl logs -n gitlab-ns $pod -c build --tail 12 || true
                 done
             continue
+        fi
+        if [ "failed" == "$PIPELINE_STATUS" ]; then
+            echo "Pipeline failed"
+            exit 1
         fi
         sleep 6
     done
