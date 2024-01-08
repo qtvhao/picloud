@@ -1,0 +1,17 @@
+#!/bin/bash
+set -xeo pipefail
+IP_SHOW=$(ip -br link show | grep "UP " | grep -v "veth" | grep -v "lo" | grep -v "docker" | grep -v "br-" | grep -v "cni" | awk '{print $1}')
+INTERFACE_FILE="/etc/network/interfaces.d/$IP_SHOW"
+cp $INTERFACE_FILE /root/$IP_SHOW
+cat /root/$IP_SHOW | grep "dhcp" || {
+    echo "Already static IP"
+    exit 0
+}
+sed -i 's/dhcp/static/g' /root/$IP_SHOW
+IP_ADDRESS=$(ip -br addr show $IP_SHOW | awk '{print $3}' | cut -d/ -f1)
+echo " address $IP_ADDRESS" >> /root/$IP_SHOW
+echo " netmask 255.255.255.0" >> /root/$IP_SHOW
+echo " gateway 192.168.1.1" >> /root/$IP_SHOW
+echo " dns-nameservers 1.1.1.1" >> /root/$IP_SHOW
+cp $INTERFACE_FILE $INTERFACE_FILE.bak"$(date +%Y%m%d%H%M%S)"
+cp /root/$IP_SHOW $INTERFACE_FILE
