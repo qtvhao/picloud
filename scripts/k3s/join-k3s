@@ -86,6 +86,12 @@ ssh -i $IDENTIFY_FILE \
 NODE_COMMAND="curl -fL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --server $K3S_URL --token $K3S_TOKEN"
 echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
+ssh -i $IDENTIFY_FILE  \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "git clone https://github.com/qtvhao/picloud/"
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "$NODE_COMMAND"
