@@ -15,3 +15,5 @@ echo " gateway 192.168.1.1" >> /root/$IP_SHOW
 echo " dns-nameservers 1.1.1.1" >> /root/$IP_SHOW
 cp $INTERFACE_FILE $INTERFACE_FILE.bak"$(date +%Y%m%d%H%M%S)"
 cp /root/$IP_SHOW $INTERFACE_FILE
+systemctl restart networking.service
+systemctl status networking.service --no-pager
