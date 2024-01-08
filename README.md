@@ -47,7 +47,7 @@ your_github_username="qtvhao" # this helps to get public key from your Github ac
 ./pic auto-pxe $IDENTITY_FILE # this will automatically discover all machines in the same network and install them with created ISO above
 ```
 
-# Discover all machines in the same network (on 192.168.1.2 to 192.168.1.254)
+## Discover all machines in the same network (on 192.168.1.2 to 192.168.1.254)
 
 [![asciicast3](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
 
@@ -83,7 +83,7 @@ It also expose all services to the internet securely with Cloudflare Tunnel.
 # - Longhorn storage
 ```
 
-# Setup Registry as a pull through cache (useful for air-gapped environment)
+## Setup Registry as a pull through cache (useful for air-gapped environment)
 
 ```bash
 ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP"
