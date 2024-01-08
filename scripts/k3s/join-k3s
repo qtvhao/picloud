@@ -88,7 +88,7 @@ echo "Joining worker node to this cluster"
 echo "NODE_IP: $NODE_IP"
 ssh -i $IDENTIFY_FILE  \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "git clone https://github.com/qtvhao/picloud/"
+    "$NODE_IP" "stat picloud/.git || git clone https://github.com/qtvhao/picloud/"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP"
