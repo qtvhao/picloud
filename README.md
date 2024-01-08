@@ -2,7 +2,7 @@
 - [x] Automated image creation with [FAI](https://fai-project.org/)
 - [x] Automated bare metal installation with PXE boot or USB boot
 - [x] Automated Kubernetes installation and management with [k3s](https://k3s.io/)
-- [x] Expose services to the internet securely with [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
+- [x] Expose services to the Internet securely without static IP or port forwarding using [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
 - [x] GitLab installation and many utilities
 - [x] Distributed block storage system with [Longhorn](https://longhorn.io/)
 - [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
@@ -32,9 +32,9 @@ docker run -it -v ~/.ssh/:/root/.ssh/ pic ./pic list-nodename $IDENTITY_FILE
 
 
 ```bash
-github_username="qtvhao" # set your own github username, this helps to download your public key from github
-./pic fai "hp-z440" "$github_username"
-./pic dd $host_name "/dev/sdc" # you can burn your ISO to USB device, or you can use pxe boot to install your machine (see below)
+your_github_username="qtvhao" # this helps to get public key from your Github account, you can ssh to created machine without password
+./pic fai "your_picloud" "$your_github_username"
+./pic dd "$host_name" "/dev/sdc" # "disk dump" your ISO to USB device, or use PXE boot to install your machine (see below)
 ```
 
 ## Automated bare metal installation with PXE boot
@@ -47,18 +47,34 @@ github_username="qtvhao" # set your own github username, this helps to download 
 ./pic auto-pxe $IDENTITY_FILE # this will automatically discover all machines in the same network and install them with created ISO above
 ```
 
+# Discover all machines in the same network (on 192.168.1.2 to 192.168.1.254)
+
+[![asciicast3](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
+
+```bash
+./pic list-nodename ./id_rsa
+```
+
+List all machines in the same network and their IP addresses, includes product name and installed date.
+
 ## Install/Reinstall Kubernetes cluster with k3s
 
 The script will automatically install k3s-agent on the listed machines.
+
 ```bash
-./pic reinstall-k3s $IDENTITY_FILE
+./pic reinstall-k3s "$IDENTITY_FILE"
 ```
 
 
 ## Install recommended packages
 
+Firstly, PiCloud will discover all machines with given identity file.
+Then, it will install k3s on all machines and setup a Kubernetes cluster.
+Finally, it will install all recommended packages on the master node.
+It also expose all services to the internet securely with Cloudflare Tunnel.
+
 ```bash
-./pic recommended $IDENTITY_FILE
+./pic recommended "$IDENTITY_FILE"
 # This following steps will be executed/installed:
 # - Install K3s
 # - Redis
