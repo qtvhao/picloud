@@ -51,7 +51,7 @@ your_github_username="qtvhao" # this helps to get public key from your Github ac
 
 PiCloud will automatically discover all machines which can be authenticated with given identity file. This is useful for managing a large number of machines.
 
-[![asciicast3](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
+[![asciicast3](https://asciinema.org/a/630467.svg)](https://asciinema.org/a/630467)
 
 ```bash
 ./pic list-nodename ./id_rsa
