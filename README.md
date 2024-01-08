@@ -47,7 +47,9 @@ your_github_username="qtvhao" # this helps to get public key from your Github ac
 ./pic auto-pxe $IDENTITY_FILE # this will automatically discover all machines in the same network and install them with created ISO above
 ```
 
-## Discover all machines in the same network (on 192.168.1.2 to 192.168.1.254)
+## Discover machines
+
+PiCloud will automatically discover all machines which can be authenticated with given identity file. This is useful for managing a large number of machines.
 
 [![asciicast3](https://asciinema.org/a/616150.svg)](https://asciinema.org/a/616150)
 
