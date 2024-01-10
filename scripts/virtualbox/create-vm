@@ -42,7 +42,7 @@ VBoxManage storagectl $VM_NAME --name "IDE Controller for installation media" --
 # Create a disk for the VM
 VBoxManage storagectl "$VM_NAME" --name "SATA Controller" --add sata --controller IntelAHCI
 HARD_DISK_PATH="$VM_FOLDER/$VM_NAME.vdi"
-VBoxManage createhd --filename "$HARD_DISK_PATH" --size 10000 --format VDI
+VBoxManage createhd --filename "$HARD_DISK_PATH" --size 20000 --format VDI
 VBoxManage storageattach $VM_NAME --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium "$HARD_DISK_PATH"
 
 VBoxManage modifyvm $VM_NAME --memory 2048 # 2GB
