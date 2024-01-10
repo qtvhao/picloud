@@ -1,9 +1,7 @@
 #!/bin/bash
 
 set -xeo pipefail
-hostnameI=$(hostname -I | awk '{print $1}')
-# KERNEL_VERSION=$(docker exec fai bash -c "uname -r")
-# /srv/tftp/fai/vmlinuz
+hostnameI=$(hostname -I | tr ' ' '\n' | grep "192" | head -n 1)
 TFTP_FOLDER="/srv/tftp/fai/"
 VMLINUZ_FILE=`docker exec fai bash -c "ls $TFTP_FOLDER | grep vmlinuz"`
 INITRD_FILE=`docker exec fai bash -c "ls $TFTP_FOLDER | grep initrd"`
