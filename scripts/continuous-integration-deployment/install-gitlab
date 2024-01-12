@@ -25,7 +25,10 @@ args=("$@")
 IDENTIFY_FILE=${args[0]}
 PIC_DIR="$HOME/.pic"
 stat "$PIC_DIR"/gitlab.json || \
-    jq -n --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD}' > "$PIC_DIR"/gitlab.json
+    jq -n \
+        --arg GITLAB_ROOT_GENERATED_PASSWORD "$(openssl rand -hex 16)" \
+        --arg GITLAB_DOMAIN_NAME "https://http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN" \
+        '{"gitlab_root_generated_password":$GITLAB_ROOT_GENERATED_PASSWORD,"gitlab_domain_name":$GITLAB_DOMAIN_NAME}' > "$PIC_DIR"/gitlab.json
 
 PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 echo "Setting password to $PASSWORD"
