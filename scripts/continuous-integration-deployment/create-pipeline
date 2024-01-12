@@ -27,6 +27,12 @@ while true; do
     fi
     PIPELINE_ID=$(echo $PIPELINE | jq -r ".id")
     PROJECT_ID=$(echo $PIPELINE | jq -r ".project_id")
+    # check if $PROJECT_ID is null
+    if [ "null" == "$PROJECT_ID" ]; then
+        echo "PROJECT_ID is null"
+        sleep 2
+        exit 1
+    fi
     echo "PROJECT_ID: $PROJECT_ID"
     if [ -z "$PROJECT_ID" ]; then
         echo "PROJECT_ID is empty"
