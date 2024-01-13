@@ -55,7 +55,7 @@ while true; do
 done
 if [ "wait-for-success" == "$option2" ]; then
     while true; do
-        sleep 2
+        sleep 8
         echo "Waiting for pipeline to succeed"
         PIPELINE=`curl -s --request GET \
             --header "Content-Type: application/json" \
