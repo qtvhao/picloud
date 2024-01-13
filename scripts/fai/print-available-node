@@ -1,4 +1,5 @@
 #!/bin/bash
+set -xeo pipefail
 args=("$@")
 IP_ADDRESS=${args[0]}
 IDENTIFY_FILE=${args[1]}
@@ -32,7 +33,7 @@ PRODUCT_NAME=$(ssh \
     | sed "s/[^[:alnum:]-]/-/g" \
     | sed -e "s/^-//g" \
     | sed -e "s/-$//g" \
-    | tr '[:upper:]' '[:lower:]')
+    | tr '[:upper:]' '[:lower:]') || exit 0
 if [ -z "$PRODUCT_NAME" ]; then
     exit 0
 fi
