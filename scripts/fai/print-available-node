@@ -17,11 +17,13 @@ if [ ! -f "$IDENTIFY_FILE" ]; then
     echo "Usage: ./pic print-available-node IP_ADDRESS IDENTIFY_FILE"
     exit 1
 fi
+echo "Checking if $IP_ADDRESS dmidecode is available" >&2
 ssh \
     -o ConnectTimeout=0 \
     -i "$IDENTIFY_FILE" \
     -o PasswordAuthentication=no \
     $IP_ADDRESS "dmidecode" >&2 > /dev/null || exit 0
+echo "Getting product name from $IP_ADDRESS" >&2
 PRODUCT_NAME=$(ssh \
     -o ConnectTimeout=0 \
     -i "$IDENTIFY_FILE" \
@@ -34,11 +36,12 @@ PRODUCT_NAME=$(ssh \
 if [ -z "$PRODUCT_NAME" ]; then
     exit 0
 fi
+echo "Got product name: $PRODUCT_NAME" >&2
 BOOT_TIME=$(ssh -T \
     -o ConnectTimeout=0 \
     -i "$IDENTIFY_FILE" \
     -o PasswordAuthentication=no \
     $IP_ADDRESS "stat -c %W /var/log/fai/localhost/last/boot.log")
 HUMAN_DIFF_SECONDS=$(echo "$(date +%s) - $BOOT_TIME" | bc)
-# echo "HUMAN_DIFF_SECONDS: $HUMAN_DIFF_SECONDS"
+echo "The machine $IP_ADDRESS was booted $HUMAN_DIFF_SECONDS seconds ago" >&2
 echo "$IP_ADDRESS "$HUMAN_DIFF_SECONDS"_seconds_ago $PRODUCT_NAME"

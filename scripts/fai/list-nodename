@@ -16,7 +16,7 @@ for IP_ADDRESS in $LIST_AUTHENTICATED_ADDRESSES; do
     fi
     ssh-keygen -R $IP_ADDRESS > /dev/null 2>&1 || true
     ssh-keyscan $IP_ADDRESS >> ~/.ssh/known_hosts 2>&1 || true
-    # echo "IP_ADDRESS: $IP_ADDRESS"
+    echo "Checking if $IP_ADDRESS is available" >&2
     ./pic print-available-node "$IP_ADDRESS" "$IDENTIFY_FILE" &
 done
 wait
