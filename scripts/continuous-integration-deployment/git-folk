@@ -162,7 +162,7 @@ while true; do
     wait_http_code_remote_repo 302
     echo "Pushing $REPO_NAME to gitlab"
     (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
-        git pull --set-upstream origin $current_branch && \
+        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git pull --set-upstream origin $current_branch && \
         timeout 60 git push --set-upstream gitlab --all -o ci.skip) && break || true
 done
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
