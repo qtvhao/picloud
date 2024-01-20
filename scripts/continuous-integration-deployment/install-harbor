@@ -17,6 +17,8 @@ GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/
 # mount ~/.pic/harbor-registry-data
 mkdir -p /harbor-registry-data
 kubectl get namespace harbor-ns || kubectl create namespace harbor-ns
+# set nodeAffinity required nodeSelectorTerms, matchExpressions key: kubernetes.io/hostname, operator: In, values: [picloud]
+KUBERNETES_HOSTNAME=`kubectl get nodes -o json | jq -r '.items[0].metadata.labels."kubernetes.io/hostname"'`
 kubectl apply -f - <<EOF
 apiVersion: v1
 kind: PersistentVolume
@@ -32,6 +34,14 @@ spec:
     hostPath:
         path: /harbor-registry-data
         type: DirectoryOrCreate
+    nodeAffinity:
+        required:
+            nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                  - $KUBERNETES_HOSTNAME
 EOF
 kubectl apply -f - <<EOF
 apiVersion: v1
@@ -60,4 +70,4 @@ kubectl get secret regcred --namespace default || \
     kubectl create secret docker-registry regcred \
     --docker-server=http-harbor-registry-harbor-ns-5000.$DOMAIN --docker-username=root --docker-password=$GITLAB_ROOT_GENERATED_PASSWORD --namespace default
 
-./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
+./pic expose http harbor-registry.harbor-ns 5000 "200"
