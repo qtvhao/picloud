@@ -11,6 +11,19 @@
 - [x] Harbor installation for private Docker registry
 - [x] Virtual machine management with [VirtualBox](https://www.virtualbox.org/)
 
+# Basic usage
+
+```bash
+#!/bin/bash
+IDENTITY_FILE="$HOME/id_rsa"
+set -xeo pipefail
+(cd ./picloud && \
+    ./pic discover-nodes $IDENTITY_FILE && \
+    ./pic recommended $IDENTITY_FILE)
+kubectl get nodes
+echo "Nodes are ready to use"
+```
+
 # Installation
 ```bash
 curl https://raw.githubusercontent.com/qtvhao/picloud/main/pic -o pic && chmod +x pic
