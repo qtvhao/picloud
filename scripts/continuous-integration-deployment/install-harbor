@@ -30,6 +30,20 @@ spec:
     hostPath:
         path: ~/.pic/harbor-registry-data
 EOF
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-registry-data
+  namespace: harbor-ns
+spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: 20Gi
+EOF
+
 helm upgrade --install harbor harbor/harbor  -n harbor-ns --create-namespace \
     --set registry.credentials.username=root \
     --set persistence.persistentVolumeClaim.registry.existingClaim=harbor-registry-data \
