@@ -18,6 +18,19 @@ GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/
 mkdir -p /harbor-registry-data
 chown -R 1000:1000 /harbor-registry-data/
 chmod -R 0777 /harbor-registry-data/
+mkdir -p /harbor-database-data
+chown -R 1000:1000 /harbor-database-data/
+chmod -R 0777 /harbor-database-data/
+mkdir -p /harbor-jobservice-data
+chown -R 1000:1000 /harbor-jobservice-data/
+chmod -R 0777 /harbor-jobservice-data/
+mkdir -p /harbor-redis-data
+chown -R 1000:1000 /harbor-redis-data/
+chmod -R 0777 /harbor-redis-data/
+mkdir -p /harbor-trivy-data
+chown -R 1000:1000 /harbor-trivy-data/
+chmod -R 0777 /harbor-trivy-data/
+
 kubectl get namespace harbor-ns || kubectl create namespace harbor-ns
 KUBERNETES_HOSTNAME=`kubectl get nodes -o json | jq -r '.items[0].metadata.labels."kubernetes.io/hostname"'`
 # create pv and pvc for harbor-registry-data, so that it can be used by helm registry
