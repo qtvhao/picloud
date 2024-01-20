@@ -113,7 +113,7 @@ while true; do
         rm -rf "pic-repos/$REPO_NAME"
     fi
     (cd pic-repos && \
-        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && \
+        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME \
     ) && break || true
     sleep 5
 done
