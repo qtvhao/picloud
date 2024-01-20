@@ -111,7 +111,7 @@ while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
     (cd pic-repos && \
         GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && \
-        git remote add origintemp $REPO_URL
+        git remote add origintemp $REPO_URL \
     ) && break || true
     sleep 5
 done
