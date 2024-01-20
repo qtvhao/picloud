@@ -98,12 +98,9 @@ SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
 IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT="x"$(echo $REPO_URL | grep -E "github|bitbucket|codecommit" | wc -l) || true
 if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
     echo "IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT: $IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT"
-    # REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//') # which return github.com:qtvhao
     REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*@//' | sed 's/\/.*//' | sed 's/:.*//') # which return github.com
     echo "REMOTE_DOMAIN: $REMOTE_DOMAIN"
     if [ "https" == "$REMOTE_DOMAIN" ]; then
-        # REMOTE_DOMAIN=$(echo $REPO_URL | sed 's/.*:\/\///' | sed 's/\/.*//' | sed 's/:.*//') # which return github.com
-        # echo "REMOTE_DOMAIN: $REMOTE_DOMAIN"
         echo "Using https"
     else
         ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
@@ -112,7 +109,10 @@ if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
 fi
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
-    (cd pic-repos && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME) && break || true
+    (cd pic-repos && \
+        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && \
+        git remote add origintemp $REPO_URL && \
+    ) && break || true
     sleep 5
 done
 # 
@@ -121,7 +121,6 @@ max=$(cd "pic-repos/$REPO_NAME" && git rev-list --count HEAD)
 (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
 for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD"`; do
     echo "Checkout $branch"
-    # Create Local Branches for Each Remote Branch
     branch=$(echo $branch | sed 's/origin\///')
     (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git checkout -b $branch origin/$branch) || true
 done
