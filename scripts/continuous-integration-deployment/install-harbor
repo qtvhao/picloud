@@ -15,7 +15,7 @@ IDENTIFY_FILE=${args[0]}
 helm repo add harbor https://helm.goharbor.io
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
 # mount ~/.pic/harbor-registry-data
-mkdir -p ~/.pic/harbor-registry-data
+mkdir -p /harbor-registry-data
 kubectl get namespace harbor-ns || kubectl create namespace harbor-ns
 kubectl apply -f - <<EOF
 apiVersion: v1
@@ -47,7 +47,7 @@ spec:
             storage: 20Gi
 EOF
 
-helm upgrade --install harbor harbor/harbor  -n harbor-ns --create-namespace \
+helm upgrade --install harbor harbor/harbor  -n harbor-ns \
     --set registry.credentials.username=root \
     --set persistence.persistentVolumeClaim.registry.existingClaim=harbor-registry-data \
     --set registry.credentials.password=$GITLAB_ROOT_GENERATED_PASSWORD
@@ -58,3 +58,5 @@ helm upgrade --install harbor harbor/harbor  -n harbor-ns --create-namespace \
 kubectl get secret regcred --namespace default || \
     kubectl create secret docker-registry regcred \
     --docker-server=http-harbor-registry-harbor-ns-5000.$DOMAIN --docker-username=root --docker-password=$GITLAB_ROOT_GENERATED_PASSWORD --namespace default
+
+./pic expose http harbor-registry.harbor-ns 5000 "200" "" "true"
