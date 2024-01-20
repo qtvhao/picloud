@@ -40,6 +40,7 @@ metadata:
   name: harbor-registry-data
   namespace: harbor-ns
 spec:
+    volumeName: harbor-registry-data
     accessModes:
         - ReadWriteOnce
     resources:
