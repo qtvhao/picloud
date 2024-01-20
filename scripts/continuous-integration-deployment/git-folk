@@ -114,10 +114,12 @@ while true; do
     fi
     (cd pic-repos && \
         GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && \
-        git remote add origintemp $REPO_URL \
     ) && break || true
     sleep 5
 done
+(cd "pic-repos/$REPO_NAME" && \
+    git remote get-url origintemp || git remote add origintemp $REPO_URL )
+
 # 
 current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
 max=$(cd "pic-repos/$REPO_NAME" && git rev-list --count HEAD)
