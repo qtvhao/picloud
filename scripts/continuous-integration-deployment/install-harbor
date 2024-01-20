@@ -24,12 +24,14 @@ metadata:
   name: harbor-registry-data
   namespace: harbor-ns
 spec:
+    storageClassName: local-path
     capacity:
         storage: 20Gi
     accessModes:
         - ReadWriteOnce
     hostPath:
-        path: ~/.pic/harbor-registry-data
+        path: /harbor-registry-data
+        type: DirectoryOrCreate
 EOF
 kubectl apply -f - <<EOF
 apiVersion: v1
