@@ -16,7 +16,10 @@ helm repo add harbor https://helm.goharbor.io
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
 # mount ~/.pic/harbor-registry-data
 mkdir -p /harbor-registry-data
-chmod -R 0770 /harbor-registry-data/
+chown -R 1000:1000 /harbor-registry-data/
+chmod -R 0777 /harbor-registry-data/
+# 0777 is required for the docker container to write to the mounted volume
+# 1000 is the uid of the user in the docker container
 kubectl get namespace harbor-ns || kubectl create namespace harbor-ns
 # set nodeAffinity required nodeSelectorTerms, matchExpressions key: kubernetes.io/hostname, operator: In, values: [picloud]
 KUBERNETES_HOSTNAME=`kubectl get nodes -o json | jq -r '.items[0].metadata.labels."kubernetes.io/hostname"'`
