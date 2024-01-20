@@ -16,6 +16,7 @@ helm repo add harbor https://helm.goharbor.io
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
 # mount ~/.pic/harbor-registry-data
 mkdir -p ~/.pic/harbor-registry-data
+kubectl get namespace harbor-ns || kubectl create namespace harbor-ns
 kubectl apply -f - <<EOF
 apiVersion: v1
 kind: PersistentVolume
