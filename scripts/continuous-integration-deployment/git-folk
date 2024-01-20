@@ -92,7 +92,6 @@ echo "Cloning $REPO_NAME from $REPO_URL"
 HEAD=$(git rev-parse --abbrev-ref HEAD)
 # export GIT_SSH_COMMAND="ssh -o ProxyCommand=\"cloudflared access ssh --hostname %h\""
 REMOTE_REPO="https://root:$PASSWORD@$FQDN_ADDRESS/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION.git"
-echo "REMOTE_REPO: $REMOTE_REPO"
 # echo "HEAD: $HEAD"
 IDENTITY_FILE=$(realpath $IDENTITY_FILE)
 SSH_FQDN_ADDRESS="tcp-gitlab-gitlab-shell-gitlab-ns-22.$DOMAIN"
@@ -126,10 +125,6 @@ for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE
     branch=$(echo $branch | sed 's/origin\///')
     (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git checkout -b $branch origin/$branch) || true
 done
-(cd pic-repos/$REPO_NAME \
-    && git remote rename origin old-origin \
-    && git remote add origin $REMOTE_REPO \
-)
 
 echo "current_branch: $current_branch"
 echo "max: $max"
@@ -140,6 +135,7 @@ for i in $(seq 1 +10 $max); do
 done;
 i=$((i-10))
 echo
+(cd pic-repos/$REPO_NAME && git remote get-url gitlab || git remote add gitlab $REMOTE_REPO)
 wait_http_code_remote_repo() {
     EXPECTED_HTTP_CODE_REMOTE_REPO=$1
     while true; do
@@ -159,16 +155,16 @@ for i in $(seq $i -50 1) ""; do
     else
         refspec="$current_branch~$i"
     fi
-    (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push --set-upstream origin HEAD:refs/heads/$current_branch -o ci.skip) || true
-    echo "Checking out $i (decreasing $max to 1) and pushing to $REMOTE_REPO"
+    (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push gitlab HEAD:refs/heads/$current_branch -o ci.skip) || true
+    echo "Checking out $i (decreasing $max to 1) and pushing to gitlab"
 done;
 
 while true; do
     wait_http_code_remote_repo 302
-    echo "Pushing $REPO_NAME to $REMOTE_REPO"
+    echo "Pushing $REPO_NAME to gitlab"
     (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
         git pull --set-upstream origin $current_branch && \
-        timeout 60 git push --set-upstream origin --all -o ci.skip) && break || true
+        timeout 60 git push --set-upstream gitlab --all -o ci.skip) && break || true
 done
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
 CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
@@ -186,7 +182,7 @@ if [ "no-create-pipelibe" != "$PIPELINE_OPTIONS" ]; then
 fi
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
-# SSH_REMOTE_REPO="git@$SSH_FQDN_ADDRESS:root/$REPO_NAME_IN_LOWER_CASE.git"
+
 export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
     -o StrictHostKeyChecking=no \
     -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no"
