@@ -109,6 +109,9 @@ if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
 fi
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
+    if [ -d "pic-repos/$REPO_NAME" ]; then
+        rm -rf "pic-repos/$REPO_NAME"
+    fi
     (cd pic-repos && \
         GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME && \
         git remote add origintemp $REPO_URL \
