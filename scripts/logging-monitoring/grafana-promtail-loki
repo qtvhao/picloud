@@ -34,6 +34,7 @@ kubectl get secret --namespace loki grafana || \
 helm upgrade --install --namespace loki promtail grafana/promtail
 helm upgrade --install --namespace loki loki grafana/loki \
     --set "singleBinary.replicas=1" \
+    --set "singleBinary.persistence.storageClass=local-path" \
     --set "loki.commonConfig.replication_factor=1" \
     --set "loki.storage.type=filesystem" \
     --set "read.persistence.storageClass=local-path" \
