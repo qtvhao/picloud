@@ -65,7 +65,7 @@ ssh -i $IDENTIFY_FILE \
     "$NODE_IP" "reboot"
 while true; do
     sleep 10
-    ssh -i $IDENTIFY_FILE \
+    timeout 8 ssh -i $IDENTIFY_FILE \
         -o PasswordAuthentication=no \
         "$NODE_IP" "hostname" && break || echo "Retrying to connect to $NODE_IP"
 done
