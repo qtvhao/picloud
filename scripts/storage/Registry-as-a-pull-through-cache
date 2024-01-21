@@ -36,6 +36,7 @@ if [ -z "$REGISTRY_PROXY_REMOTEURL" ]; then
     time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://registry.k8s.io"                                   "registry-k8s-io"                                   "203.0.113.5" "registry.k8s.io"                                     | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
     time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://gcr.io"                                            "gcr-io"                                            "203.0.113.6" "gcr.io"                                              | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
     time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://http-harbor-registry-harbor-ns-5000.$DOMAIN"       "http-harbor-registry-harbor-ns-5000-$DOMAIN_SED"   "203.0.113.7" "http-harbor-registry-harbor-ns-5000.$DOMAIN"         | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
+    time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP" "https://ghcr.io"                                           "ghcr-io"                                           "203.0.113.8" "ghcr.io"                                             | tee $LOGS_DIR/Registry-as-a-pull-through-cache.log
     # 
     ssh -i $IDENTIFY_FILE \
         -o PasswordAuthentication=no \
