@@ -43,7 +43,7 @@ metadata:
 spec:
     storageClassName: local-path
     capacity:
-        storage: 20Gi
+        storage: 2000Gi
     accessModes:
         - ReadWriteOnce
     hostPath:
@@ -70,7 +70,7 @@ spec:
         - ReadWriteOnce
     resources:
         requests:
-            storage: 20Gi
+            storage: 2000Gi
 EOF
 # create pv and pvc for harbor-database-data
 kubectl apply -f - <<EOF
