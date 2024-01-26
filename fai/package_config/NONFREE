@@ -3,10 +3,15 @@ PACKAGES install BUSTER BULLSEYE
 firmware-bnx2$bpo firmware-bnx2x$bpo firmware-realtek$bpo
 firmware-linux-nonfree$bpo
 
+PACKAGES install BUSTER BULLSEYE
+firmware-atheros
+PACKAGES install BOOKWORM
+firmware-ath9k-htc
+
 PACKAGES install BUSTER BULLSEYE BOOKWORM
 # wifi/wireless firmware
-atmel-firmware firmware-atheros firmware-brcm80211
-firmware-iwlwifi firmware-libertas firmware-ralink firmware-zd1211
+atmel-firmware firmware-brcm80211 firmware-misc-nonfree
+firmware-iwlwifi firmware-libertas firmware-zd1211
 firmware-brcm80211 firmware-ti-connectivity
 firmware-netronome firmware-netxen firmware-realtek
 firmware-cavium
