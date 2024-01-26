@@ -25,7 +25,7 @@ if [ -d "$REGISTRY_FOLDER" ]; then
     echo "Cleaning up registry folder"
     ssh -i $IDENTIFY_FILE $NODE_IP "rm -rf $REGISTRY_FOLDER" || true
     ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
-    EXPIRY_DAYS="7"
+    EXPIRY_DAYS="21"
     ssh -i $IDENTIFY_FILE $NODE_IP "find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;" || true
     find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;
     echo "Copying registry folder to $NODE_IP"
