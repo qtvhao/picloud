@@ -98,7 +98,7 @@ ssh -i $IDENTIFY_FILE  \
     "$NODE_IP" "stat picloud/.git || git clone https://github.com/qtvhao/picloud/"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP"
+    "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP || exit 1"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "$NODE_COMMAND"

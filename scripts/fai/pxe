@@ -73,16 +73,6 @@ wakeonlan $MAC_ADDRESS
 ./pic wait-node-to-shutdown $MAC_ADDRESS $IDENTITY_FILE
 IP_ADDRESS_FILE="$HOME/.pic/$MAC_ADDRESS-IP_ADDRESS.txt"
 IP_ADDRESS=$(cat $IP_ADDRESS_FILE)
-# delete old images in registry folder
-REGISTRY_FOLDER="/var/lib/registry/"
-EXPIRY_DAYS="7"
-if [ -d "$REGISTRY_FOLDER" ]; then
-    find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS
-    find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;
-    ssh -i $IDENTITY_FILE $IP_ADDRESS "rm -rf $REGISTRY_FOLDER" || true
-    ssh -i $IDENTITY_FILE $IP_ADDRESS "mkdir -p $REGISTRY_FOLDER" || true
-    time rsync -avzP -e "ssh -i $IDENTITY_FILE" $REGISTRY_FOLDER $IP_ADDRESS:$REGISTRY_FOLDER
-fi
 
 # with avP, the -P option is implied, which is --partial --progress ( --partial enables resuming partial transfers)
 echo
