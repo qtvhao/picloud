@@ -62,7 +62,7 @@ if [ "wait-for-success" == "$option2" ]; then
             --header "Authorization: Bearer $GITLAB_TOKEN" \
             $URL"s/"$PIPELINE_ID`
         PIPELINE_STATUS=$(echo $PIPELINE | jq -r ".status")
-        PIPELINE_ERROR=$(echo $PIPELINE | jq -r ".error")
+        PIPELINE_ERROR=$(echo $PIPELINE | jq -r ".error") || true
         if [ "invalid_token" == "$PIPELINE_ERROR" ]; then
             echo "Invalid token"
             GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
