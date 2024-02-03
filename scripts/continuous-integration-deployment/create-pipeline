@@ -34,8 +34,7 @@ while true; do
     # check if $PROJECT_ID is null
     if [ "null" == "$PROJECT_ID" ]; then
         echo "PROJECT_ID is null"
-        sleep 2
-        exit 1
+        continue;
     fi
     echo "PROJECT_ID: $PROJECT_ID"
     if [ -z "$PROJECT_ID" ]; then
