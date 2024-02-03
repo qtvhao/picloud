@@ -21,9 +21,13 @@ while true; do
         $URL` || continue;
     echo "PIPELINE: $PIPELINE"
     PIPELINE_MESSAGE_BASE_0=$(echo $PIPELINE | jq -r ".message.base[0]") || true;
+    if [ "Commit not found" == "$PIPELINE_MESSAGE_BASE_0" ]; then
+        echo "Commit not found"
+        continue;
+    fi
     if [ "Reference not found" == "$PIPELINE_MESSAGE_BASE_0" ]; then
         echo "Reference not found"
-        exit 0
+        continue;
     fi
     PIPELINE_ID=$(echo $PIPELINE | jq -r ".id")
     PROJECT_ID=$(echo $PIPELINE | jq -r ".project_id")
@@ -56,8 +60,8 @@ done
 if [ "wait-for-success" == "$option2" ]; then
     PODS_CREATED=""
     while true; do
-        sleep 8
         echo "Waiting for pipeline to succeed"
+        sleep 8
         PIPELINE=`curl -s --request GET \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $GITLAB_TOKEN" \
