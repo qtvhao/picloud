@@ -54,6 +54,7 @@ while true; do
     break;
 done
 if [ "wait-for-success" == "$option2" ]; then
+    PODS_CREATED=""
     while true; do
         sleep 8
         echo "Waiting for pipeline to succeed"
@@ -82,6 +83,14 @@ if [ "wait-for-success" == "$option2" ]; then
                 CONDITIONS='.items[] | select(.metadata.annotations."project.runner.gitlab.com/id" == "'$PROJECT_ID'") | .metadata.name'
                 PODS=$(kubectl get pods -n gitlab-ns -o json | jq -r "$CONDITIONS")
                 echo "PODS: $PODS"
+                if [ -z "$PODS" ]; then
+                    echo "PODS is empty"
+                    if [ -n "$PODS_CREATED" ]; then
+                        echo "PODS_CREATED is set"
+                        break;
+                    fi
+                fi
+                PODS_CREATED="$PODS"
                 for pod in $PODS; do
                     IS_PodInitializing=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="PodInitializing")].status}')
                     if [ "PodInitializing" == "$IS_PodInitializing" ]; then
