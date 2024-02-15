@@ -25,6 +25,10 @@ while true; do
         echo "Commit not found"
         continue;
     fi
+    if [ "Missing CI config file" == "$PIPELINE_MESSAGE_BASE_0" ]; then
+        echo "Missing CI config file"
+        exit 0
+    fi
     if [ "Pipeline filtered out by workflow rules." == "$PIPELINE_MESSAGE_BASE_0" ]; then
         echo "Pipeline filtered out by workflow rules. This is a normal behavior if the pipeline is not supposed to run. Please check the .gitlab-ci.yml file. Skipping..."
         exit 0
