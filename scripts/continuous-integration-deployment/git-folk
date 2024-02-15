@@ -179,8 +179,7 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root" "*" false
 rm -rf pic-repos
 
-# ./pic create-pipeline root%2F$REPO_NAME $current_branch
-if [ "no-create-pipelibe" != "$PIPELINE_OPTIONS" ]; then
+if [ "no-create-pipeline" != "$PIPELINE_OPTIONS" ]; then
     ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
         ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success"
     ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true

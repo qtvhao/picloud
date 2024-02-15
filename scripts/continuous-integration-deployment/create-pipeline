@@ -31,7 +31,7 @@ while true; do
     fi
     if [ "Reference not found" == "$PIPELINE_MESSAGE_BASE_0" ]; then
         echo "Reference not found"
-        exit 1
+        break;
     fi
     PIPELINE_ID=$(echo $PIPELINE | jq -r ".id")
     PROJECT_ID=$(echo $PIPELINE | jq -r ".project_id")
