@@ -79,7 +79,7 @@ do
     for EXCLUDE in $EXCLUDES; do
         PATH_TO_EXCLUDE="$ORG_NAME/$EXCLUDE"
         if [ "$PATH_TO_EXCLUDE" == "$REPO" ]; then
-            PIPELINE_OPTIONS="no-create-pipelibe"
+            PIPELINE_OPTIONS="no-create-pipeline"
         fi
     done
     
