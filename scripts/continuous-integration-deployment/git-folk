@@ -153,6 +153,7 @@ wait_http_code_remote_repo() {
     done
 }
 for i in $(seq $i -50 1) ""; do
+    sleep 18
     wait_http_code_remote_repo 302
     if [ -z "$i" ]; then
         refspec="$current_branch"
