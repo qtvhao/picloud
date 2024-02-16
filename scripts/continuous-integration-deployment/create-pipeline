@@ -117,6 +117,6 @@ if [ "wait-for-success" == "$option2" ]; then
             echo "Pipeline failed"
             exit 1
         fi
-        sleep 6
+        sleep 16
     done
 fi
