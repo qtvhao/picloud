@@ -11,6 +11,29 @@ PAYLOAD=$(jq --arg ref $ref '.ref = $ref' <<<'{}')
 echo "PAYLOAD: $PAYLOAD"
 PROJECT_ID=""
 PIPELINE_ID=""
+is_pipeline_is_up_to_date() {
+    AUTHORIZATION="$1"
+    REF="$2"
+    PROJECT_URL="$3"
+    LAST_COMMIT_ID=`curl -s --request GET \
+        --header "Content-Type: application/json" \
+        --header "Authorization: Bearer $AUTHORIZATION" \
+        "$PROJECT_URL/repository/commits?ref=$REF" \
+            | jq -r ".[0].id"`
+
+    PAYLOAD=$(jq --arg ref $REF '.ref = $ref' <<<'{}')
+
+    LAST_PIPELINE_SHA=`curl -s --request GET --data "$PAYLOAD" \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer $AUTHORIZATION" \
+        "$PROJECT_URL/pipelines?ref=$REF&status=success" \
+            | jq -r ".[0].sha"`
+    if [ "$LAST_COMMIT_ID" == "$LAST_PIPELINE_SHA" ]; then
+        echo "Last commit and last pipeline are the same. That means the pipeline is up to date."
+    fi
+}
+is_pipeline_is_up_to_date "$GITLAB_TOKEN" "$ref" "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME" | grep "Last commit and last pipeline are the same" && exit 0 || true
+
 while true; do
     echo "Retrying to create pipeline"
     sleep 12
