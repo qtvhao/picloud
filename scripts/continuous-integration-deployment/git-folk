@@ -39,7 +39,7 @@ PAYLOAD=$(jq --null-input \
     '{path: $path}')
 
 echo "PAYLOAD: $PAYLOAD"
-kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
+# kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
 # 
 while true; do
     HTTP_CODE_API_V4_PROJECTS=$(curl -X GET --url https://$FQDN_ADDRESS/api/v4/projects/ --write-out "%{http_code}\n" --silent --output /dev/null)
@@ -82,7 +82,7 @@ while true; do
     fi
     break;
 done
-(kubectl logs statefulset/gitlab-gitaly -n gitlab-ns -f > ./gitlab-gitaly.log) &
+# (kubectl logs statefulset/gitlab-gitaly -n gitlab-ns -f > ./gitlab-gitaly.log) &
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
@@ -199,4 +199,4 @@ if [ ! -z "$CLONE_DIR" ]; then
             git config pull.rebase false && git pull)
 fi
 ./pic create-remote-mirrors "$REPO_URL"
-kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
+# kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
