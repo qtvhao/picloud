@@ -163,14 +163,16 @@ for i in $(seq $i -50 1) ""; do
     echo "Checking out $i (decreasing $max to 1) and pushing to gitlab"
 done;
 
-while true; do
-    wait_http_code_remote_repo 302
-    echo "Pushing $REPO_NAME to gitlab"
-    (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
-        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git pull --set-upstream origin $current_branch && \
-        git pull gitlab $current_branch && \
-        timeout 60 git push --set-upstream gitlab --all -o ci.skip) && break || true
-done
+time {
+    while true; do
+        wait_http_code_remote_repo 302
+        echo "Pushing $REPO_NAME to gitlab"
+        (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
+            GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git pull --set-upstream origin $current_branch && \
+            git pull gitlab $current_branch && \
+            timeout 60 git push --set-upstream gitlab --all -o ci.skip) && break || true
+    done
+}
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
 CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY           "$CI_REGISTRY"
@@ -180,9 +182,9 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
 rm -rf pic-repos
 
 if [ "no-create-pipeline" != "$PIPELINE_OPTIONS" ]; then
-    ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
-        ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success" || true
-    ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
+    time ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
+        time ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success" || true
+    time ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
 fi
 
 ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
