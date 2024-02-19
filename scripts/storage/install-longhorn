@@ -9,4 +9,9 @@ if [ -z "$IDENTIFY_FILE" ]; then
 fi
 
 curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/scripts/environment_check.sh | bash
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+kubectl get namespace longhorn-system || kubectl create namespace longhorn-system
+# set defaultSettings.defaultReplicaCount to 1
+helm install longhorn longhorn/longhorn --namespace longhorn-system \
+    --set defaultSettings.defaultReplicaCount=1
