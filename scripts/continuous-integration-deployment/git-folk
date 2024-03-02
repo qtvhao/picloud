@@ -187,7 +187,7 @@ if [ "no-create-pipeline" != "$PIPELINE_OPTIONS" ]; then
     time ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
 fi
 
-./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
+# ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
 
 export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
     -o StrictHostKeyChecking=no \
