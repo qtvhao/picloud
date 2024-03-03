@@ -2,7 +2,7 @@
 set -x -e -o pipefail
 args=("$@")
 MAC_ADDRESS=${args[0]}
-hostnameI=$(./pic expose)
+hostnameI=$(./pic hostname)
 if [ -z "$MAC_ADDRESS" ]; then
     echo "MAC_ADDRESS is empty"
     docker rm -f fai-nginx || true
@@ -27,14 +27,7 @@ if [ $IP_ADDRESS_TO_TURN_OFF == $hostnameI ]; then
     echo "IP_ADDRESS_TO_TURN_OFF is the same as PXE server. Exiting"
     exit 1
 fi
-# warp-cli disconnect || true
-# echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
-# docker exec -it fai bash -c "rm /etc/exports || true"
-# hostnameI=$(./pic expose)
-# echo "/srv/fai/config $hostnameI/16(async,ro,no_subtree_check)" > ./exports
-# echo "/srv/fai/nfsroot $hostnameI/16(async,ro,no_subtree_check,no_root_squash)" >> ./exports
-# docker cp ./exports fai:/etc/exports
 SQUASH_IMG_FILESIZE_HUMAN=$( docker exec fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}' )
 if [ -f "./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER" ]; then
     mkdir -p ./fai/pxelinux.cfg/ || true
@@ -42,11 +35,6 @@ if [ -f "./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER" ]; then
     curl $URL -o ./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER
 fi
 echo "  - squash.img size: $SQUASH_IMG_FILESIZE_HUMAN"
-# MAC_ADDRESS_SED=$(echo $MAC_ADDRESS | sed 's/:/-/g')
-# MAC_ADDRESS_SED_LOWER=$(echo $MAC_ADDRESS_SED | tr '[:upper:]' '[:lower:]')
-# fai/pxelinux.cfg/01-2c-59-e5-04-c4-51
-# replace http://\d+\.\d+\.\d+\.\d+/squash.img with http://$hostnameI/squash.img
-# replace IP ADDRESS with hostnameI
 
 ./pic start-pxe-server
 
@@ -66,7 +54,7 @@ else
     done
 fi
 # 
-wakeonlan || apt install wakeonlan -y
+which wakeonlan || apt install wakeonlan -y
 wakeonlan $MAC_ADDRESS
 # docker exec -it fai bash -c "touch /tmp/dnsmasq.log"
 # docker exec -it fai bash -c "chmod 0777 /tmp/dnsmasq.log"

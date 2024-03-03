@@ -9,7 +9,7 @@ time (./pic install-minio | tee $LOGS_DIR/s3.log)
 
 kubectl get namespace gitlab-ns || kubectl create namespace gitlab-ns
 
-S3_HOST="minio.tenant-ns" #$(./pic expose)":9000"
+S3_HOST="minio.tenant-ns"
 # 
 source .env
 if [ -z "$DOMAIN" ]; then
