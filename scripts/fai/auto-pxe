@@ -12,7 +12,7 @@ if [ ! -f "$IDENTITY_FILE" ]; then
     echo "Usage: ./pic print-available-node IDENTIFY_FILE"
     exit 1
 fi
-hostnameI=$(hostname -I | awk '{print $1}')
+hostnameI=$(./pic expose)
 # echo "hostnameI: $hostnameI"
 LIST_NODENAME=$(./pic list-nodename $IDENTITY_FILE | grep -v virtualbox | grep -v $hostnameI | awk '{print $1}')
 echo;

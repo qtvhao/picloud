@@ -2,7 +2,7 @@
 set -x -e -o pipefail
 args=("$@")
 MAC_ADDRESS=${args[0]}
-hostnameI=$(hostname -I | awk '{print $1}')
+hostnameI=$(./pic expose)
 if [ -z "$MAC_ADDRESS" ]; then
     echo "MAC_ADDRESS is empty"
     docker rm -f fai-nginx || true
@@ -31,7 +31,7 @@ fi
 # echo "ISO_FILE: $ISO_FILE"
 echo "Provisioning on metal machine"
 # docker exec -it fai bash -c "rm /etc/exports || true"
-# hostnameI=$(hostname -I | awk '{print $1}')
+# hostnameI=$(./pic expose)
 # echo "/srv/fai/config $hostnameI/16(async,ro,no_subtree_check)" > ./exports
 # echo "/srv/fai/nfsroot $hostnameI/16(async,ro,no_subtree_check,no_root_squash)" >> ./exports
 # docker cp ./exports fai:/etc/exports
