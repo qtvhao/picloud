@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -eo pipefail
+
+hostname -I | tr ' ' '\n' | grep -v '^127' | grep -v '^172' | grep -v '^192.168.56' | head -n 1
