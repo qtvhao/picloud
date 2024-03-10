@@ -126,7 +126,11 @@ if [ "wait-for-success" == "$option2" ]; then
                 fi
                 PODS_CREATED="$PODS"
                 for pod in $PODS; do
-                    IS_PodInitializing=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="PodInitializing")].status}')
+                    IS_PodInitializing=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="PodInitializing")].status}') || true
+                    if [ "" == "$IS_PodInitializing" ]; then
+                        echo "Pod $pod is not found"
+                        continue
+                    fi
                     if [ "PodInitializing" == "$IS_PodInitializing" ]; then
                         echo "Pod $pod is initializing"
                         continue
