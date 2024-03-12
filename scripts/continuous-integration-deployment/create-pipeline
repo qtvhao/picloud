@@ -126,14 +126,41 @@ if [ "wait-for-success" == "$option2" ]; then
                 fi
                 PODS_CREATED="$PODS"
                 for pod in $PODS; do
+                    kubectl get pod -n gitlab-ns $pod -o json
                     IS_PodInitializing=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="PodInitializing")].status}') || true
-                    if [ "" == "$IS_PodInitializing" ]; then
-                        echo "Pod $pod is not found"
-                        continue
-                    fi
                     if [ "PodInitializing" == "$IS_PodInitializing" ]; then
                         echo "Pod $pod is initializing"
                         continue
+                    fi
+                    # Initialized
+                    IS_Initialized=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="Initialized")].status}') || true
+                    if [ "Initialized" == "$IS_Initialized" ]; then
+                        echo "Pod $pod is initialized"
+                        continue
+                    fi
+                    # Ready
+                    IS_Ready=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}') || true
+                    if [ "Ready" == "$IS_Ready" ]; then
+                        echo "Pod $pod is ready"
+                        continue
+                    fi
+                    # ContainersReady
+                    IS_ContainersReady=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="ContainersReady")].status}') || true
+                    if [ "ContainersReady" == "$IS_ContainersReady" ]; then
+                        echo "Pod $pod containers are ready"
+                        continue
+                    fi
+                    # PodScheduled
+                    IS_PodScheduled=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.conditions[?(@.type=="PodScheduled")].status}') || true
+                    if [ "PodScheduled" == "$IS_PodScheduled" ]; then
+                        echo "Pod $pod is scheduled"
+                        continue
+                    fi
+                    STATUS_PHASE=$(kubectl get pod -n gitlab-ns $pod -o jsonpath='{.status.phase}') || true
+                    if [ "Failed" == "$STATUS_PHASE" ]; then
+                        echo "Pod $pod failed"
+                        kubectl logs -n gitlab-ns $pod -c build --tail 12 || true
+                        exit 1
                     fi
                     echo "===================="
                     kubectl logs -n gitlab-ns $pod -c build --tail 12 || true
