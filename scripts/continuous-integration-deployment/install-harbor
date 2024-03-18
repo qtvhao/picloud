@@ -292,6 +292,27 @@ spec:
 EOF
 kubectl apply -f harbor-registry-deployment.yaml
 
+cat <<EOF | tee harbor-registry-service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: harbor-registry
+  namespace: harbor-ns
+  labels:
+    app: registry
+    component: registry
+spec:
+    selector:
+        app: registry
+    ports:
+        - name: http
+          protocol: TCP
+          port: 5000
+          targetPort: 5001
+    type: ClusterIP
+EOF
+kubectl apply -f harbor-registry-service.yaml
 # install harbor
 # helm upgrade --install harbor harbor/harbor  -n harbor-ns \
 #     --set persistence.persistentVolumeClaim.registry.existingClaim=harbor-registry-data \
