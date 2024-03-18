@@ -73,83 +73,83 @@ spec:
             storage: 2000Gi
 EOF
 # create pv and pvc for harbor-database-data
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: harbor-database-data
-  namespace: harbor-ns
-spec:
-    storageClassName: local-path
-    capacity:
-        storage: 20Gi
-    accessModes:
-        - ReadWriteOnce
-    hostPath:
-        path: /harbor-database-data
-        type: DirectoryOrCreate
-    nodeAffinity:
-        required:
-            nodeSelectorTerms:
-            - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: In
-                  values:
-                  - $KUBERNETES_HOSTNAME
-EOF
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-database-data
-  namespace: harbor-ns
-spec:
-    volumeName: harbor-database-data
-    accessModes:
-        - ReadWriteOnce
-    resources:
-        requests:
-            storage: 20Gi
-EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: harbor-database-data
+#   namespace: harbor-ns
+# spec:
+#     storageClassName: local-path
+#     capacity:
+#         storage: 20Gi
+#     accessModes:
+#         - ReadWriteOnce
+#     hostPath:
+#         path: /harbor-database-data
+#         type: DirectoryOrCreate
+#     nodeAffinity:
+#         required:
+#             nodeSelectorTerms:
+#             - matchExpressions:
+#                 - key: kubernetes.io/hostname
+#                   operator: In
+#                   values:
+#                   - $KUBERNETES_HOSTNAME
+# EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: harbor-database-data
+#   namespace: harbor-ns
+# spec:
+#     volumeName: harbor-database-data
+#     accessModes:
+#         - ReadWriteOnce
+#     resources:
+#         requests:
+#             storage: 20Gi
+# EOF
 # create pv and pvc for harbor-jobservice-data
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: harbor-jobservice-data
-  namespace: harbor-ns
-spec:
-    storageClassName: local-path
-    capacity:
-        storage: 20Gi
-    accessModes:
-        - ReadWriteOnce
-    hostPath:
-        path: /harbor-jobservice-data
-        type: DirectoryOrCreate
-    nodeAffinity:
-        required:
-            nodeSelectorTerms:
-            - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: In
-                  values:
-                  - $KUBERNETES_HOSTNAME
-EOF
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-jobservice-data
-  namespace: harbor-ns
-spec:
-    volumeName: harbor-jobservice-data
-    accessModes:
-        - ReadWriteOnce
-    resources:
-        requests:
-            storage: 20Gi
-EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: harbor-jobservice-data
+#   namespace: harbor-ns
+# spec:
+#     storageClassName: local-path
+#     capacity:
+#         storage: 20Gi
+#     accessModes:
+#         - ReadWriteOnce
+#     hostPath:
+#         path: /harbor-jobservice-data
+#         type: DirectoryOrCreate
+#     nodeAffinity:
+#         required:
+#             nodeSelectorTerms:
+#             - matchExpressions:
+#                 - key: kubernetes.io/hostname
+#                   operator: In
+#                   values:
+#                   - $KUBERNETES_HOSTNAME
+# EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: harbor-jobservice-data
+#   namespace: harbor-ns
+# spec:
+#     volumeName: harbor-jobservice-data
+#     accessModes:
+#         - ReadWriteOnce
+#     resources:
+#         requests:
+#             storage: 20Gi
+# EOF
 # create pv and pvc for harbor-redis-data
 kubectl apply -f - <<EOF
 apiVersion: v1
@@ -190,44 +190,114 @@ spec:
             storage: 20Gi
 EOF
 # create pv and pvc for harbor-trivy-data
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolume
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: harbor-trivy-data
+#   namespace: harbor-ns
+# spec:
+#     storageClassName: local-path
+#     capacity:
+#         storage: 20Gi
+#     accessModes:
+#         - ReadWriteOnce
+#     hostPath:
+#         path: /harbor-trivy-data
+#         type: DirectoryOrCreate
+#     nodeAffinity:
+#         required:
+#             nodeSelectorTerms:
+#             - matchExpressions:
+#                 - key: kubernetes.io/hostname
+#                   operator: In
+#                   values:
+#                   - $KUBERNETES_HOSTNAME
+# EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: harbor-trivy-data
+#   namespace: harbor-ns
+# spec:
+#     volumeName: harbor-trivy-data
+#     accessModes:
+#         - ReadWriteOnce
+#     resources:
+#         requests:
+#             storage: 20Gi
+# EOF
+
+echo "installing harbor"
+cat <<EOF | tee harbor-registry-deployment.yaml
+---
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
-  name: harbor-trivy-data
+  name: registry
   namespace: harbor-ns
+  labels:
+    app: registry
+    component: registry
 spec:
-    storageClassName: local-path
-    capacity:
-        storage: 20Gi
-    accessModes:
-        - ReadWriteOnce
-    hostPath:
-        path: /harbor-trivy-data
-        type: DirectoryOrCreate
-    nodeAffinity:
-        required:
-            nodeSelectorTerms:
-            - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: In
-                  values:
-                  - $KUBERNETES_HOSTNAME
+  serviceName: registry
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      initContainers:
+        # Generate htpasswd file
+        - name: init-registry
+          image: httpd:2
+          imagePullPolicy: IfNotPresent
+          command: [ /bin/sh ]
+          args: [ -c, "/usr/bin/htpasswd -Bbn \"root\" \"$GITLAB_ROOT_GENERATED_PASSWORD\" > /htpasswd/htpasswd" ]
+
+          volumeMounts:
+            - name: htpasswd-dir
+              mountPath: /htpasswd
+
+      containers:
+        - name: registry
+          image: registry:{{ registry_version }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REGISTRY_HTTP_ADDR
+              value: "0.0.0.0:{{ registry_port }}"
+            - name: REGISTRY_AUTH
+              value: htpasswd
+            - name: REGISTRY_AUTH_HTPASSWD_REALM
+              value: "Registry Realm"
+            - name: REGISTRY_AUTH_HTPASSWD_PATH
+              value: /htpasswd/htpasswd
+            - name: REGISTRY_HTTP_TLS_CERTIFICATE
+              value: /secrets/registry.crt
+            - name: REGISTRY_HTTP_TLS_KEY
+              value: /secrets/registry.key
+          volumeMounts:
+            - name: registry-data
+              mountPath: /var/lib/registry
+            - name: registry-secrets
+              mountPath: /secrets
+            - name: htpasswd-dir
+              mountPath: /htpasswd
+
+      volumes:
+        - name: registry-secrets
+          secret:
+            secretName: registry-secrets
+        - name: htpasswd-dir
+          emptyDir: {}
+
 EOF
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-trivy-data
-  namespace: harbor-ns
-spec:
-    volumeName: harbor-trivy-data
-    accessModes:
-        - ReadWriteOnce
-    resources:
-        requests:
-            storage: 20Gi
-EOF
+kubectl apply -f harbor-registry-deployment.yaml
+exit 0
 
 # install harbor
 helm upgrade --install harbor harbor/harbor  -n harbor-ns \
