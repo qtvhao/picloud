@@ -256,7 +256,7 @@ spec:
           image: httpd:2
           imagePullPolicy: IfNotPresent
           command: [ /bin/sh ]
-          args: [ -c, "/usr/bin/htpasswd -Bbn \"root\" \"$GITLAB_ROOT_GENERATED_PASSWORD\" > /htpasswd/htpasswd" ]
+          args: [ -c, "htpasswd -Bbn \"root\" \"$GITLAB_ROOT_GENERATED_PASSWORD\" > /htpasswd/htpasswd" ]
 
           volumeMounts:
             - name: htpasswd-dir
@@ -331,3 +331,4 @@ kubectl get secret regcred --namespace default || \
     --docker-server=http-harbor-registry-harbor-ns-5000.$DOMAIN --docker-username=root --docker-password=$GITLAB_ROOT_GENERATED_PASSWORD --namespace default
 
 ./pic expose http harbor-registry.harbor-ns 5000 "200"
+docker login http-harbor-registry-harbor-ns-5000.$DOMAIN -u root -p $GITLAB_ROOT_GENERATED_PASSWORD
