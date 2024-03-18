@@ -233,15 +233,14 @@ echo "installing harbor"
 cat <<EOF | tee harbor-registry-deployment.yaml
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: registry
+  name: harbor-registry
   namespace: harbor-ns
   labels:
     app: registry
     component: registry
 spec:
-  serviceName: registry
   replicas: 1
   selector:
     matchLabels:
@@ -265,49 +264,43 @@ spec:
 
       containers:
         - name: registry
-          image: registry:{{ registry_version }}
+          image: registry:2
           imagePullPolicy: IfNotPresent
           env:
             - name: REGISTRY_HTTP_ADDR
-              value: "0.0.0.0:{{ registry_port }}"
+              value: "0.0.0.0:5001"
             - name: REGISTRY_AUTH
               value: htpasswd
             - name: REGISTRY_AUTH_HTPASSWD_REALM
               value: "Registry Realm"
             - name: REGISTRY_AUTH_HTPASSWD_PATH
               value: /htpasswd/htpasswd
-            - name: REGISTRY_HTTP_TLS_CERTIFICATE
-              value: /secrets/registry.crt
-            - name: REGISTRY_HTTP_TLS_KEY
-              value: /secrets/registry.key
           volumeMounts:
-            - name: registry-data
+            - name: harbor-registry-data
               mountPath: /var/lib/registry
-            - name: registry-secrets
-              mountPath: /secrets
             - name: htpasswd-dir
               mountPath: /htpasswd
 
       volumes:
-        - name: registry-secrets
-          secret:
-            secretName: registry-secrets
+        - name: harbor-registry-data
+          persistentVolumeClaim:
+            claimName: harbor-registry-data
         - name: htpasswd-dir
           emptyDir: {}
 
+
 EOF
 kubectl apply -f harbor-registry-deployment.yaml
-exit 0
 
 # install harbor
-helm upgrade --install harbor harbor/harbor  -n harbor-ns \
-    --set persistence.persistentVolumeClaim.registry.existingClaim=harbor-registry-data \
-    --set persistence.persistentVolumeClaim.database.existingClaim=harbor-database-data \
-    --set persistence.persistentVolumeClaim.jobservice.existingClaim=harbor-jobservice-data \
-    --set persistence.persistentVolumeClaim.redis.existingClaim=harbor-redis-data \
-    --set persistence.persistentVolumeClaim.trivy.existingClaim=harbor-trivy-data \
-    --set registry.credentials.username=root \
-    --set registry.credentials.password=$GITLAB_ROOT_GENERATED_PASSWORD
+# helm upgrade --install harbor harbor/harbor  -n harbor-ns \
+#     --set persistence.persistentVolumeClaim.registry.existingClaim=harbor-registry-data \
+#     --set persistence.persistentVolumeClaim.database.existingClaim=harbor-database-data \
+#     --set persistence.persistentVolumeClaim.jobservice.existingClaim=harbor-jobservice-data \
+#     --set persistence.persistentVolumeClaim.redis.existingClaim=harbor-redis-data \
+#     --set persistence.persistentVolumeClaim.trivy.existingClaim=harbor-trivy-data \
+#     --set registry.credentials.username=root \
+#     --set registry.credentials.password=$GITLAB_ROOT_GENERATED_PASSWORD
 
 
 ./pic wait deployment harbor-registry harbor-ns Available
