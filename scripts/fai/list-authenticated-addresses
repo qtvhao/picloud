@@ -7,6 +7,11 @@ if [ -z "$IDENTIFY_FILE" ]; then
     exit 1
 fi
 chmod 600 "$IDENTIFY_FILE"
+# verify $IDENTIFY_FILE is a valid identify file
+if ! ssh -T -i "$IDENTIFY_FILE" -o ConnectTimeout=0 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "github.com" 2>/dev/null; then
+    echo "IDENTIFY_FILE is not a valid identify file."
+    exit 1
+fi
 LIST_IP_ADDRESSES=$(./pic list-ssh-addresses 2>/dev/null)
 echo "LIST_IP_ADDRESSES: $LIST_IP_ADDRESSES" >&2
 echo
