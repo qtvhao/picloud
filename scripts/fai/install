@@ -44,8 +44,6 @@ notes=" (optional, you can skip this step if you don't want to push the image to
 # if .docker/config.json auths to index.docker.io exists
 time ( docker buildx build \
     --push \
-    --cache-from docker.io/$GITHUB_USERNAME/picloud:branch-cache \
-    --cache-to type=registry,ref=docker.io/$GITHUB_USERNAME/picloud:branch-cache,mode=max \
     -t docker.io/$GITHUB_USERNAME/picloud:fai-config -f Dockerfile.fai-config . && \
     docker pull docker.io/$GITHUB_USERNAME/picloud:fai-config) || \
 time ( docker buildx build \
