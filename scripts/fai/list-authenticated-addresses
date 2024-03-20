@@ -8,7 +8,7 @@ if [ -z "$IDENTIFY_FILE" ]; then
 fi
 chmod 600 "$IDENTIFY_FILE"
 # verify $IDENTIFY_FILE is a valid identify file
-if ! ssh -T -i "$IDENTIFY_FILE" -o ConnectTimeout=0 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "github.com" 2>/dev/null; then
+if ! ssh-keygen -l -f "$IDENTIFY_FILE" > /dev/null 2>&1; then
     echo "IDENTIFY_FILE is not a valid identify file."
     exit 1
 fi
