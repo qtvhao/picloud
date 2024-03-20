@@ -24,13 +24,13 @@ bc
 tesseract-ocr
 libtesseract-dev
 parted
-linux-headers-6.1.0-13-common
+linux-headers-6.1.0-18-common
 
 PACKAGES install
 task-english 
 virtualbox-7.0
 linux-headers-amd64
-linux-headers-6.1.0-13-amd64
+linux-headers-6.1.0-18-amd64
 npm
 nodejs
 
