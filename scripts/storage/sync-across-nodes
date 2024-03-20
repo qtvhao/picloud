@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -xeo pipefail
+
+args=("$@")
+WORKDIR=${args[0]}
+
+NODES=`./pic list-nodename /root/id_rsa | awk '{print $1}'`
+echo "="
+for NODE in $NODES; do
+    echo "NODE: $NODE"
+
+    mkdir -p $WORKDIR
+    # -a: archive mode
+    # -v: verbose
+    # -z: compress file data
+    rsync -avz \
+        -e "ssh -i /root/id_rsa" $NODE:$WORKDIR $WORKDIR || echo "Failed to copy to $NODE"
+    
+    rsync -avz \
+        -e "ssh -i /root/id_rsa" $WORKDIR $NODE:$WORKDIR || echo "Failed to copy from $NODE"
+done
