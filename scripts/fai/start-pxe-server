@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -xeo pipefail
-hostnameI=$(hostname -I | tr ' ' '\n' | grep "192" | head -n 1)
+hostnameI=$(./pic hostname)
 TFTP_FOLDER="/srv/tftp/fai/"
 VMLINUZ_FILE=`docker exec fai bash -c "ls $TFTP_FOLDER | grep vmlinuz"`
 INITRD_FILE=`docker exec fai bash -c "ls $TFTP_FOLDER | grep initrd"`
