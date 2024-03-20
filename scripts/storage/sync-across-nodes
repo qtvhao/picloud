@@ -10,7 +10,10 @@ echo "="
 for NODE in $NODES; do
     echo "NODE: $NODE"
 
-    mkdir -p $WORKDIR
+    # if is ends with /, make directory
+    if [[ $WORKDIR == */ ]]; then
+        mkdir -p $WORKDIR
+    fi
     # -a: archive mode
     # -v: verbose
     # -z: compress file data
