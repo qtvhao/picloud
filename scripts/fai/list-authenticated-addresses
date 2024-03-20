@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 if [ -z "$IDENTIFY_FILE" ]; then
@@ -7,11 +8,9 @@ if [ -z "$IDENTIFY_FILE" ]; then
     exit 1
 fi
 chmod 600 "$IDENTIFY_FILE"
-# verify $IDENTIFY_FILE is a valid identify file
-if ! ssh-keygen -l -f "$IDENTIFY_FILE" > /dev/null 2>&1; then
-    echo "IDENTIFY_FILE is not a valid identify file."
-    exit 1
-fi
+
+ssh-keygen -l -f "$IDENTIFY_FILE" > /dev/null 2>&1 || (echo "IDENTIFY_FILE is not a valid identify file." && exit 1)
+
 LIST_IP_ADDRESSES=$(./pic list-ssh-addresses 2>/dev/null)
 echo "LIST_IP_ADDRESSES: $LIST_IP_ADDRESSES" >&2
 echo
