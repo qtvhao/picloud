@@ -17,10 +17,10 @@ for NODE in $NODES; do
     # -a: archive mode
     # -v: verbose
     # -z: compress file data
-    rsync -avz \
+    rsync -avz --info=progress2 \
         -e "ssh -i /root/id_rsa" $NODE:$WORKDIR $WORKDIR || echo "Failed to copy to $NODE"
     
     ssh -i /root/id_rsa $NODE "mkdir -p $WORKDIR || echo 'Failed to create directory'"
-    rsync -avz \
+    rsync -avz --info=progress2 \
         -e "ssh -i /root/id_rsa" $WORKDIR $NODE:$WORKDIR || echo "Failed to copy from $NODE"
 done
