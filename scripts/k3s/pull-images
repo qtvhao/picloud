@@ -6,6 +6,8 @@ NODE_NAME=${args[0]}
 set -e -o pipefail
 echo "Usage: ./pull-image.sh <image-name>"
 # gitlab-images.txt
+IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS="/var/lib/rancher/k3s/agent/containerd/io.containerd.snapshotter.v1.overlayfs/"
+./pic sync-across-nodes $IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS
 GITLAB_IMAGES_TXT="./images.txt"
 # Error from server (Forbidden): is forbidden: error looking up service account default/default: serviceaccount "default" not found
 LAST_LINE=$(cat $GITLAB_IMAGES_TXT | tail -n 1)
