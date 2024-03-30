@@ -119,7 +119,7 @@ if [ "wait-for-success" == "$option2" ]; then
         if [ "running" == "$PIPELINE_STATUS" ]; then
             echo "Pipeline is running"
             CONDITIONS='.items[] | select(.metadata.name | startswith("runner-")) | select(.metadata.annotations."project.runner.gitlab.com/id" == "'$PROJECT_ID'") | .metadata.name'
-            kubectl get pods -n gitlab-ns -o json | jq -r $CONDITIONS | head -n 1 | xargs -I {} kubectl logs -n gitlab-ns {} -c build -f || true
+            kubectl get pods -n gitlab-ns -o json | jq -r "$CONDITIONS" | head -n 1 | xargs -I {} kubectl logs -n gitlab-ns {} -c build -f || true
             # PODS=$(kubectl get pods -n gitlab-ns -o json | jq -r "$CONDITIONS")
             # echo "PODS: $PODS"
             # if [ -z "$PODS" ]; then
