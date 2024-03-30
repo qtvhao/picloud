@@ -7,6 +7,22 @@
 
 # This is really important, because we use shell globbing for creating the list of disks
 # cd /dev/disk/by-id || echo Cannot get disk information
+fastestdisk() {
+    DISKS=$(all_disks_and_size | sort -n  -k2 | checkdisk $FAI_BOOTSTICK)
+    SORTED_DISKS=""
+    for disk in $DISKS; do
+        if [ "nvme" = "${disk:0:4}" ]; then
+            SORTED_DISKS="$disk
+$SORTED_DISKS"
+        elif [ "sd" = "${disk:0:2}" ]; then
+            SORTED_DISKS="$SORTED_DISKS
+$disk"
+        fi
+    done
+
+    echo "$SORTED_DISKS" | sed '/^$/d' | head -1
+}
+
 
 
 # case $HOSTNAME in
@@ -15,7 +31,7 @@
 #       server2) newlist=$(mydisks *_SSD_* *TOSHIBA* ) ;;
 #     *)         newlist=$(mydisks nvme* ) ;;
 # esac
-newlist=$(smallestdisk)
+newlist=$(fastestdisk)
 if [ -n "$newlist" ]; then
     echo New disklist: $newlist
     echo disklist=\"$newlist\" >> $LOGDIR/additional.var
