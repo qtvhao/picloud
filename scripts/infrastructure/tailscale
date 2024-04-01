@@ -1,0 +1,11 @@
+#!/bin/bash
+
+NODES=`./pic list-nodename /root/id_rsa | awk '{print $1}'`
+for NODE in $NODES; do
+    echo "NODE: $NODE"
+    ssh -i /root/id_rsa $NODE "curl -fsSL https://tailscale.com/install.sh | sh"
+done
+for NODE in $NODES; do
+    echo "NODE: $NODE"
+    ssh -i /root/id_rsa $NODE "tailscale up"
+done
