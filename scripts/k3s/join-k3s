@@ -95,6 +95,9 @@ ssh -i $IDENTIFY_FILE  \
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP || exit 1"
+ssh -i $IDENTIFY_FILE  \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "rm -rf /var/lib/rancher/k3s/ || true"
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "$NODE_COMMAND"
