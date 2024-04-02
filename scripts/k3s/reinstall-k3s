@@ -108,6 +108,15 @@ echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 rm -rf /var/lib/rancher/ || true
 k3s-killall.sh || true
 k3s-uninstall.sh || true
+NEW_INOTIFY_MAX_USER_WATCHES=95956992
+NEW_INOTIFY_MAX_USER_INSTANCES=32768
+NEW_INOTIFY_MAX_QUEUED_EVENTS=4194304
+LOCAL_CONF="/etc/sysctl.d/local.conf"
+echo "" > $LOCAL_CONF
+echo "fs.inotify.max_user_watches=$NEW_INOTIFY_MAX_USER_WATCHES" >> $LOCAL_CONF
+echo "fs.inotify.max_user_instances=$NEW_INOTIFY_MAX_USER_INSTANCES" >> $LOCAL_CONF
+echo "fs.inotify.max_queued_events=$NEW_INOTIFY_MAX_QUEUED_EVENTS" >> $LOCAL_CONF
+service procps force-reload
 # delete pods use crictl, use: crictl rmp -af
 # delete containers use crictl, use: crictl rm -af
 

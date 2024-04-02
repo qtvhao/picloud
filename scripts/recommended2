@@ -54,7 +54,6 @@ while ! ./pic pull-image docker.io/cloudflare/cloudflared:latest $FIRST_NODE_NAM
 done
 ( time (./pic pull-images "$FIRST_NODE_NAME")) &
 echo "Pulled images for the first node"
-# use this command to reduce the time of pulling images (from 19m25.985s to 18m35.825s)
-# exit 0
+
 ( time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log) || exit 1)
 echo "PiCloud has installed gitlab"
