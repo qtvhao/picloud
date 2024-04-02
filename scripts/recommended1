@@ -14,6 +14,22 @@ echo "Installing k3s recommended packages 1"
 time (./pic redis | tee $LOGS_DIR/redis.log) &
 wait $(jobs -p)
 
+# BEGIN replace-Corefile
+Corefile="Corefile"
+coredns_custom="coredns-custom"
+NS="kube-system"
+coredns_custom_content="
+. {
+    forward . tls://1.1.1.1 tls://1.0.0.1 {
+       tls_servername cloudflare-dns.com
+       health_check 5s
+    }
+    cache 30
+}"
+kubectl -n $NS create configmap $coredns_custom --from-literal=Corefile="$coredns_custom_content" --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n $NS rollout restart deployment coredns
+# END replace-Corefile
+
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
 
