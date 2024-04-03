@@ -32,7 +32,7 @@ is_pipeline_is_up_to_date() {
         echo "Last commit and last pipeline are the same. That means the pipeline is up to date."
     fi
 }
-is_pipeline_is_up_to_date "$GITLAB_TOKEN" "$ref" "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME" | grep "Last commit and last pipeline are the same" && exit 0 || true
+# is_pipeline_is_up_to_date "$GITLAB_TOKEN" "$ref" "https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME" | grep "Last commit and last pipeline are the same" && exit 0 || true
 
 while true; do
     echo "Retrying to create pipeline"
