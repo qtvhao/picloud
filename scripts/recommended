@@ -22,7 +22,11 @@ TUNNEL_NAMESPACE=default ./pic expose tcp redis-master.default 6379
 ./pic dump-images $IDENTIFY_FILE
 
 echo "./pic has installed your recommended packages"
-# This takes 21m6s on 3 nodes
+# This takes 10m6s on 3 nodes
+# real    9m32.497s
+# user    3m2.385s
+# sys     0m29.889s
+
 rm -rf $LOGS_DIR/reinstall-k3s.log
 rm -rf $LOGS_DIR/harbor.log
 rm -rf $LOGS_DIR/gitlab.log
