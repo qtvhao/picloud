@@ -18,6 +18,8 @@ for NODE in $NODES; do
     # -a: archive mode
     # -v: verbose
     # -z: compress file data
+    # --info=progress2: show progress
+    # compress data by highest level: -9
     rsync -avz --info=progress2 \
         -e "ssh -i /root/id_rsa" $NODE:$WORKDIR $WORKDIR || echo "Failed to copy to $NODE"
     

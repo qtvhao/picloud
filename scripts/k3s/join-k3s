@@ -20,19 +20,7 @@ if [ ! -f $IDENTIFY_FILE ]; then
     exit 1
 fi
 set -xeo pipefail
-REGISTRY_FOLDER="/harbor-registry-data/"
-EXPIRY_DAYS="60"
-if [ -d "$REGISTRY_FOLDER" ]; then
-    echo "Cleaning up registry folder"
-    ssh -i $IDENTIFY_FILE $NODE_IP "rm -rf $REGISTRY_FOLDER" || true
-    ssh -i $IDENTIFY_FILE $NODE_IP "mkdir -p $REGISTRY_FOLDER" || true
-    ssh -i $IDENTIFY_FILE $NODE_IP "find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;" || true
-    find $REGISTRY_FOLDER -type f -mtime +$EXPIRY_DAYS -exec rm -f {} \;
-    echo "Copying registry folder to $NODE_IP"
-    time rsync --info=progress2 -az --human-readable -e "ssh -i $IDENTIFY_FILE" $NODE_IP:$REGISTRY_FOLDER $REGISTRY_FOLDER
-    echo "Copying registry folder from $NODE_IP"
-    time rsync --info=progress2 -az --human-readable -e "ssh -i $IDENTIFY_FILE" $REGISTRY_FOLDER $NODE_IP:$REGISTRY_FOLDER
-fi
+./pic sync-across-nodes /var/lib/registry-proxy/ &
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
