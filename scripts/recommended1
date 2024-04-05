@@ -9,10 +9,10 @@ echo "Installing k3s recommended packages 1"
 ./pic recommended2 $IDENTIFY_FILE
 
 ( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log))
-( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
+# ( ( time ./pic install-longhorn $IDENTIFY_FILE | tee $LOGS_DIR/install-longhorn.log)) &
 
-time (./pic redis | tee $LOGS_DIR/redis.log) &
-wait $(jobs -p)
+time (./pic redis | tee $LOGS_DIR/redis.log)
+# wait $(jobs -p)
 
 # BEGIN replace-Corefile
 Corefile="Corefile"

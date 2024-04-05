@@ -1,5 +1,5 @@
 #!/bin/bash
 time (./pic reinstall-k3s $HOME/id_rsa)
-time ./pic recommended1 $HOME/id_rsa | tee recommended.log
+time ./pic recommended1 $HOME/id_rsa 2>&1 | tee recommended.log
 # it costs 10 minutes to install recommended packages
 echo "Recommended packages installed"
