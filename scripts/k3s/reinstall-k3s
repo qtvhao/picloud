@@ -17,49 +17,6 @@ chmod 0400 $IDENTIFY_FILE
 PIC_DIR="$HOME/.pic"
 
 echo "Uninstalling k3s"
-echo "- Uninstalling longhorn"
-if kubectl get ns;then 
-namespaces=$(kubectl get ns -o json | jq -r '.items[].metadata.name')
-echo "namespaces: $namespaces"
-removable_namespaces=$(echo "$namespaces" | grep -v "kube-system\|longhorn-system\|kube-public\|kube-node-lease")
-echo "removable_namespaces: $removable_namespaces"
-MATCHING="No resources found in"
-for namespace in $removable_namespaces; do
-    RNs="deployment statefulset daemonset job cronjob pvc service secret configmap ingress"
-    for RN in $RNs; do
-        MATCHING="No resources found in"
-        if [ "x0" == "x$(kubectl get $RN -n $namespace | grep "$MATCHING" | wc -l)" ]; then
-            echo "No $RN in $namespace"
-        else
-            echo "Deleting $RN in $namespace"
-            kubectl get $RN -n $namespace -o json | jq -r '.items[].metadata.name' | xargs -I {} kubectl delete $RN -n $namespace {}
-        fi
-    done
-done
-
-while true; do
-    if [ "x0" == "x$(kubectl get pv | grep "No resources found" | wc -l)" ]; then
-        echo "All pv are released"
-        break
-    else
-        echo "Waiting for all pv to be released"
-        sleep 2
-    fi
-done
-kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag || true
-
-echo "1. Deleting longhorn"
-timeout 120 kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml > /dev/null 2>&1 || true
-
-echo "2. Uninstalling longhorn"
-kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/uninstall/uninstall.yaml > /dev/null 2>&1 || true
-
-kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml > /dev/null 2>&1 || true
-
-echo "3. Waiting for longhorn to be uninstalled"
-(kubectl get job longhorn-uninstall -n longhorn-system && \
-    ./pic wait job longhorn-uninstall longhorn-system Complete) || true
-fi
 
 NODES_JSON=$(kubectl get nodes -o json || echo "")
 NODES=$(echo $NODES_JSON | jq -r "[.items[] | .metadata.annotations.\"k3s.io/internal-ip\"]")
@@ -84,8 +41,7 @@ echo "Installing k3s"
 curl -fsSL https://get.docker.com -o install-docker.sh
 docker ps >/dev/null 2>&1 || sh install-docker.sh
 rm install-docker.sh || true
-# kubectl >/dev/null 2>&1 ||
-    # (curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" >/usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl)
+
 helm version >/dev/null 2>&1 ||
     (curl https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz -o helm-v3.13.1-linux-amd64.tar.gz && tar -xvf helm-v3.13.1-linux-amd64.tar.gz -C /usr/local/bin/ --strip-components=1 linux-amd64/helm)
 rm helm-v3.13.1-linux-amd64.tar.gz || true
