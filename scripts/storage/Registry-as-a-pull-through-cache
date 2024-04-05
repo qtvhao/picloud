@@ -59,7 +59,7 @@ ssh -i $IDENTIFY_FILE \
     --restart=always \
     -v /var/lib/registry-proxy/remote-vendor-$CONTAINER_NAME/:/var/lib/registry \
     --name $CONTAINER_NAME \
-    --net iptastic --ip $IP_ADDRESS registry:2" &
+    --net iptastic --ip $IP_ADDRESS registry:2"
 # curl the ip from any other place (assuming this is a public ip block duh)
 # while true; do
 #     ssh -i $IDENTIFY_FILE \

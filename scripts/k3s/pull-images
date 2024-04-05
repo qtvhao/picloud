@@ -3,19 +3,21 @@
 args=("$@")
 NODE_NAME=${args[0]}
 
-set -e -o pipefail
+set -xe -o pipefail
 echo "Usage: ./pull-image.sh <image-name>"
 # gitlab-images.txt
 IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS="/var/lib/rancher/k3s/agent/containerd/io.containerd.content.v1.content/"
 ./pic sync-across-nodes $IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS
 GITLAB_IMAGES_TXT="./images.txt"
-# Error from server (Forbidden): is forbidden: error looking up service account default/default: serviceaccount "default" not found
+
 LAST_LINE=$(cat $GITLAB_IMAGES_TXT | tail -n 1)
 while true; do
     sleep 10
+    echo "Pulling image $LAST_LINE to $NODE_NAME"
     ./pic pull-image $LAST_LINE $NODE_NAME && break
 done
 while read -r line; do
+    echo "Pulling image $line to $NODE_NAME"
     ./pic pull-image $line $NODE_NAME &
 done < "$GITLAB_IMAGES_TXT"
 wait

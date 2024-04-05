@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -xeo pipefail
 
 args=("$@")
 WORKDIR=${args[0]}
@@ -21,8 +21,10 @@ for NODE in $NODES; do
     # --info=progress2: show progress
     # compress data by highest level: -9
     time rsync -az \
-        -e "ssh -i /root/id_rsa -o StrictHostKeyChecking=no" $NODE:$WORKDIR $WORKDIR || echo "Failed to copy to $NODE"
+        -e "ssh -i /root/id_rsa" $NODE:$WORKDIR $WORKDIR || echo "Failed to copy to $NODE"
     
     time rsync -az \
-        -e "ssh -i /root/id_rsa -o StrictHostKeyChecking=no" $WORKDIR $NODE:$WORKDIR || echo "Failed to copy from $NODE"
+        -e "ssh -i /root/id_rsa" $WORKDIR $NODE:$WORKDIR || echo "Failed to copy from $NODE"
 done
+
+echo "Synced $WORKDIR across nodes"

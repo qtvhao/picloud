@@ -1,7 +1,8 @@
 #!/bin/bash
+set -xeo pipefail
 time (./pic reinstall-k3s $HOME/id_rsa | tee reinstall-k3s.log)
-time ./pic recommended $HOME/id_rsa | tee recommended.log
-# real    9m32.497s
-# user    3m2.385s
-# sys     0m29.889s
+time ./pic recommended $HOME/id_rsa 2>&1 | tee recommended.log
+# real    11m16.051s
+# user    3m15.124s
+# sys     0m32.637s
 echo "Recommended packages installed"

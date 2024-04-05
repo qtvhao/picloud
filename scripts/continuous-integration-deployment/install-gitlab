@@ -153,8 +153,7 @@ gitlab-runner.runners.privileged=true \
     --set global.appConfig.terraformState.bucket=gitlab-terraform-state \
     --set global.appConfig.dependencyProxy.bucket=gitlab-dependency-proxy \
     --set global.appConfig.backups.bucket=gitlab-backup-upload \
-    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage \
-    &
+    --set global.appConfig.backups.tmpBucket=gitlab-tmp-storage
     # --set global.registry.bucket=gitlab-registry \
     # --set rbac.create=true \
 #     --set registry.storage.secret=gitlab-registry-storage \

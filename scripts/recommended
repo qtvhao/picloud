@@ -9,8 +9,7 @@ echo "Installing k3s recommended packages"
 ./pic recommended1 $IDENTIFY_FILE
 # 
 GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/.pic/gitlab.json")
-( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log) &
-wait
+( time ./pic grafana-promtail-loki "lokiadmin" "$GITLAB_ROOT_GENERATED_PASSWORD" | tee $LOGS_DIR/grafana-promtail-loki.log)
 
 TUNNEL_NAMESPACE=default ./pic expose http grafana.loki 80
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
@@ -18,7 +17,6 @@ TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns
 ./pic wait pod          redis-replicas-1                    default Ready
 ./pic wait pod          redis-replicas-2                    default Ready
 TUNNEL_NAMESPACE=default ./pic expose tcp redis-master.default 6379
-# wait
 ./pic dump-images $IDENTIFY_FILE
 
 echo "./pic has installed your recommended packages"
