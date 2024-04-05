@@ -230,7 +230,7 @@ EOF
 # EOF
 
 echo "installing harbor"
-cat <<EOF | tee harbor-registry-deployment.yaml
+cat <<EOF > harbor-registry-deployment.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment

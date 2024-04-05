@@ -163,9 +163,7 @@ gitlab-runner.runners.privileged=true \
     # --set gitlab.toolbox.backups.objectStorage.config.key=connection \
 
 time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
-# time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log certificates
-# time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log configure
-time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations
+time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations > ./gitlab-migrations-1.log
 rm gitlab-migrations-1.log
 # 
 time ./pic logs deployment/gitlab-webservice-default    gitlab-ns gitlab-webservice-default-dependencies.log dependencies
