@@ -20,9 +20,9 @@ for NODE in $NODES; do
     # -z: compress file data
     # --info=progress2: show progress
     # compress data by highest level: -9
-    rsync -avz --info=progress2 \
+    time rsync -avz \
         -e "ssh -i /root/id_rsa" $NODE:$WORKDIR $WORKDIR || echo "Failed to copy to $NODE"
     
-    rsync -avz --info=progress2 \
+    time rsync -avz \
         -e "ssh -i /root/id_rsa" $WORKDIR $NODE:$WORKDIR || echo "Failed to copy from $NODE"
 done
