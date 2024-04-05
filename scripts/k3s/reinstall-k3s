@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -xeo pipefail
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 if [ -z "$IDENTIFY_FILE" ]; then
