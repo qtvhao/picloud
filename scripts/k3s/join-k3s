@@ -30,7 +30,7 @@ echo "Connected to $NODE_IP"
 # 
 scp  \
     -i $IDENTIFY_FILE \
-    /etc/resolv.conf $NODE_IP:/etc/resolv.conf &
+    /etc/resolv.conf $NODE_IP:/etc/resolv.conf
 scp \
     -i $IDENTIFY_FILE \
     /usr/local/share/ca-certificates/kubernetes.crt "$NODE_IP":/usr/local/share/ca-certificates/kubernetes.crt
@@ -87,23 +87,18 @@ NEW_INOTIFY_MAX_USER_WATCHES=95956992
 NEW_INOTIFY_MAX_USER_INSTANCES=32768
 NEW_INOTIFY_MAX_QUEUED_EVENTS=4194304
 LOCAL_CONF="/etc/sysctl.d/local.conf"
-# echo "" > $LOCAL_CONF
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" 'echo "" > /etc/sysctl.d/local.conf'
-# echo "fs.inotify.max_user_watches=$NEW_INOTIFY_MAX_USER_WATCHES" >> $LOCAL_CONF
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "echo 'fs.inotify.max_user_watches=$NEW_INOTIFY_MAX_USER_WATCHES' >> /etc/sysctl.d/local.conf"
-# echo "fs.inotify.max_user_instances=$NEW_INOTIFY_MAX_USER_INSTANCES" >> $LOCAL_CONF
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "echo 'fs.inotify.max_user_instances=$NEW_INOTIFY_MAX_USER_INSTANCES' >> /etc/sysctl.d/local.conf"
-# echo "fs.inotify.max_queued_events=$NEW_INOTIFY_MAX_QUEUED_EVENTS" >> $LOCAL_CONF
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "echo 'fs.inotify.max_queued_events=$NEW_INOTIFY_MAX_QUEUED_EVENTS' >> /etc/sysctl.d/local.conf"
-# service procps force-reload
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "service procps force-reload"

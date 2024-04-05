@@ -54,6 +54,8 @@ while ! ./pic pull-image docker.io/cloudflare/cloudflared:latest $FIRST_NODE_NAM
 done
 ( time (./pic pull-images "$FIRST_NODE_NAME")) &
 echo "Pulled images for the first node"
+# IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS="/var/lib/rancher/k3s/agent/containerd/io.containerd.content.v1.content/"
+# ./pic sync-across-nodes $IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS
 
 ( time (./pic install-gitlab $IDENTIFY_FILE | tee $LOGS_DIR/gitlab.log) || exit 1)
 echo "PiCloud has installed gitlab"
