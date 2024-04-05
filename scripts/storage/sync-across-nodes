@@ -5,7 +5,10 @@ set -xeo pipefail
 args=("$@")
 WORKDIR=${args[0]}
 
-NODES=`./pic list-nodename /root/id_rsa | awk '{print $1}'`
+NODES=$(kubectl get nodes -o json | jq -r ".items[].status.addresses[0] | select(.type == \"InternalIP\") | .address") || true
+if [ -z "$NODES" ]; then
+    NODES=`./pic list-nodename /root/id_rsa | awk '{print $1}'`
+fi
 echo "="
 for NODE in $NODES; do
     echo "NODE: $NODE"

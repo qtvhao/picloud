@@ -8,6 +8,7 @@ echo "Usage: ./pull-image.sh <image-name>"
 # gitlab-images.txt
 IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS="/var/lib/rancher/k3s/agent/containerd/io.containerd.content.v1.content/"
 ./pic sync-across-nodes $IO_CONTAINERD_SNAPSHOTTER_OVERLAYFS
+exit 0
 GITLAB_IMAGES_TXT="./images.txt"
 
 LAST_LINE=$(cat $GITLAB_IMAGES_TXT | tail -n 1)
