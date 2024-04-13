@@ -188,6 +188,7 @@ kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:default || \
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
 echo "GitLab root password: $PASSWORD"
+TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181 302
 # 
 
 if [ -z "$IDENTIFY_FILE" ]; then
@@ -200,7 +201,6 @@ if [ -f $IDENTIFY_FILE ]; then
     ./pic add-ssh-key-gitlab "$SSH_PUB_KEY"
 fi
 ./pic add-ssh-key-gitlab "$(cat ~/.ssh/id_rsa.pub)"
-TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    40
 GITLAB_SETTINGS="import_sources[]=github&import_sources[]=bitbucket&import_sources[]=bitbucket_server&import_sources[]=git&import_sources[]=gitlab_project"
 while true; do
     ./pic applications-settings $GITLAB_SETTINGS && break || true
