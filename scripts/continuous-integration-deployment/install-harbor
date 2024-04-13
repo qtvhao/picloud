@@ -65,6 +65,7 @@ metadata:
   name: harbor-registry-data
   namespace: harbor-ns
 spec:
+    storageClassName: local-path
     volumeName: harbor-registry-data
     accessModes:
         - ReadWriteOnce
