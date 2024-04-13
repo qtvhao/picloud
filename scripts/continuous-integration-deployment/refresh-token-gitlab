@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -xe -o pipefail
 source .env
 export FQDN_RECORD="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
 PIC_DIR="$HOME/.pic"
@@ -7,14 +7,14 @@ PIC_DIR="$HOME/.pic"
 GITLAB_OAUTH_URL="https://$FQDN_RECORD/oauth/token"
 PASSWORD=$(jq -r '.gitlab_root_generated_password' "$PIC_DIR"/gitlab.json)
 
-GITLAB_TOKEN=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
---header 'Content-Type: application/json' \
---data-raw '{
-    "grant_type": "password",
-    "username": "root",
-    "password": "'$PASSWORD'"
-}' | jq -r '.access_token')
-
+GITLAB_TOKEN_RESPONSE=$(curl -s --request POST "$GITLAB_OAUTH_URL" \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "grant_type": "password",
+        "username": "root",
+        "password": "'$PASSWORD'"
+    }')
+GITLAB_TOKEN=`echo $GITLAB_TOKEN_RESPONSE | jq -r '.access_token'`
 if [ -z "$GITLAB_TOKEN" ]; then
     echo "GITLAB_TOKEN is empty. Please check your credentials."
     exit 1

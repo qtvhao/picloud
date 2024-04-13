@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -xe -o pipefail
 source .env
 
 ./pic refresh-token-gitlab > /dev/null 2>&1
