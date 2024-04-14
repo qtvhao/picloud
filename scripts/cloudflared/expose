@@ -7,7 +7,7 @@ fi
 if [ ! -z "$DOMAIN_ALT" ]; then
     DOMAIN="$DOMAIN_ALT"
 fi
-set -e -o pipefail
+set -xe -o pipefail
 export TUNNEL_FORCE_PROVISIONING_DNS=true
 cloudflared -v
 args=("$@")
