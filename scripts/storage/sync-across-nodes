@@ -5,7 +5,7 @@ set -xeo pipefail
 args=("$@")
 WORKDIR=${args[0]}
 
-NODES=$(kubectl get nodes -o json | jq -r ".items[].status.addresses[0] | select(.type == \"InternalIP\") | .address") || true
+NODES=`kubectl get nodes -o json | jq -r ".items[] | select(.status.conditions[] | select(.type == \"Ready\" and .status == \"True\")) | .status.addresses[0] | select(.type == \"InternalIP\") | .address"` || true
 if [ -z "$NODES" ]; then
     NODES=`./pic list-nodename /root/id_rsa | awk '{print $1}'`
 fi
