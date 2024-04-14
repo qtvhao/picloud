@@ -90,6 +90,7 @@ if [ "$arg1" == "wait" ]; then
     exit 0
 fi
 if [ "$arg1" == "self-update" ]; then
+    set -xeo pipefail
     REPO="qtvhao/picloud"
     REPO_EVENTS=$(curl "https://api.github.com/repos/$REPO/events")
     EVENTS_TYPE_PUSH_EVENT=$(echo $REPO_EVENTS | jq -r '[.[] | select(.type == "PushEvent")]')
