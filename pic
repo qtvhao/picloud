@@ -93,7 +93,11 @@ if [ "$arg1" == "self-update" ]; then
     set -xeo pipefail
     REPO="qtvhao/picloud"
     REPO_EVENTS=$(curl "https://api.github.com/repos/$REPO/events")
-    EVENTS_TYPE_PUSH_EVENT=$(echo $REPO_EVENTS | jq -r '[.[] | select(.type == "PushEvent")]')
+    EVENTS_TYPE_PUSH_EVENT=$(echo $REPO_EVENTS | jq -r '[.[] | select(.type == "PushEvent")]') || true
+    if [ -z "$EVENTS_TYPE_PUSH_EVENT" ]; then
+        echo "No PushEvent found. Failed to update."
+        exit 0
+    fi
     EVENTS_TYPE_PUSH_EVENT_FIRST=$(echo $EVENTS_TYPE_PUSH_EVENT | jq -r '.[0]')
     PAYLOAD=$(echo $EVENTS_TYPE_PUSH_EVENT_FIRST | jq -r '.payload')
     # echo "PAYLOAD: $PAYLOAD"
