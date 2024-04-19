@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -xe -o pipefail
 source .env
 if [ -z "$DOMAIN" ]; then
     echo "Please set DOMAIN in .env"
