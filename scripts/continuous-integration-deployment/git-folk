@@ -32,7 +32,6 @@ else
     exit 1
 fi
 FQDN_ADDRESS="http-gitlab-webservice-default-gitlab-ns-8181.$DOMAIN"
-GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
 REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION=$(echo $REPO_NAME_IN_LOWER_CASE | sed 's/\.git$//')
 PAYLOAD=$(jq --null-input \
     --arg path "$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" \
@@ -49,39 +48,41 @@ while true; do
     fi
     sleep 2
 done
-while true; do
-    POST_PROJECT=$(curl --request POST \
-        --header "Authorization: Bearer $GITLAB_TOKEN" \
-        --header "Content-Type: application/json" \
-        --data "$PAYLOAD" \
-        --silent \
-        --url "https://$FQDN_ADDRESS/api/v4/projects/")
-    echo "POST_PROJECT: $POST_PROJECT"
-    MESSAGE=$(echo $POST_PROJECT | jq -r ".message")
-    MESSAGE_BASE=$(echo $MESSAGE | jq -r ".base")
-    MESSAGES_NAME=$(echo $MESSAGE | jq -r ".name")
-    if [ "null" != "$MESSAGES_NAME" ]; then
-        echo "MESSAGES_NAME: $MESSAGES_NAME"
-        echo "MESSAGE: $MESSAGE"
-        # if [ "has already been taken" == "$MESSAGES_NAME" ]; then
-        if [ "has already been taken" == "$(echo $MESSAGES_NAME | jq -r ".[0]")" ]; then
-            echo "Project $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION already exists"
-        else
-            continue;
-        fi
-    fi
-    if [ "null" != "$MESSAGE_BASE" ]; then
-        echo "MESSAGE_BASE: $MESSAGE_BASE"
-        echo "MESSAGE: $MESSAGE"
-        continue;
-    fi
-    if [ "403 Forbidden" == "$MESSAGE" ]; then
-        echo "You need to create a personal access token with api scope in order to create a project"
-        echo "https://$FQDN_ADDRESS/profile/personal_access_tokens"
-        continue;
-    fi
-    break;
-done
+# while true; do
+    # GITLAB_TOKEN=$(./pic get-refresh-token-gitlab)
+#     POST_PROJECT=$(curl --request POST \
+#         --header "Authorization: Bearer $GITLAB_TOKEN" \
+#         --header "Content-Type: application/json" \
+#         --data "$PAYLOAD" \
+#         --silent \
+#         --url "https://$FQDN_ADDRESS/api/v4/projects/")
+#     echo "POST_PROJECT: $POST_PROJECT"
+#     MESSAGE=$(echo $POST_PROJECT | jq -r ".message")
+#     MESSAGE_BASE=$(echo $MESSAGE | jq -r ".base")
+#     MESSAGES_NAME=$(echo $MESSAGE | jq -r ".name")
+#     if [ "null" != "$MESSAGES_NAME" ]; then
+#         echo "MESSAGES_NAME: $MESSAGES_NAME"
+#         echo "MESSAGE: $MESSAGE"
+#         # if [ "has already been taken" == "$MESSAGES_NAME" ]; then
+#         if [ "has already been taken" == "$(echo $MESSAGES_NAME | jq -r ".[0]")" ]; then
+#             echo "Project $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION already exists"
+#         else
+#             continue;
+#         fi
+#     fi
+#     if [ "null" != "$MESSAGE_BASE" ]; then
+#         echo "MESSAGE_BASE: $MESSAGE_BASE"
+#         echo "MESSAGE: $MESSAGE"
+#         continue;
+#     fi
+#     if [ "403 Forbidden" == "$MESSAGE" ]; then
+#         echo "You need to create a personal access token with api scope in order to create a project"
+#         echo "https://$FQDN_ADDRESS/profile/personal_access_tokens"
+#         continue;
+#     fi
+#     break;
+# done
+
 # (kubectl logs statefulset/gitlab-gitaly -n gitlab-ns -f > ./gitlab-gitaly.log) &
 
 PASSWORD=$(kubectl get secret --namespace gitlab-ns gitlab-gitlab-initial-root-password -o jsonpath="{.data.password}" | base64 --decode)
@@ -103,32 +104,41 @@ if [ "x0" != "$IS_GITHUB_OR_BITBUCKET_OR_CODECOMMIT" ]; then
     if [ "https" == "$REMOTE_DOMAIN" ]; then
         echo "Using https"
     else
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
-        ssh-keyscan -H "$REMOTE_DOMAIN" >> ~/.ssh/known_hosts
+        echo "Using ssh, checking if $REMOTE_DOMAIN is in known_hosts"
+        touch "$HOME/.ssh/known_hosts"
+        if [ "0" == "$(ssh-keygen -F $REMOTE_DOMAIN | wc -l)" ]; then
+            echo "Adding $REMOTE_DOMAIN to known_hosts"
+            ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$REMOTE_DOMAIN"
+            ssh-keyscan -H "$REMOTE_DOMAIN" >> $HOME/.ssh/known_hosts
+        fi
     fi
 fi
+# 0.6s
 while true; do
     echo "Cloning $REPO_NAME from $REPO_URL"
     if [ -d "pic-repos/$REPO_NAME" ]; then
         rm -rf "pic-repos/$REPO_NAME"
     fi
     (cd pic-repos && \
-        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git clone $REPO_URL $REPO_NAME \
+        GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" time git clone $REPO_URL $REPO_NAME \
     ) && break || true
     sleep 5
 done
-(cd "pic-repos/$REPO_NAME" && \
-    git remote get-url origintemp || git remote add origintemp $REPO_URL )
+# 4.6s
+# (cd "pic-repos/$REPO_NAME" && \
+#     git remote get-url origintemp || git remote add origintemp $REPO_URL )
 
 # 
 current_branch=$(cd pic-repos/$REPO_NAME && git rev-parse --abbrev-ref HEAD)
 max=$(cd "pic-repos/$REPO_NAME" && git rev-list --count HEAD)
-(cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
+# (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git fetch --all)
 for branch in `cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git branch -r | grep -vE "HEAD"`; do
     echo "Checkout $branch"
     branch=$(echo $branch | sed 's/origin\///')
     (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git checkout -b $branch origin/$branch) || true
+    # (cd pic-repos/$REPO_NAME && GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git pull origin $branch) || true
 done
+# 4.6s
 
 echo "current_branch: $current_branch"
 echo "max: $max"
@@ -138,6 +148,7 @@ for i in $(seq 1 +10 $max); do
     (cd pic-repos/$REPO_NAME && git checkout $current_branch~$i) > /dev/null 2>&1 || true
 done;
 i=$((i-10))
+# 4.6s
 echo
 (cd pic-repos/$REPO_NAME && git remote get-url gitlab || git remote add gitlab $REMOTE_REPO)
 wait_http_code_remote_repo() {
@@ -152,27 +163,36 @@ wait_http_code_remote_repo() {
         sleep 8
     done
 }
-for i in $(seq $i -50 1) ""; do
-    wait_http_code_remote_repo 302
-    if [ -z "$i" ]; then
-        refspec="$current_branch"
-    else
-        refspec="$current_branch~$i"
-    fi
-    (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push gitlab HEAD:refs/heads/$current_branch -o ci.skip) || true
-    echo "Checking out $i (decreasing $max to 1) and pushing to gitlab"
-done;
-
-time {
-    while true; do
+# Checkout $current_branch and push to gitlab
+(cd pic-repos/$REPO_NAME && git checkout $current_branch && \
+    git pull gitlab && \
+    timeout 120 git push gitlab HEAD:refs/heads/$current_branch -o ci.skip) || \
+{
+    # Sometimes the push fails, maybe because of the size of the repo or the number of branches,
+    # so we try to push the previous commits to gitlab one by one until we reach the current branch and push it
+    for i in $(seq $i -50 1) ""; do
         wait_http_code_remote_repo 302
-        echo "Pushing $REPO_NAME to gitlab"
-        (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
-            GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" git pull --set-upstream origin $current_branch && \
-            git pull gitlab $current_branch && \
-            timeout 60 git push --set-upstream gitlab --all -o ci.skip) && break || true
-    done
+        if [ -z "$i" ]; then
+            refspec="$current_branch"
+        else
+            refspec="$current_branch~$i"
+        fi
+        (cd pic-repos/$REPO_NAME && git checkout "$refspec" && timeout 60 git push gitlab HEAD:refs/heads/$current_branch -o ci.skip) || true
+        echo "Checking out $i (decreasing $max to 1) and pushing to gitlab"
+    done;
 }
+# 2.3s
+
+# time {
+#     while true; do
+#         wait_http_code_remote_repo 302
+#         echo "Pushing $REPO_NAME to gitlab"
+#         (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
+#             git pull gitlab $current_branch && \
+#             timeout 60 git push --set-upstream gitlab --all -o ci.skip) && break || true
+#     done
+# }
+
 CI_REGISTRY="harbor-registry.harbor-ns:5000"
 CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY           "$CI_REGISTRY"
@@ -180,12 +200,15 @@ CI_REGISTRY_IMAGE="$CI_REGISTRY/root/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_PASSWORD  "$PASSWORD"
 ./pic declare-project-variables root%2F$REPO_NAME CI_REGISTRY_USER      "root" "*" false
 rm -rf pic-repos
+# 10s
 
 if [ "no-create-pipeline" != "$PIPELINE_OPTIONS" ]; then
     time ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
         time ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success" || true
+    # 23s
     time ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
 fi
+# 38s
 
 # ./pic force-connect-gitlab-agent $REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
 
@@ -202,3 +225,4 @@ if [ ! -z "$CLONE_DIR" ]; then
 fi
 ./pic create-remote-mirrors "$REPO_URL"
 # kubectl rollout restart statefulset/gitlab-gitaly -n gitlab-ns
+# 41s
