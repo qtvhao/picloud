@@ -6,7 +6,7 @@ if [ -z "$DOMAIN" ]; then
     exit 1
 fi
 echo "Installing S3"
-VERSION="5.0.11"
+VERSION="5.0.14"
 curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/operator-$VERSION.tgz
 curl -O https://raw.githubusercontent.com/minio/operator/master/helm-releases/tenant-$VERSION.tgz
 # helm uninstall minio-operator -n minio-operator || true
@@ -58,5 +58,7 @@ rm tenant-$VERSION.tgz
 while true; do
     kubectl -n tenant-ns get svc tenant-picloud-hl && break || sleep 5
 done
+kubectl auth can-i '*' '*' --as=system:serviceaccount:tenant-ns:tenant-picloud-sa || \
+    kubectl create clusterrolebinding minio-operator-cluster-admin-binding --clusterrole=cluster-admin --serviceaccount=tenant-ns:tenant-picloud-sa
 
 echo "Minio console: https://http-console-minio-operator-9090.$DOMAIN/"
