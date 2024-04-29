@@ -165,7 +165,7 @@ wait_http_code_remote_repo() {
 }
 # Checkout $current_branch and push to gitlab
 (cd pic-repos/$REPO_NAME && git checkout $current_branch && \
-    git pull gitlab && \
+    git pull gitlab $current_branch && \
     timeout 120 git push gitlab HEAD:refs/heads/$current_branch -o ci.skip) || \
 {
     # Sometimes the push fails, maybe because of the size of the repo or the number of branches,
@@ -217,6 +217,11 @@ export GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE \
     -o ProxyCommand=\"cloudflared access ssh --hostname %h\" -o StrictHostKeyChecking=no"
 if [ ! -z "$CLONE_DIR" ]; then
     echo "CLONE_DIR: $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION"
+    GIT_CLONE_DIR="$CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION/.git"
+    if [ ! -d "$GIT_CLONE_DIR" ]; then
+        echo "Not found $GIT_CLONE_DIR"
+        rm -rf $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
+    fi
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$SSH_FQDN_ADDRESS"
     git clone $REMOTE_REPO $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION || \
         (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
