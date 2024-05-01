@@ -87,7 +87,7 @@ while true; do
     fi
     break;
 done
-if [ "wait-for-success-deprecated" == "$option2" ]; then
+if [ "wait-for-success" == "$option2" ]; then
     PODS_CREATED=""
     while true; do
         echo "Waiting for pipeline to succeed"

@@ -116,7 +116,7 @@ kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-p
 helm repo add gitlab https://charts.gitlab.io/
 helm repo update
 helm upgrade --install gitlab gitlab/gitlab \
-    --version 7.10.1 \
+    --version "7.10.*" \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
