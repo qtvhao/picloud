@@ -3,7 +3,7 @@ set -xeo pipefail
 
 PIC_DIR="$HOME/.pic"
 LOGS_DIR="$PIC_DIR/logs/"
-# time (./pic install-harbor | tee $LOGS_DIR/harbor.log)
+time (./pic install-harbor | tee $LOGS_DIR/harbor.log)
 
 time (./pic install-minio | tee $LOGS_DIR/s3.log)
 
