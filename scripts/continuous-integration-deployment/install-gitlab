@@ -3,7 +3,7 @@ set -xeo pipefail
 
 PIC_DIR="$HOME/.pic"
 LOGS_DIR="$PIC_DIR/logs/"
-time (./pic install-harbor | tee $LOGS_DIR/harbor.log)
+# time (./pic install-harbor | tee $LOGS_DIR/harbor.log)
 
 time (./pic install-minio | tee $LOGS_DIR/s3.log)
 
@@ -66,6 +66,23 @@ echo "endpoint: http://$S3_HOST"                                            >> $
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
 kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
 # 
+PSQL_USERNAME="gitlab"
+PSQL_PASSWORD=`openssl rand -hex 16`
+docker rm -f gitlab-postgres || true
+docker run -d \
+    --restart=always \
+	--name gitlab-postgres \
+    -p 5432:5432 \
+	-e POSTGRES_PASSWORD="$PSQL_PASSWORD" \
+    -e POSTGRES_USER="$PSQL_USERNAME" \
+    -e POSTGRES_DB=gitlabhq_production \
+	postgres
+PIC_HOSTNAME=`./pic hostname`
+
+kubectl create secret generic gitlab-postgresql-password \
+    --from-literal=postgresql-password="$PSQL_PASSWORD" \
+    --from-literal=postgresql-postgres-password="$PSQL_PASSWORD" \
+    --namespace gitlab-ns
 
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
 echo "s3:"                                                                          >  $REGISTRY_MINIO_YAML
@@ -103,6 +120,17 @@ echo "              BucketName = \"gitlab-cache\""                              
 echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
 echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
 echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
+echo "global:"                                                                  >> $RUNNER_CACHE_YAML
+echo "  psql:"                                                                 >> $RUNNER_CACHE_YAML
+echo "    host: $PIC_HOSTNAME"                                                  >> $RUNNER_CACHE_YAML
+echo "    password: $PSQL_PASSWORD"                                             >> $RUNNER_CACHE_YAML
+echo "    username: $PSQL_USERNAME"                                             >> $RUNNER_CACHE_YAML
+echo "    database: gitlabhq_production"                                        >> $RUNNER_CACHE_YAML
+echo "    password:"                                                            >> $RUNNER_CACHE_YAML
+echo "      useSecret: true"                                                    >> $RUNNER_CACHE_YAML
+echo "      secret: gitlab-postgresql-password"                                 >> $RUNNER_CACHE_YAML
+echo "      key: postgresql-password"                                           >> $RUNNER_CACHE_YAML
+
 # 
 
 
