@@ -83,6 +83,18 @@ kubectl create secret generic gitlab-postgresql-password \
     --from-literal=postgresql-password="$PSQL_PASSWORD" \
     --from-literal=postgresql-postgres-password="$PSQL_PASSWORD" \
     --namespace gitlab-ns
+#
+REDIS_PASSWORD=`openssl rand -hex 16`
+docker rm -f gitlab-redis || true
+docker run --name gitlab-redis \
+    --restart=always \
+    -d \
+    -p 6379:6379 \
+    -e REDIS_PASSWORD="$REDIS_PASSWORD" \
+    bitnami/redis:latest
+kubectl create secret generic gitlab-redis \
+    --from-literal=redis-password="$REDIS_PASSWORD" \
+    --namespace gitlab-ns
 
 REGISTRY_MINIO_YAML="$HOME/registry_minio.yaml"
 echo "s3:"                                                                          >  $REGISTRY_MINIO_YAML
@@ -120,6 +132,10 @@ echo "              BucketName = \"gitlab-cache\""                              
 echo "              Insecure = true"                                            >> $RUNNER_CACHE_YAML
 echo "    cache:"                                                               >> $RUNNER_CACHE_YAML
 echo "      secretName: gitlab-minioaccess"                                     >> $RUNNER_CACHE_YAML
+echo "redis:"                                                                   >> $RUNNER_CACHE_YAML
+echo "  install: false"                                                        >> $RUNNER_CACHE_YAML
+echo "postgresql:"                                                              >> $RUNNER_CACHE_YAML
+echo "  install: false"                                                        >> $RUNNER_CACHE_YAML
 echo "global:"                                                                  >> $RUNNER_CACHE_YAML
 echo "  psql:"                                                                 >> $RUNNER_CACHE_YAML
 echo "    host: $PIC_HOSTNAME"                                                  >> $RUNNER_CACHE_YAML
@@ -130,6 +146,14 @@ echo "    password:"                                                            
 echo "      useSecret: true"                                                    >> $RUNNER_CACHE_YAML
 echo "      secret: gitlab-postgresql-password"                                 >> $RUNNER_CACHE_YAML
 echo "      key: postgresql-password"                                           >> $RUNNER_CACHE_YAML
+echo "  redis:"                                                                >> $RUNNER_CACHE_YAML
+echo "    host: $PIC_HOSTNAME"                                                  >> $RUNNER_CACHE_YAML
+echo "    serviceName: redis"                                                   >> $RUNNER_CACHE_YAML
+echo "    port: 6379"                                                           >> $RUNNER_CACHE_YAML
+echo "    auth:"                                                               >> $RUNNER_CACHE_YAML
+echo "      enabled: true"                                                     >> $RUNNER_CACHE_YAML
+echo "      secret: gitlab-redis"                                               >> $RUNNER_CACHE_YAML
+echo "      key: redis-password"                                               >> $RUNNER_CACHE_YAML
 
 # 
 
@@ -190,7 +214,7 @@ gitlab-runner.runners.privileged=true \
     # --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
     # --set gitlab.toolbox.backups.objectStorage.config.key=connection \
 
-time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
+#time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 time ./pic logs job/gitlab-migrations-1 gitlab-ns gitlab-migrations-1.log migrations > ./gitlab-migrations-1.log
 rm gitlab-migrations-1.log
 # 
