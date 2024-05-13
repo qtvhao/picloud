@@ -167,8 +167,18 @@ kubectl create secret --namespace gitlab-ns generic gitlab-gitlab-initial-root-p
 
 helm repo add gitlab https://charts.gitlab.io/
 helm repo update
+VERSION_TO_CHECK="9"
+while true; do
+    helm search repo gitlab/gitlab --version "7.$VERSION_TO_CHECK.4" | grep "gitlab/gitlab" || break
+    # 0, 1, 2, 3 is early version of gitlab
+    # 4, 5, 6, 7 is stable version of gitlab
+    LATEST_VERSION="$VERSION_TO_CHECK"
+    VERSION_TO_CHECK=$((VERSION_TO_CHECK + 1))
+    sleep 1
+done
+# URL_TO_CHECK="https://gitlab.com/gitlab-org/gitlab/-/raw/v16.11.2-ee/.license_encryption_key.pub"
 helm upgrade --install gitlab gitlab/gitlab \
-    --version "7.10.*" \
+    --version "7.$LATEST_VERSION.*" \
     -f "$RUNNER_CACHE_YAML" \
     --namespace gitlab-ns \
     --set certmanager-issuer.email="$EMAIL",\
