@@ -229,9 +229,13 @@ if [ ! -z "$CLONE_DIR" ]; then
             git config pull.rebase false && git pull)
     # 
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git remote set-url --add --push origin $REPO_URL) || true
+        git remote set-url --delete origin $REPO_URL) || true
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git remote set-url --add --push origin $REMOTE_REPO) || true
+        git remote set-url --delete origin $REMOTE_REPO) || true
+    (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
+        git remote set-url --add --push origin $REPO_URL)
+    (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
+        git remote set-url --add --push origin $REMOTE_REPO)
     
 fi
 ./pic create-remote-mirrors "$REPO_URL"
