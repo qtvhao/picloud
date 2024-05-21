@@ -122,7 +122,7 @@ scp -i $IDENTIFY_FILE \
     ./samba-registry-deployment.yaml $NODE_IP:/tmp/samba-registry-deployment.yaml
 ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
-    "$NODE_IP" "kubectl apply -f /tmp/samba-registry-deployment.yaml"
+    "$NODE_IP" "kubectl apply -f /tmp/samba-registry-deployment.yaml" || true
 
 # while true; do
 #     ssh -i $IDENTIFY_FILE \

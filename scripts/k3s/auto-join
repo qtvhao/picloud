@@ -28,6 +28,7 @@ for node in $NODES; do
     JOINED_NODES="$JOINED_NODES $node"
 done
 echo "All nodes are joined: $JOINED_NODES"
+( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
 echo
 for node in $NODES; do
     if [ -z "$node" ]; then
