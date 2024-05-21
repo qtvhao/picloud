@@ -228,10 +228,9 @@ if [ ! -z "$CLONE_DIR" ]; then
             echo "Updating $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" && \
             git config pull.rebase false && git pull)
     # 
+# Delete all remote URLs in $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git remote set-url --delete origin $REPO_URL) || true
-    (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git remote set-url --delete origin $REMOTE_REPO) || true
+        git remote -v | grep origin | grep -E "http|https|git" | awk '{print $1}' | xargs -I {} git remote set-url --delete origin {})
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
         git remote set-url --add --push origin $REPO_URL)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
