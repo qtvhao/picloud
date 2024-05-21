@@ -46,6 +46,7 @@ if [ -z "$REGISTRY_PROXY_REMOTEURL" ]; then
     exit 0
 fi
 CONTAINER_NAME=${args[3]}
+CONTAINER_NAME=$(echo $CONTAINER_NAME | cut -c1-30)
 IP_ADDRESS=${args[4]}
 MIRROR_NAME=${args[5]}
 # create a new bridge network with your subnet and gateway for your ip block
@@ -61,6 +62,68 @@ ssh -i $IDENTIFY_FILE \
     --name $CONTAINER_NAME \
     --net iptastic --ip $IP_ADDRESS registry:2"
 # curl the ip from any other place (assuming this is a public ip block duh)
+cat <<EOF > ./samba-registry-deployment.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harbor-registry-$CONTAINER_NAME
+  namespace: harbor-ns
+  labels:
+    app: registry-$CONTAINER_NAME
+    component: registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry-$CONTAINER_NAME
+  template:
+    metadata:
+      labels:
+        app: registry-$CONTAINER_NAME
+    spec:
+      containers:
+        - name: registry
+          image: registry:2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REGISTRY_PROXY_REMOTEURL
+              value: "$REGISTRY_PROXY_REMOTEURL"
+          volumeMounts:
+            - name: harbor-registry-data
+              mountPath: /var/lib/registry
+
+      volumes:
+        - name: harbor-registry-data
+          hostPath:
+            path: /var/lib/registry-proxy/remote-vendor-$CONTAINER_NAME/
+            type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: harbor-registry-$CONTAINER_NAME
+  namespace: harbor-ns
+  labels:
+    app: registry-$CONTAINER_NAME
+    component: registry
+spec:
+    selector:
+        app: registry-$CONTAINER_NAME
+    ports:
+        - name: http
+          protocol: TCP
+          port: 5000
+          targetPort: 5000
+    type: ClusterIP
+EOF
+scp -i $IDENTIFY_FILE \
+    ./samba-registry-deployment.yaml $NODE_IP:/tmp/samba-registry-deployment.yaml
+ssh -i $IDENTIFY_FILE \
+    -o PasswordAuthentication=no \
+    "$NODE_IP" "kubectl apply -f /tmp/samba-registry-deployment.yaml"
+
 # while true; do
 #     ssh -i $IDENTIFY_FILE \
 #         -o PasswordAuthentication=no \
