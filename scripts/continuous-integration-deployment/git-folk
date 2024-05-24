@@ -226,7 +226,7 @@ if [ ! -z "$CLONE_DIR" ]; then
     git clone $REMOTE_REPO $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION || \
         (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
             echo "Updating $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" && \
-            git config pull.rebase false && git pull)
+            git config pull.rebase false && git pull || true)
     # 
 # Delete all remote URLs in $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
