@@ -230,7 +230,7 @@ if [ ! -z "$CLONE_DIR" ]; then
     # 
 # Delete all remote URLs in $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git remote -v | grep origin | grep -E "http|https|git" | awk '{print $1}' | xargs -I {} git remote set-url --delete origin {})
+        git remote remove origin || true)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
         git remote set-url --add --push origin $REPO_URL)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
