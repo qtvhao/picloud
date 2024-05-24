@@ -232,7 +232,7 @@ if [ ! -z "$CLONE_DIR" ]; then
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
         git remote remove origin || true)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git remote set-url --add --push origin $REPO_URL)
+        git remote add origin $REPO_URL)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
         git remote set-url --add --push origin $REMOTE_REPO)
     
