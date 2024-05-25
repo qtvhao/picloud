@@ -235,6 +235,8 @@ if [ ! -z "$CLONE_DIR" ]; then
         git remote add origin $REPO_URL)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
         git remote set-url --add --push origin $REMOTE_REPO)
+    (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
+        git remote set-url --add --push origin $REPO_URL)
     
 fi
 ./pic create-remote-mirrors "$REPO_URL"
