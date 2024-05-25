@@ -238,7 +238,7 @@ if [ ! -z "$CLONE_DIR" ]; then
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
         git remote set-url --add --push origin $REPO_URL)
     (cd $CLONE_DIR/$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION && \
-        git branch --set-upstream-to=origin/$current_branch $current_branch)
+        git fetch && git branch --set-upstream-to=origin/$current_branch $current_branch)
     
 fi
 ./pic create-remote-mirrors "$REPO_URL"

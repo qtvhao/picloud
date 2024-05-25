@@ -36,12 +36,13 @@ is_pipeline_is_up_to_date() {
 
 while true; do
     echo "Retrying to create pipeline"
-    sleep 12
     PIPELINE=`curl -s --request POST \
         --data "$PAYLOAD" \
         --header "Content-Type: application/json" \
         --header "Authorization: Bearer $GITLAB_TOKEN" \
-        $URL` || continue;
+        $URL` || {
+            sleep 12 && continue
+        }
     echo "PIPELINE: $PIPELINE"
     PIPELINE_MESSAGE_BASE_0=$(echo $PIPELINE | jq -r ".message.base[0]") || true;
     if [ "Commit not found" == "$PIPELINE_MESSAGE_BASE_0" ]; then
