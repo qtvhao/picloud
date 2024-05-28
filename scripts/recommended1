@@ -25,7 +25,7 @@ coredns_custom_content="
     }
     cache 30
 }"
-kubectl -n $NS create configmap $coredns_custom --from-literal=Corefile="$coredns_custom_content" --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n $NS create configmap $coredns_custom --from-literal=log.override="" --from-literal=stub.server="" --from-literal=Corefile="$coredns_custom_content" --dry-run=client -o yaml | kubectl apply -f -
 kubectl -n $NS rollout restart deployment coredns
 # END replace-Corefile
 
