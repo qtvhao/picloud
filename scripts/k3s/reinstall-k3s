@@ -91,6 +91,8 @@ kubectl get node -o wide
 
 jq -n --arg k3s_url "$K3S_URL" --arg k3s_token "$K3S_TOKEN" '{"k3s_url":$k3s_url,"k3s_token":$k3s_token}' >"$PIC_DIR/k3s.json"
 ./pic status
+stat ~/picloud/.git || git clone https://github.com/qtvhao/picloud/ ~/picloud/
+cd ~/picloud/ && ./pic setup-static-IP
 
 echo
 echo "To join a worker node to this cluster, run the following command:"

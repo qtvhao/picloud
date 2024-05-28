@@ -3,7 +3,7 @@ set -xeo pipefail
 IP_SHOW=$(ip -br link show | grep "UP " | grep -v "veth" | grep -v "lo" | grep -v "docker" | grep -v "br-" | grep -v "cni" | awk '{print $1}')
 INTERFACE_FILE="/etc/network/interfaces.d/$IP_SHOW"
 cp $INTERFACE_FILE /root/$IP_SHOW
-cat /root/$IP_SHOW | grep "dhcp" || {
+cat /root/$IP_SHOW | grep "static" || {
     echo "Already static IP"
     exit 0
 }
