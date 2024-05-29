@@ -242,6 +242,8 @@ time ./pic wait deploy       gitlab-sidekiq-all-in-1-v2      gitlab-ns Available
 time ./pic wait deploy       gitlab-webservice-default       gitlab-ns Available
 time ./pic wait deploy       gitlab-gitlab-runner          gitlab-ns Available
 
+kubectl auth can-i '*' '*' --as=system:serviceaccount:coredns:default || \
+    kubectl create clusterrolebinding coredns-binding --clusterrole=cluster-admin --serviceaccount=coredns:default
 kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:gitlab-gitlab-runner || \
     kubectl create clusterrolebinding gitlab-runner-binding --clusterrole=cluster-admin --serviceaccount=gitlab-ns:gitlab-gitlab-runner
 kubectl auth can-i '*' '*' --as=system:serviceaccount:gitlab-ns:gitlab-certmanager-issuer || \
