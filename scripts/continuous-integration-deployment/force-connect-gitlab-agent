@@ -74,6 +74,7 @@ while true; do
     sleep 1
 done
 #
+export K8S_PROXY_URL="https://tcp-gitlab-kas-gitlab-ns-8154.$DOMAIN/k8s-proxy/"
 echo "Latest version: 7.$LATEST_VERSION.$LATEST_MINOR_VERSION"
 
 helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
@@ -82,3 +83,8 @@ helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
     --set "image.tag=v16.$LATEST_VERSION.$LATEST_MINOR_VERSION" \
     --set config.token="$TOKEN_STRING" \
     --set config.kasAddress=wss://tcp-gitlab-kas-gitlab-ns-8150.$DOMAIN
+
+./pic declare-project-variables $PROJECT K8S_PROXY_URL  "$K8S_PROXY_URL"  "production"       "false"
+./pic declare-project-variables $PROJECT AGENT_ID       "$FIRST_AGENT_ID"  "production"       "false"
+
+echo "gitlab-agent-$PROJECT_NAME installed"
