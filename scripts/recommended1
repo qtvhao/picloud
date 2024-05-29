@@ -13,8 +13,8 @@ echo "Installing k3s recommended packages 1"
 time (./pic redis | tee $LOGS_DIR/redis.log)
 # wait $(jobs -p)
 
-kubectl auth can-i '*' '*' --as=system:serviceaccount:coredns:default || \
-    kubectl create clusterrolebinding coredns-binding --clusterrole=cluster-admin --serviceaccount=coredns:default
+kubectl auth can-i '*' '*' --as=system:serviceaccount:kube-system:coredns || \
+    kubectl create clusterrolebinding coredns-admin-binding --clusterrole=cluster-admin --serviceaccount=kube-system:coredns
 # BEGIN replace-Corefile
 Corefile="Corefile"
 coredns_custom="coredns-custom"
