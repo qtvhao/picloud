@@ -55,9 +55,30 @@ if [ "null" == "$TOKEN_STRING" ]; then
 fi
 echo "TOKEN_STRING: $TOKEN_STRING"
 helm uninstall gitlab-agent-$PROJECT_NAME -n gitlab-agent-gitlab-agent || echo ""
-helm upgrade --install gitlab-agent-$PROJECT_NAME https://gitlab-charts.s3.amazonaws.com/gitlab-agent-1.21.0.tgz \
+VERSION_TO_CHECK="9"
+while true; do
+    helm search repo gitlab/gitlab --version "7.$VERSION_TO_CHECK.4" | grep "gitlab/gitlab" || break
+    # 0, 1, 2, 3 is early version of gitlab
+    # 4, 5, 6, 7 is stable version of gitlab
+    LATEST_VERSION="$VERSION_TO_CHECK"
+    VERSION_TO_CHECK=$((VERSION_TO_CHECK + 1))
+    sleep 1
+done
+
+#
+MINOR_VERSION_TO_CHECK="4"
+while true; do
+    helm search repo gitlab/gitlab --version "7.$LATEST_VERSION.$MINOR_VERSION_TO_CHECK" | grep "gitlab/gitlab" || break
+    LATEST_MINOR_VERSION="$MINOR_VERSION_TO_CHECK"
+    MINOR_VERSION_TO_CHECK=$((MINOR_VERSION_TO_CHECK + 1))
+    sleep 1
+done
+#
+echo "Latest version: 7.$LATEST_VERSION.$LATEST_MINOR_VERSION"
+
+helm upgrade --install gitlab-agent-$PROJECT_NAME gitlab/gitlab-agent \
     --namespace gitlab-agent-gitlab-agent \
     --create-namespace \
-    --set image.tag=v16.5.0 \
+    --set "image.tag=v16.$LATEST_VERSION.$LATEST_MINOR_VERSION" \
     --set config.token="$TOKEN_STRING" \
     --set config.kasAddress=wss://tcp-gitlab-kas-gitlab-ns-8150.$DOMAIN
