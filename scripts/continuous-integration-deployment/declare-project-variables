@@ -19,7 +19,11 @@ if [ -z "$KEY" ]; then
 fi
 if [ -z "$VALUE" ]; then
     echo "VALUE for $KEY is empty"
-    exit 1
+    if [ "$KEY" == "KUBERNETES_SERVICE_HOST" ]; then
+        echo "KUBERNETES_SERVICE_HOST is empty"
+    else
+        exit 1
+    fi
 fi
 if [ -z "$ENVIRONMENT_SCOPE" ]; then
     ENVIRONMENT_SCOPE="*"
