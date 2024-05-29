@@ -46,6 +46,25 @@ if [ -f NODES ]; then
     done < NODES
 fi
 echo;time ./pic reinstall-k3s $IDENTIFY_FILE | tee $LOGS_DIR/reinstall-k3s.log
+# BEGIN replace-Corefile
+time ./pic wait deploy       coredns       kube-system Available
+kubectl auth can-i '*' '*' --as=system:serviceaccount:kube-system:coredns || \
+    kubectl create clusterrolebinding coredns-admin-binding --clusterrole=cluster-admin --serviceaccount=kube-system:coredns
+Corefile="Corefile"
+coredns_custom="coredns-custom"
+NS="kube-system"
+coredns_custom_content="
+. {
+    forward . tls://1.1.1.1 tls://1.0.0.1 {
+       tls_servername cloudflare-dns.com
+       health_check 5s
+    }
+    cache 30
+}"
+kubectl -n $NS create configmap $coredns_custom --from-literal=log.override="" --from-literal=stub.server="" --from-literal=Corefile="$coredns_custom_content" --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n $NS rollout restart deployment coredns
+# END replace-Corefile
+
 rm NODES || true
 
 FIRST_NODE_NAME=$(kubectl get node -o json | jq -r '.items[0].metadata.name')
