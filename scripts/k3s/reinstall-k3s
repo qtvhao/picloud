@@ -47,7 +47,6 @@ k9s info >/dev/null 2>&1 ||
     (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s && mv k9s /usr/local/bin/ && chmod +x /usr/local/bin/k9s)
 rm k9s_Linux_amd64.tar.gz || true
 ( stat $HOME/k3s || wget "https://github.com/k3s-io/k3s/releases/download/v1.29.1+k3s2/k3s" -O $HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)
-cp $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
 # 
@@ -60,6 +59,7 @@ echo "K3S_NODE_NAME: $K3S_NODE_NAME"
 rm -rf /var/lib/rancher/ || true
 k3s-killall.sh || true
 k3s-uninstall.sh || true
+cp $HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s
 NEW_INOTIFY_MAX_USER_WATCHES=95956992
 NEW_INOTIFY_MAX_USER_INSTANCES=32768
 NEW_INOTIFY_MAX_QUEUED_EVENTS=4194304
