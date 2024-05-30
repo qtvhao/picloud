@@ -90,6 +90,7 @@ while true; do
 done
 if [ "wait-for-success" == "$option2" ]; then
     PODS_CREATED=""
+    PENDING_COUNT=0
     while true; do
         echo "Waiting for pipeline to succeed"
         sleep 8
@@ -105,6 +106,15 @@ if [ "wait-for-success" == "$option2" ]; then
             continue
         fi
         echo "PIPELINE_STATUS: $PIPELINE_STATUS"
+        if [ "pending" == "$PIPELINE_STATUS" ]; then
+            echo "Pipeline is pending"
+            PENDING_COUNT=$((PENDING_COUNT+1))
+            if [ "$PENDING_COUNT" -gt 5 ]; then
+                echo "Pipeline is stuck in pending state"
+                exit 1
+            fi
+            continue
+        fi
         if [ "success" == "$PIPELINE_STATUS" ]; then
             echo "Pipeline succeeded"
             break
