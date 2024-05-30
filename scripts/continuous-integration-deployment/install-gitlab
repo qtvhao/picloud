@@ -66,6 +66,13 @@ echo "endpoint: http://$S3_HOST"                                            >> $
 echo "path_style: true"                                                     >> $RAILS_MINIO_YAML
 kubectl create secret generic gitlab-storage --from-file=connection=$RAILS_MINIO_YAML --namespace gitlab-ns
 # 
+docker rm -f registry-proxy-registry-1-docker-io || true
+docker run -d -p 5002:5000 --name registry-proxy-registry-1-docker-io \
+    -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+    -v /var/lib/registry-proxy/remote-vendor-registry-1-docker-io/:/var/lib/registry \
+    --restart=always \
+    registry:2
+# 
 PSQL_USERNAME="gitlab"
 PSQL_PASSWORD=`openssl rand -hex 16`
 docker rm -f gitlab-postgres || true
@@ -76,7 +83,7 @@ docker run -d \
 	-e POSTGRES_PASSWORD="$PSQL_PASSWORD" \
     -e POSTGRES_USER="$PSQL_USERNAME" \
     -e POSTGRES_DB=gitlabhq_production \
-	postgres
+	localhost:5002/library/postgres
 PIC_HOSTNAME=`./pic hostname`
 
 kubectl create secret generic gitlab-postgresql-password \
@@ -91,7 +98,7 @@ docker run --name gitlab-redis \
     -d \
     -p 6379:6379 \
     -e REDIS_PASSWORD="$REDIS_PASSWORD" \
-    bitnami/redis:latest
+    localhost:5002/bitnami/redis:latest
 kubectl create secret generic gitlab-redis \
     --from-literal=redis-password="$REDIS_PASSWORD" \
     --namespace gitlab-ns

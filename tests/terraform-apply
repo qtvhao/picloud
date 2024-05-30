@@ -1,0 +1,4 @@
+#!/bin/bash
+
+./pic git-folk git@github.com:qtvhao/terraform-test.git "$HOME/id_rsa" ".."
+
