@@ -72,6 +72,10 @@ docker run -d -p 5002:5000 --name registry-proxy-registry-1-docker-io \
     -v /var/lib/registry-proxy/remote-vendor-registry-1-docker-io/:/var/lib/registry \
     --restart=always \
     registry:2
+while true; do
+  CATALOG_DOCKER=`curl -s -o /dev/null -w "%{http_code}" http://localhost:5002/v2/` || true
+  [ $CATALOG_DOCKER -eq 200 ] && break || sleep .2
+done
 # 
 PSQL_USERNAME="gitlab"
 PSQL_PASSWORD=`openssl rand -hex 16`
