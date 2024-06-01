@@ -91,8 +91,10 @@ done
 if [ "wait-for-success" == "$option2" ]; then
     PODS_CREATED=""
     PENDING_COUNT=0
+    RUNNING_COUNT=0
     while true; do
         echo "Waiting for pipeline to succeed"
+        echo "RUNNING_COUNT: $RUNNING_COUNT"
         sleep 8
         PIPELINE=`curl -s --request GET \
             --header "Content-Type: application/json" \
@@ -128,6 +130,15 @@ if [ "wait-for-success" == "$option2" ]; then
             break
         fi
         if [ "running" == "$PIPELINE_STATUS" ]; then
+            RUNNING_COUNT=$((RUNNING_COUNT+1))
+            if [ "$RUNNING_COUNT" -gt 30 ]; then
+                curl --request POST \
+                    --header "Content-Type: application/json" \
+                    --header "Authorization: Bearer $AUTHORIZATION" \
+                    "$PROJECT_URL/pipelines/$PIPELINE_ID/cancel"
+                echo "Pipeline is stuck in running state"
+                exit 1
+            fi
             echo "Pipeline is running"
             CONDITIONS='.items[] | select(.metadata.name | startswith("runner-")) | select(.metadata.annotations."project.runner.gitlab.com/id" == "'$PROJECT_ID'") | .metadata.name'
             kubectl get pods -n gitlab-ns -o json | jq -r "$CONDITIONS" | head -n 1 | xargs -I {} kubectl logs -n gitlab-ns {} -c build -f || true
