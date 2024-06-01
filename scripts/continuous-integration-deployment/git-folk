@@ -204,8 +204,10 @@ rm -rf pic-repos
 
 if [ "no-create-pipeline" != "$PIPELINE_OPTIONS" ]; then
     time ./pic create-pipeline root%2F$REPO_NAME main "wait-for-success" || \
+        time ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success" || \
+        time ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success" || \
         time ./pic create-pipeline root%2F$REPO_NAME master "wait-for-success" || true
-    # 23s
+
     time ./pic create-pipeline root%2F$REPO_NAME develop "wait-for-success" || true
 fi
 # 38s
