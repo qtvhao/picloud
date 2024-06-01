@@ -65,6 +65,8 @@ GITHUB_AUTH="git:$PAT"
 for REPO in  $full_names;
 do
     REPO_NAME=$(basename $REPO)
+    STARTED_AT=$(date)
+    echo "Started at $STARTED_AT"
     if [ -d "../$REPO_NAME" ]; then
         echo "REPO_NAME: $REPO_NAME"
     fi
@@ -92,5 +94,8 @@ do
         echo "Retrying..."
         sleep 60
     done
+    echo "Finished at $(date)"
+    ELAPSED_TIME_IN_SECONDS=$(($(date -d "now" +%s) - $(date -d "$STARTED_AT" +%s)))
+    echo "Elapsed time: $ELAPSED_TIME_IN_SECONDS for $REPO_NAME"
 done
 echo "Mirror org $ORG_NAME successfully"
