@@ -66,6 +66,7 @@ if [ "$status_code" == "200" ]; then
     echo "Tunnel already exposed at $CNAME_RECORD.$DOMAIN with status code $status_code"
     exit 0
 fi
+echo "Exposing tunnel at $CNAME_RECORD.$DOMAIN"
 cat "$EXPOSE_ITEMS_JSON" | \
     jq -rM \
         --arg CNAME_RECORD "$CNAME_RECORD" \
