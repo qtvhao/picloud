@@ -135,7 +135,7 @@ if [ "wait-for-success" == "$option2" ]; then
                 curl --request POST \
                     --header "Content-Type: application/json" \
                     --header "Authorization: Bearer $AUTHORIZATION" \
-                    "$PROJECT_URL/pipelines/$PIPELINE_ID/cancel"
+                    $URL"s/$PIPELINE_ID/cancel"
                 echo "Pipeline is stuck in running state"
                 exit 1
             fi
