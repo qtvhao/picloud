@@ -1,6 +1,19 @@
 #!/bin/bash
 source .env
 set -xeo pipefail
+label_node_by_disks_id() {
+    NODE_NAME=$1
+    NODE_IP=$2
+
+    DISKS_ID=`ssh -i /root/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        root@$NODE_IP "ls /dev/disk/by-id/" | grep -v part | grep -v wwn | grep -v scsi | grep -v eui | grep -v "DVDRAM" | awk '{print $1}'`
+    echo "Node $NODE_NAME has disks: $DISKS_ID"
+    LOWER_CASE_DISKS_ID=`echo $DISKS_ID | tr '[:upper:]' '[:lower:]'`
+    for DISK_ID in $LOWER_CASE_DISKS_ID; do
+        echo "Label node $NODE_NAME with disk $DISK_ID. One node can have multiple disks."
+        kubectl label node $NODE_NAME "disk-id-$DISK_ID=True" --overwrite
+    done
+}
 args=("$@")
 IDENTIFY_FILE=${args[0]}
 PIC_DIR="$HOME/.pic"
@@ -10,6 +23,17 @@ echo "Installing k3s recommended packages 1"
 
 ( time (./pic auto-join $IDENTIFY_FILE | tee $LOGS_DIR/auto-join.log))
 
+NODES=`kubectl get node -o json | jq --compact-output -M`
+NODES_NAME_WITH_IP=`echo $NODES | jq -r ".items | .[] | .metadata.name + \" \" + .status.addresses[0].address"`
+
+while read -r NODE; do
+    NODE_NAME=`echo $NODE | awk '{print $1}'`
+    NODE_IP=`echo $NODE | awk '{print $2}'`
+    echo "Node $NODE_NAME has IP $NODE_IP"
+    label_node_by_disks_id $NODE_NAME $NODE_IP &
+done <<< "$NODES_NAME_WITH_IP"
+wait 
+echo
 time (./pic redis | tee $LOGS_DIR/redis.log)
 # wait $(jobs -p)
 
