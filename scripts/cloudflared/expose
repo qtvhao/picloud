@@ -54,10 +54,10 @@ stat $EXPOSE_ITEMS_JSON > /dev/null 2>&1 || \
     echo "{}" >"$EXPOSE_ITEMS_JSON"
 MAP_KEY="$CNAME_RECORD-$TUNNEL_NAMESPACE"
 status_code=$(timeout 5 curl -s -o /dev/null -w "%{http_code}" https://$CNAME_RECORD.$DOMAIN/ || true)
-if [ "$status_code" == "404" ]; then
-    echo "Tunnel already exposed at $CNAME_RECORD.$DOMAIN with status code $status_code"
-    exit 0
-fi
+#if [ "$status_code" == "404" ]; then
+#    echo "Tunnel already exposed at $CNAME_RECORD.$DOMAIN with status code $status_code"
+#    exit 0
+#fi
 if [ "$status_code" == "$EXPECTED_STATUS_CODE" ]; then
     echo "Tunnel already exposed at $CNAME_RECORD.$DOMAIN with status code $status_code"
     exit 0
@@ -214,7 +214,7 @@ echo "                values:"                              >>cloudflared-deploy
 echo "                - $NODE_NUMBERTH"                     >>cloudflared-deployment.yaml
 echo "      containers:"                                    >>cloudflared-deployment.yaml
 echo "        - name: cloudflared"                          >>cloudflared-deployment.yaml
-echo "          image: cloudflare/cloudflared:2024.2.1"    >>cloudflared-deployment.yaml
+echo "          image: cloudflare/cloudflared:2024.6.0"    >>cloudflared-deployment.yaml
 echo "          args:"                                      >>cloudflared-deployment.yaml
 echo "            - tunnel"                                 >>cloudflared-deployment.yaml
 echo "            - --no-autoupdate"                        >>cloudflared-deployment.yaml
