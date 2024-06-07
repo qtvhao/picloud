@@ -28,6 +28,22 @@ for node in $NODES_IP; do
     echo "Uninstalling k3s from $node"
     FIRST_IP_OF_NODE=$(echo $node | cut -d, -f1)
     (ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $FIRST_IP_OF_NODE "timeout 120 k3s-uninstall.sh" || true)
+    # reboot node, except the current node
+    if [ "$FIRST_IP_OF_NODE" != `./pic hostname` ]; then
+        (ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $FIRST_IP_OF_NODE "reboot" || true)
+    fi
+done
+for node in $NODES_IP; do
+    if [ -z "$node" ]; then
+        continue
+    fi
+    FIRST_IP_OF_NODE=$(echo $node | cut -d, -f1)
+    echo "Waiting for $node to reboot"
+    while true; do
+        # check if the node is up
+        ssh -o StrictHostKeyChecking=no -i $IDENTIFY_FILE $FIRST_IP_OF_NODE "uptime" && break
+        sleep 10
+    done
 done
 #
 set -xeo pipefail

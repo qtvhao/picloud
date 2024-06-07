@@ -2,7 +2,10 @@
 set -xe -o pipefail
 source .env
 
-./pic refresh-token-gitlab > /dev/null 2>&1
+while true; do
+    ./pic refresh-token-gitlab >&2 && break || sleep 5
+done
+
 PIC_DIR="$HOME/.pic"
 
 GITLAB_TOKEN=$(cat "$PIC_DIR"/gitlab.json | jq -r '.gitlab_token') > /dev/null 2>&1
