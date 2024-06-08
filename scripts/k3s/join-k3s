@@ -71,8 +71,8 @@ NODE_COMMAND="curl -fL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_N
 NODE_RAM=$(ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "free -g | grep Mem | awk '{print \$2}'")
-if [ "$NODE_RAM" -lt "8" ]; then
-    echo "Node RAM is less than 8GB. Joining node as worker"
+if [ "$NODE_RAM" -lt "30" ]; then
+    echo "Node RAM is less than 30GB. Joining node as worker"
     NODE_COMMAND="curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -"
 fi
 echo "Joining worker node to this cluster"
