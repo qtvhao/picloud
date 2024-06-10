@@ -67,7 +67,7 @@ ssh -i $IDENTIFY_FILE \
     cp \$HOME/k3s /usr/local/bin/ && chmod +x /usr/local/bin/k3s;" || exit 1
 
 ( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
-NODE_COMMAND="curl -fL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --server $K3S_URL --token $K3S_TOKEN"
+NODE_COMMAND="curl -fL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --server $K3S_URL --token $K3S_TOKEN --embedded-registry"
 NODE_RAM=$(ssh -i $IDENTIFY_FILE \
     -o PasswordAuthentication=no \
     "$NODE_IP" "free -g | grep Mem | awk '{print \$2}'")
