@@ -129,7 +129,6 @@ RUNNER_CACHE_YAML="$HOME/runner_cache.yaml"
 echo "gitlab-runner:"                                                           >  $RUNNER_CACHE_YAML
 echo "  runners:"                                                               >> $RUNNER_CACHE_YAML
 echo "    config: |"                                                            >> $RUNNER_CACHE_YAML
-echo "      concurrent = 1"                                                     >> $RUNNER_CACHE_YAML
 echo "      [[runners]]"                                                        >> $RUNNER_CACHE_YAML
 echo "        [runners.kubernetes]"                                             >> $RUNNER_CACHE_YAML
 echo "          image = \"ubuntu:22.04\""                                       >> $RUNNER_CACHE_YAML
