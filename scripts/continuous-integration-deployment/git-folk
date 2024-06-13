@@ -80,7 +80,7 @@ while true; do
     if [ -d "pic-repos-$REPO_NAME" ]; then
         rm -rf "pic-repos-$REPO_NAME"
     fi
-    (GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" time git clone $REPO_URL pic-repos-$REPO_NAME) && break || true
+    (GIT_SSH_COMMAND="ssh -i $IDENTITY_FILE" timeout 120 git clone $REPO_URL pic-repos-$REPO_NAME) && break || true
     sleep 5
 done
 # 4.6s

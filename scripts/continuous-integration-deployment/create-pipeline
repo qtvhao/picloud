@@ -9,6 +9,7 @@ option2=${args[2]}
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/pipeline"
 PAYLOAD=$(jq --arg ref $ref '.ref = $ref' <<<'{}')
 echo "PAYLOAD: $PAYLOAD"
+STARTED_AT=$(date +%s)
 PROJECT_ID=""
 PIPELINE_ID=""
 is_pipeline_is_up_to_date() {
@@ -95,6 +96,8 @@ if [ "wait-for-success" == "$option2" ]; then
     while true; do
         echo "Waiting for pipeline to succeed"
         echo "RUNNING_COUNT: $RUNNING_COUNT"
+        ELAPSED_TIME=$((`date +%s` - $STARTED_AT))
+        echo "ELAPSED_TIME: $ELAPSED_TIME"
         sleep 8
         PIPELINE=`curl -s --request GET \
             --header "Content-Type: application/json" \
