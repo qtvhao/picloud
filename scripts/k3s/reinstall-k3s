@@ -85,8 +85,6 @@ echo "fs.inotify.max_user_watches=$NEW_INOTIFY_MAX_USER_WATCHES" >> $LOCAL_CONF
 echo "fs.inotify.max_user_instances=$NEW_INOTIFY_MAX_USER_INSTANCES" >> $LOCAL_CONF
 echo "fs.inotify.max_queued_events=$NEW_INOTIFY_MAX_QUEUED_EVENTS" >> $LOCAL_CONF
 service procps force-reload
-# delete pods use crictl, use: crictl rmp -af
-# delete containers use crictl, use: crictl rm -af
 
 time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init --embedded-registry && time systemctl restart k3s)
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"

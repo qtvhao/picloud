@@ -2,22 +2,12 @@
 
 PIC_DIR="$HOME/.pic"
 LOGS_DIR="$PIC_DIR/logs/"
-set -e -o pipefail
-./pic reinstall-k3s ../id_rsa
-
-vnstat --remove enp1s0 --force
-vnstat --add -i enp1s0
-BRIDGE_ID="br-"$(docker network inspect iptastic | jq -r '.[0].Id' | cut -c1-12)
-echo "BRIDGE_ID: $BRIDGE_ID"
-vnstat --remove $BRIDGE_ID --force
-vnstat --add -i $BRIDGE_ID
-systemctl restart vnstat
-
-vnstat -d enp1s0 > ./vnstat.log
-vnstat -d $BRIDGE_ID >> ./vnstat.log
-echo "==="
-time ./pic pull-images ip-192-168-1-192
-
-sleep 60
-vnstat -d enp1s0 >> ./vnstat.log
-vnstat -d $BRIDGE_ID >> ./vnstat.log
+set -xe -o pipefail
+./pic reinstall-k3s /root/id_rsa
+time ./pic wait deploy       coredns       kube-system Available
+# 1m11.415s
+IMAGES="registry.gitlab.com/gitlab-org/build/cng/certificates:v16.11.4 registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v16.11.1 registry.gitlab.com/gitlab-org/build/cng/gitlab-base:v16.11.4 registry.gitlab.com/gitlab-org/build/cng/gitlab-kas:v16.11.4 registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v14.35.0 registry.gitlab.com/gitlab-org/build/cng/gitaly:v16.11.4 registry.gitlab.com/gitlab-org/build/cng/gitlab-toolbox-ee:v16.11.4 registry.gitlab.com/gitlab-org/build/cng/gitlab-sidekiq-ee:v16.11.4 registry.gitlab.com/gitlab-org/build/cng/gitlab-webservice-ee:v16.11.4 registry.gitlab.com/gitlab-org/build/cng/gitlab-workhorse-ee:v16.11.4"
+for IMAGE in $IMAGES; do
+    # docker pull $IMAGE
+    time ./pic pull-image $IMAGE `kubectl get nodes -o json | jq -r ".items[0].metadata.name"`
+done

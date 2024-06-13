@@ -134,7 +134,7 @@ if [ "wait-for-success" == "$option2" ]; then
             if [ "$RUNNING_COUNT" -gt 30 ]; then
                 curl --request POST \
                     --header "Content-Type: application/json" \
-                    --header "Authorization: Bearer $AUTHORIZATION" \
+                    --header "Authorization: Bearer $GITLAB_TOKEN" \
                     $URL"s/$PIPELINE_ID/cancel"
                 echo "Pipeline is stuck in running state"
                 exit 1
