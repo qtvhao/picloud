@@ -332,4 +332,6 @@ kubectl get secret regcred --namespace default || \
     --docker-server=http-harbor-registry-harbor-ns-5000.$DOMAIN --docker-username=root --docker-password=$GITLAB_ROOT_GENERATED_PASSWORD --namespace default
 
 ./pic expose http harbor-registry.harbor-ns 5000 "200"
-docker login http-harbor-registry-harbor-ns-5000.$DOMAIN -u root -p $GITLAB_ROOT_GENERATED_PASSWORD
+while true; do
+    docker login http-harbor-registry-harbor-ns-5000.$DOMAIN -u root -p $GITLAB_ROOT_GENERATED_PASSWORD && break || sleep 5
+done
