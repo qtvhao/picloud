@@ -59,13 +59,13 @@ helm version >/dev/null 2>&1 ||
 rm helm-v3.13.1-linux-amd64.tar.gz || true
 cloudflared version ||
     (curl https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared-linux-amd64.deb && dpkg -i cloudflared-linux-amd64.deb)
-k9s info >/dev/null 2>&1 ||
-    (wget -nc https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s && mv k9s /usr/local/bin/ && chmod +x /usr/local/bin/k9s)
 rm k9s_Linux_amd64.tar.gz || true
-( stat $HOME/k3s || wget "https://github.com/k3s-io/k3s/releases/download/v1.29.1+k3s2/k3s" -O $HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)
+k9s info >/dev/null 2>&1 ||
+    (wget --no-check-certificate -nc https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_Linux_amd64.tar.gz -O k9s_Linux_amd64.tar.gz && tar -xvf k9s_Linux_amd64.tar.gz k9s && mv k9s /usr/local/bin/ && chmod +x /usr/local/bin/k9s)
+( stat $HOME/k3s || wget --no-check-certificate -nc "https://github.com/k3s-io/k3s/releases/download/v1.29.1+k3s2/k3s" -O $HOME/k3s) || (echo "Cannot download k3s. Please check your internet connection" && exit 1)
 export NODE_IP=$(hostname -I | cut -d' ' -f1)
 export K3S_NODE_NAME="ip-"$(echo "$NODE_IP" | tr . -)
-# 
+#  
 ssh-keygen -R $NODE_IP || true
 ssh-keyscan -H $NODE_IP >> ~/.ssh/known_hosts
 ( time ./pic Registry-as-a-pull-through-cache "$IDENTIFY_FILE" "$NODE_IP")
