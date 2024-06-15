@@ -187,6 +187,7 @@ while true; do
     sleep 1
 done
 # URL_TO_CHECK="https://gitlab.com/gitlab-org/gitlab/-/raw/v16.11.2-ee/.license_encryption_key.pub"
+helm_upgrade_install_gitlab_v7() {
 helm upgrade --install gitlab gitlab/gitlab \
     --version "7.$LATEST_VERSION.*" \
     -f "$RUNNER_CACHE_YAML" \
@@ -233,6 +234,14 @@ gitlab-runner.runners.privileged=true \
 #     --set registry.storage.key=connection    
     # --set gitlab.toolbox.backups.objectStorage.config.secret=gitlab-storage \
     # --set gitlab.toolbox.backups.objectStorage.config.key=connection \
+}
+
+helm_upgrade_install_gitlab_v7 | tee $LOGS_DIR/helm_gitlab_v7_install.log
+MATCH_ERROR_CONTEXT_DEADLINE_EXCEEDED="Error: context deadline exceeded"
+while true; do
+    grep -q "$MATCH_ERROR_CONTEXT_DEADLINE_EXCEEDED" $LOGS_DIR/helm_gitlab_v7_install.log && helm_upgrade_install_gitlab_v7 | tee $LOGS_DIR/helm_gitlab_v7_install.log || break
+    sleep 2
+done
 
 #time ./pic wait pod          gitlab-postgresql-0                 gitlab-ns Ready
 kubectl get job -l app=migrations -l release=gitlab -n gitlab-ns -o name | grep migration | xargs -I {} time ./pic logs {} gitlab-ns gitlab-migrations.log migrations | tee ./gitlab-migrations.log
