@@ -33,6 +33,7 @@ while read -r NODE; do
     label_node_by_disks_id $NODE_NAME $NODE_IP &
 done <<< "$NODES_NAME_WITH_IP"
 wait 
+kubectl apply -k https://github.com/kubernetes-sigs/node-feature-discovery/deployment/overlays/default?ref=v0.16.0
 echo
 time (./pic redis | tee $LOGS_DIR/redis.log)
 # wait $(jobs -p)

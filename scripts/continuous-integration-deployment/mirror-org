@@ -90,14 +90,13 @@ do
     else
         CLONE_DIR=""
     fi
-    {
-        while ! time ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" "$CLONE_DIR" "$PIPELINE_OPTIONS"; do
-            echo "Retrying..."
-            sleep 60
-        done
-        echo "Finished at $(date)"
-        ELAPSED_TIME_IN_SECONDS=$(($(date -d "now" +%s) - $(date -d "$STARTED_AT" +%s)))
-        echo "Elapsed time: $ELAPSED_TIME_IN_SECONDS for $REPO_NAME"
-    }
+    while ! ./pic git-folk git@github.com:$REPO.git "$IDENTITY_FILE" "$CLONE_DIR" "$PIPELINE_OPTIONS"; do
+        echo "Retrying..."
+        sleep 60
+    done
+    echo "Finished at $(date)"
+    DATE_NOW=$(date)
+    ELAPSED_TIME_IN_SECONDS=`echo $DATE_NOW - $STARTED_AT | bc`
+    echo "Elapsed time: $ELAPSED_TIME_IN_SECONDS for $REPO_NAME"
 done
 echo "Mirror org $ORG_NAME successfully"
