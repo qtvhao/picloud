@@ -251,6 +251,14 @@ spec:
       labels:
         app: registry
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - matchExpressions:
+                - key: added-numberth
+                  operator: In
+                  values:
+                    - add-0
       initContainers:
         # Generate htpasswd file
         - name: init-registry
