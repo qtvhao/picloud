@@ -82,6 +82,14 @@ spec:
       labels:
         app: registry-$CONTAINER_NAME
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - matchExpressions:
+                - key: added-numberth
+                  operator: In
+                  values:
+                    - add-0
       containers:
         - name: registry
           image: registry:2
