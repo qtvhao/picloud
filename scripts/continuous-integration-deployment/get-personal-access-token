@@ -9,7 +9,7 @@ URL="https://$FQDN_ADDRESS/api/v4/users/1/personal_access_tokens"
 PAYLOAD=$(jq --arg name "picloud-$(date +%s)" \
     --arg scopes "api,read_user,read_api,read_repository,write_repository,read_registry,write_registry,sudo,admin_mode,create_runner,ai_features,k8s_proxy" \
     '.name = $name | .scopes = $scopes' <<<'{}')
-echo "PAYLOAD: $PAYLOAD"
+echo "PAYLOAD PAT: $PAYLOAD"
 PAT=`curl -s --request POST \
     --data "$PAYLOAD" \
     --header "Content-Type: application/json" \

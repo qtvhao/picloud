@@ -43,7 +43,7 @@ PAYLOAD=$(jq --null-input \
     --argjson protected false \
     --arg environment_scope "$ENVIRONMENT_SCOPE" \
     '{value: $value, key: $key, raw: $raw, masked: $masked, protected: $protected, environment_scope: $environment_scope}')
-# echo "PAYLOAD: $PAYLOAD"
+
 MIRROR=$(curl -s --request POST \
     --header "Content-Type: application/json" \
     --data "$PAYLOAD" \

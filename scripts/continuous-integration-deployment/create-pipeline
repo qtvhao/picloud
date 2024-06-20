@@ -8,7 +8,7 @@ ref=${args[1]}
 option2=${args[2]}
 URL="https://$FQDN_ADDRESS/api/v4/projects/$PROJECT_NAME/pipeline"
 PAYLOAD=$(jq --arg ref $ref '.ref = $ref' <<<'{}')
-echo "PAYLOAD: $PAYLOAD"
+echo "PAYLOAD Pipeline: $PAYLOAD"
 STARTED_AT=$(date +%s)
 PROJECT_ID=""
 PIPELINE_ID=""

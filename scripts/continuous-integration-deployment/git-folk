@@ -37,7 +37,7 @@ PAYLOAD=$(jq --null-input \
     --arg path "$REPO_NAME_IN_LOWER_CASE_WITHOUT_EXTENSION" \
     '{path: $path}')
 
-echo "PAYLOAD: $PAYLOAD"
+echo "PAYLOAD git folk: $PAYLOAD"
 # 
 while true; do
     HTTP_CODE_API_V4_PROJECTS=$(curl -X GET --url https://$FQDN_ADDRESS/api/v4/projects/ --write-out "%{http_code}\n" --silent --output /dev/null)
