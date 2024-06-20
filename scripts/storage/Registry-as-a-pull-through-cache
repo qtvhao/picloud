@@ -83,13 +83,14 @@ spec:
         app: registry-$CONTAINER_NAME
     spec:
       affinity:
-        podAntiAffinity:
+        nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
             - matchExpressions:
                 - key: added-numberth
                   operator: In
                   values:
-                    - add-0
+                  - add-0
       containers:
         - name: registry
           image: registry:2

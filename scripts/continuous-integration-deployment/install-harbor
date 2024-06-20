@@ -252,13 +252,14 @@ spec:
         app: registry
     spec:
       affinity:
-        podAntiAffinity:
+        nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
             - matchExpressions:
                 - key: added-numberth
                   operator: In
                   values:
-                    - add-0
+                  - add-0
       initContainers:
         # Generate htpasswd file
         - name: init-registry
