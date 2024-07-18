@@ -167,12 +167,12 @@ docker run -d -p 8080:80 --name fai-nginx -v ./dvd/:/usr/share/nginx/html:ro ngi
 docker rm -f tryc-fai || true;
 ADDRESS_8080="ADDRESS=172.17.0.1:8080"
 VOLUME_DOCKER_SOCK="/var/run/docker.sock:/var/run/docker.sock"
+docker network create tryc_default || true
 docker run -e $ADDRESS_8080 -i \
     --name tryc-fai \
     -v $VOLUME_DOCKER_SOCK \
     ghcr.io/qtvhao/trycloudflare-docker:main tryc-fai
 docker rm -f tryc-fai
-docker network create tryc_default || true
 docker run -e $ADDRESS_8080 -i \
     --name tryc-fai \
     -v $VOLUME_DOCKER_SOCK \
