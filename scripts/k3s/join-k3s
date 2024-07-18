@@ -80,9 +80,9 @@ echo "NODE_IP: $NODE_IP"
 ssh -i $IDENTIFY_FILE  \
     -o PasswordAuthentication=no \
     "$NODE_IP" "stat picloud/.git || git clone https://github.com/qtvhao/picloud/"
-ssh -i $IDENTIFY_FILE \
-    -o PasswordAuthentication=no \
-    "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP || exit 1"
+#ssh -i $IDENTIFY_FILE \
+#    -o PasswordAuthentication=no \
+#    "$NODE_IP" "cd /root/picloud && ./pic setup-static-IP || exit 1"
 NEW_INOTIFY_MAX_USER_WATCHES=95956992
 NEW_INOTIFY_MAX_USER_INSTANCES=32768
 NEW_INOTIFY_MAX_QUEUED_EVENTS=4194304
