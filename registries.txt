@@ -2,3 +2,4 @@
 docker.io
 quay.io
 registry.gitlab.com
+registry.k8s.io
