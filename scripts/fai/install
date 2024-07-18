@@ -172,6 +172,7 @@ docker run -e $ADDRESS_8080 -i \
     -v $VOLUME_DOCKER_SOCK \
     ghcr.io/qtvhao/trycloudflare-docker:main tryc-fai
 docker rm -f tryc-fai
+docker network create tryc_default || true
 docker run -e $ADDRESS_8080 -i \
     --name tryc-fai \
     -v $VOLUME_DOCKER_SOCK \
