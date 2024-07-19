@@ -8,12 +8,16 @@ rsync
 openssh-client
 time
 procinfo
-eject
 sudo
 locales
 console-setup kbd
 pciutils usbutils
 unattended-upgrades
+
+# needed for a live ISO
+PACKAGES install-norec LIVEISO
+dracut dracut-live dracut-squash grub-pc grub-efi-amd64-bin
+initramfs-tools- initramfs-tools-core-
 
 PACKAGES install-norec I386
 linux-image-686-pae

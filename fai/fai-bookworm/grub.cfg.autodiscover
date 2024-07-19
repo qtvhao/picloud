@@ -43,12 +43,12 @@ set timeout=20
 
 menuentry "Autodiscover the FAI server" {
     search --set=root --file /FAI-CD
-    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose" fai.discover rootovl root=/dev/nfs ip=dhcp quiet
+    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt" fai.discover rootovl root=/dev/nfs rd.neednet quiet
     initrd  /boot/initrd.img
 }
 
 menuentry "Boot OS from first partition on first disk" {
-   if [ "$grub_platform" = "efi" ]; then
+   if [ "$grub_platform" == "efi" ]; then
       if [ -f (hd0,gpt1)/efi/debian/grub.cfg ]; then
            configfile (hd0,gpt1)/efi/debian/grub.cfg
       elif [ -f (hd1,gpt1)/efi/debian/grub.cfg ]; then

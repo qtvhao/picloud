@@ -25,4 +25,4 @@ PACKAGES install GERMAN
 language-pack-gnome-de
 
 PACKAGES install HWE
-linux-generic-hwe-22.04
+linux-generic-hwe-24.04

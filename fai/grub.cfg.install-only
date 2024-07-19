@@ -23,35 +23,32 @@ fi
 
 
 menuentry "        +------------------------------------------------------+" {
-    set dummy=0
+set timeout=20
 }
 
 menuentry "        |        Fully  Automatic  Installation                |" {
-    set dummy=0
-
+set timeout=20
 }
 menuentry "        |     _VERSIONSTRING_     |" --unrestricted {
-    set dummy=0
-
+set timeout=20
 }
 menuentry "        |        (c) Thomas Lange  lange@debian.org            |" {
-    set dummy=0
+set timeout=20
 }
 menuentry "        +------------------------------------------------------+" {
-    set dummy=0
+set timeout=20
 }
-
 menuentry "" {
-    set dummy=0
+set timeout=20
 }
 menuentry "FAI.me installation" {
     search --set=root --file /FAI-CD
-    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ip=eth0:on quiet
+    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD rd.neednet quiet
     initrd  /boot/initrd.img
 }
 menuentry "FAI.me installation (no network during installation)" {
     search --set=root --file /FAI-CD
-    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD quiet
+    linux   /boot/vmlinuz FAI_FLAGS="menu,verbose,createvt" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD quiet
     initrd  /boot/initrd.img
 }
 
@@ -81,6 +78,6 @@ menuentry "Boot OS from first partition on first disk" {
 
 menuentry "Rescue system, no installation" {
     search --set=root --file /FAI-CD
-    linux /boot/vmlinuz FAI_FLAGS="verbose" FAI_ACTION=sysinfo FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD quiet
+    linux /boot/vmlinuz FAI_FLAGS="verbose,createvt" FAI_ACTION=sysinfo FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD quiet
     initrd /boot/initrd.img
 }
