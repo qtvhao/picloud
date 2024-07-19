@@ -1,5 +1,4 @@
 PACKAGES install-norec
-nodejs
 docker-ce
 docker-ce-cli
 containerd.io
@@ -9,8 +8,6 @@ curl
 wget
 git
 jq
-cloudflare-warp
-cloudflared
 netcat-traditional
 ca-certificates
 resolvconf
@@ -24,13 +21,12 @@ bc
 tesseract-ocr
 libtesseract-dev
 parted
-linux-headers-6.1.0-18-common
+linux-headers-6.1.0-23-common
 
 PACKAGES install
 task-english 
-virtualbox-7.0
 linux-headers-amd64
-linux-headers-6.1.0-18-amd64
+linux-headers-6.1.0-23-amd64
 npm
 nodejs
 
