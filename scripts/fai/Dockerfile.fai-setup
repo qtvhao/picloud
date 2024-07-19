@@ -11,9 +11,9 @@ RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cl
 RUN echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bookworm contrib' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/virtualbox.list
 RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
 RUN mkdir -p /srv/fai/config/
-COPY fai/fai-bookworm/ /srv/fai/config/fai-bookworm/
+COPY fai/fai-bookworm/ /etc/fai-bookworm/
 COPY fai/files/etc/resolv.conf /srv/fai/nfsroot/etc/resolv.conf
-RUN cp /etc/apt/sources.list /srv/fai/config/fai-bookworm/apt/sources.list
-RUN cp /etc/fai/nfsroot.conf /srv/fai/config/fai-bookworm/nfsroot.conf
-RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /srv/fai/config/fai-bookworm/nfsroot.conf
+RUN cp /etc/apt/sources.list /etc/fai-bookworm/apt/sources.list
+RUN cp /etc/fai/nfsroot.conf /etc/fai-bookworm/nfsroot.conf
+RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /etc/fai-bookworm/nfsroot.conf
 RUN chmod +x /usr/sbin/policy-rc.d

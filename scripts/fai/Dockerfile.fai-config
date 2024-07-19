@@ -1,4 +1,4 @@
-FROM debian:bookworm as fai-mk-configspace
+FROM debian:bookworm AS fai-mk-configspace
 RUN apt-get update && apt-get install -y wget
 RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
 RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
@@ -24,7 +24,7 @@ RUN echo "bpo=" >> /srv/fai/config/class/FAIME.var
 RUN echo "postinst=mac.sh" >> /srv/fai/config/class/FAIME.var
 RUN echo "rclocal=1" >> /srv/fai/config/class/FAIME.var
 RUN echo "repo=\"deb [trusted=yes] https://download.docker.com/linux/debian bookworm stable\"" >> /srv/fai/config/class/FAIME.var
-COPY fai/fai-bookworm/ /srv/fai/config/fai-bookworm/
+COPY fai/fai-bookworm/ /etc/fai-bookworm/
 COPY fai/debconf /srv/fai/config/debconf
 COPY fai/disk_config /srv/fai/config/disk_config
 COPY fai/files/etc/ /srv/fai/config/files/etc/
