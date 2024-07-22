@@ -5,7 +5,7 @@ URL=${args[0]}
 
 if [ -z "$URL" ]; then
     echo "URL is empty. Specify a URL to download."
-    echo "Usage: ./pic download URL"
+    echo "Usage: ./pic config_space_download_URL"
     exit 1
 fi
 wget -c $URL
@@ -14,6 +14,7 @@ mv $(basename $URL) ./fai/
 echo "Downloaded $URL to ./fai/$(basename $URL)"
 
 (cd ./fai/ && tar -xvf $(basename $URL))
+exit 0
 sed -i 's/mirror.netcologne.de/127.0.0.1:9999/' ./fai/fai-bookworm/apt/sources.list
 sed -i 's/mirror.netcologne.de/127.0.0.1:9999/' ./fai/fai-bookworm/nfsroot.conf
 sed -i 's/\/srv\/fai\/nfsroot-bookworm/\/srv\/fai\/nfsroot/' ./fai/fai-bookworm/nfsroot.conf
