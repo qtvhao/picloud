@@ -24,16 +24,20 @@ RUN echo "bpo=" >> /srv/fai/config/class/FAIME.var
 RUN echo "postinst=mac.sh" >> /srv/fai/config/class/FAIME.var
 RUN echo "rclocal=1" >> /srv/fai/config/class/FAIME.var
 RUN echo "repo=\"deb [trusted=yes] https://download.docker.com/linux/debian bookworm stable\"" >> /srv/fai/config/class/FAIME.var
-COPY fai/fai-bookworm/ /etc/fai-bookworm/
-COPY fai/debconf /srv/fai/config/debconf
-COPY fai/disk_config /srv/fai/config/disk_config
-COPY fai/files/etc/ /srv/fai/config/files/etc/
-COPY fai/files/postinst /srv/fai/config/files/postinst
-COPY fai/grub.cfg.install-only /srv/fai/config/grub.cfg.install-only
-COPY fai/hooks /srv/fai/config/hooks
-COPY fai/package_config /srv/fai/config/package_config
-COPY fai/scripts /srv/fai/config/scripts
 
+WORKDIR /srv/fai/config/
+COPY fai/basefiles/ /srv/fai/config/basefiles/
+COPY fai/class/ /srv/fai/config/class/
+COPY fai/debconf/ /srv/fai/config/debconf/
+COPY fai/disk_config/ /srv/fai/config/disk_config/
+COPY fai/fai-bookworm/ /srv/fai/config/fai-bookworm/
+COPY fai/files/ /srv/fai/config/files/
+COPY fai/grub.cfg.install-only /srv/fai/config/grub.cfg.install-only
+COPY fai/grub.cfg.live /srv/fai/config/grub.cfg.live
+COPY fai/hooks/ /srv/fai/config/hooks/
+COPY fai/package_config/ /srv/fai/config/package_config/
+COPY fai/pxelinux.cfg/ /srv/fai/config/pxelinux.cfg/
+COPY fai/scripts/ /srv/fai/config/scripts/
 CMD	test -n "pa.archive.ubuntu.com" && \
 	/etc/init.d/apt-cacher-ng start && \
 	/bin/bash

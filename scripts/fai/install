@@ -31,7 +31,6 @@ rm ./dvd/$HOSTNAME-fai-cd.iso || true
 
 docker rm -f fai-config || true
 docker rm -f fai || true
-export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,XFCE,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 docker rm -f apt-cacher-ng || true
 # warp-cli && warp-cli connect || true
 cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
@@ -58,24 +57,28 @@ rm Dockerfile.fai-config
 
 # Grab your own configuration from https://fai-project.org/FAIme/
 docker run --name fai-config \
-    --privileged --entrypoint /bin/bash -d docker.io/$GITHUB_USERNAME/picloud:fai-config -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+    --privileged --entrypoint /bin/bash -d docker.io/$GITHUB_USERNAME/picloud:fai-config -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
 
 FAI_CONFIG_IMAGE_ID=$(docker image inspect docker.io/$GITHUB_USERNAME/picloud:fai-config | jq -r ".[0].Id" | sed 's/^sha256://g')
 FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IMAGE_ID"
 docker logs fai-config -f &
-docker exec fai-config bash -c "apt update && timeout 30 apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean" || \
-    (echo "fai-config failed to start. Check the logs above." && exit 1)
+#docker exec fai-config bash -c "apt update && timeout 30 apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean" || \
+#    (echo "fai-config failed to start. Check the logs above." && exit 1)
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
  time docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log
 docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 echo "Fai-setup finished"
 
 docker stop fai-config || true
-docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-config $FAI_SETUP_BASE
+# docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
+ time docker commit fai-config $FAI_SETUP_BASE
 IMAGE_SIZE=$(docker image inspect $FAI_SETUP_BASE | jq -r ".[0].Size")
-echo "Fai-setup committed: $FAI_SETUP_BASE, size: $IMAGE_SIZE"
+IMAGE_SIZE_MB=$(echo "scale=2; $IMAGE_SIZE / 1024 / 1024" | bc)
+echo "Fai-setup committed: $FAI_SETUP_BASE, Size $IMAGE_SIZE_MB MB"
 docker rm -f fai-config || true
 echo "Fai-setup committed: $FAI_SETUP_BASE"
+# END GLOBAL SETUP
+# START CUSTOM SETUP
 docker tag $FAI_SETUP_BASE fai-setup-base
 # 
 if [ -f "$HOME/.pic/fai-rootpw.json" ]; then
@@ -88,20 +91,21 @@ ENCRYPTED_FAI_ROOTPW=$(echo $FAI_ROOTPW | openssl passwd -stdin -6)
 SANITIZED_FAI_ROOTPW=$(echo $ENCRYPTED_FAI_ROOTPW | sed 's/\//\\\//g')
 FAIME_VAR_FILE="/srv/fai/config/class/FAIME.var"
 FAIBASE_VAR_FILE="/srv/fai/config/class/FAIBASE.var"
-NFS_ROOT_CONF_FILE="/etc/fai-bookworm/nfsroot.conf"
+NFS_ROOT_CONF_FILE="/srv/fai/config/fai-bookworm/nfsroot.conf"
 
 docker rm -f fai-setup
 docker run --name fai-setup \
-    --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+    --privileged --entrypoint /bin/bash -d fai-setup-base -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
 docker exec -i fai-setup bash -c "sed -i 's/FAI_ROOTPW=.*/FAI_ROOTPW=\"$SANITIZED_FAI_ROOTPW\"/g' $NFS_ROOT_CONF_FILE"
 docker exec -i fai-setup bash -c "sed -i 's/USERPW=.*/USERPW=\"$SANITIZED_FAI_ROOTPW\"/g' $FAIME_VAR_FILE"
 docker exec -i fai-setup bash -c "sed -i 's/ROOTPW=.*/ROOTPW=\"$SANITIZED_FAI_ROOTPW\"/g' $FAIBASE_VAR_FILE"
 docker cp fai-setup:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-setup.log
 (docker exec -i fai-setup bash -c "rm -rf /srv/fai/nfsroot")
 FAI_SETUP_IMAGE_ID=$(docker image inspect fai-setup-base | jq -r ".[0].Id")
-FAI_ROOTPW_MD5=$(echo "$FAI_ROOTPW""$FAI_SETUP_IMAGE_ID" | md5sum | cut -c1-20)
+FAI_ROOTPW_MD5=$(echo "$FAI_ROOTPW""$FAI_SETUP_IMAGE_ID" | md5sum | cut -c1-8)
 FAI_SETUP_BASE="fai-setup-base-$FAI_ROOTPW_MD5"
 
+docker exec -i fai-setup bash -c "sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /etc/fai/nfsroot.conf"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time ( (docker exec -i fai-setup bash -c "export RUNLEVEL=1 && fai-setup -v") | tee fai-setup.log )
 echo "Fai-setup finished"
 docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || time docker commit fai-setup $FAI_SETUP_BASE
@@ -111,13 +115,19 @@ time docker build -t fai-setup -f Dockerfile.fai-setup .
 echo "Dockerfile.fai-setup built"
 rm Dockerfile.fai-setup
 docker run --name fai \
-    --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+    --env FAI_ETC_DIR=/etc/fai-bookworm \
+    --privileged --entrypoint /bin/bash -d fai-setup -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
 docker cp fai:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-fai.log
 FAI_MIRROR_IMAGE_ID=$(docker image inspect fai-setup | jq -r ".[0].Id" | sed 's/^sha256://g')
+export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,SSH_SERVER,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 FAI_CD_BASE_FULL="$FAI_MIRROR_IMAGE_ID-$HOSTNAME-$cl"
 FAI_CD_BASE="fai-cd-base-"$(echo $FAI_CD_BASE_FULL | md5sum | cut -c1-20)
+# -m: Set the number of packages to NUM. This overwrites the variable MAXPACKAGES.
+# -c: Use only this list of classes for building the mirror. Can’t be used in conjunction with -x.
+# -C: Use CFDIR as the configuration directory. Default is /etc/fai. You can also set the environment variable FAI_ETC_DIR.
+MIRROR_DIR="/tmp/$HOSTNAME"
 docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
-    time ( (docker exec -i fai fai-mirror -v -C /etc/fai-bookworm -m1 -c$cl /tmp/$HOSTNAME) | tee fai-mirror.log)
+    time ( (docker exec -i fai fai-mirror -v -m1 -c$cl $MIRROR_DIR) | tee fai-mirror.log)
 # 8907 lines
 echo "Fai-mirror finished"
 # docker stop fai || true
@@ -131,9 +141,10 @@ docker run --net host --name fai \
     -v ./dvd/:/dvd/ \
     -v /var/www/html/:/var/www/html/ \
     -v ./fai/pxelinux.cfg/:/srv/tftp/fai/pxelinux.cfg/ \
-    --cap-add=NET_ADMIN \
     -v ./dnsmasq.conf:/etc/dnsmasq.conf \
-    --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && wait-for-it 127.0.0.1:9999 && sleep 86400"
+    --env FAI_ETC_DIR=/etc/fai-bookworm \
+    --cap-add=NET_ADMIN \
+    --privileged --entrypoint /bin/bash -d fai-cd-base -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
 docker cp fai:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher-fai-2.log
 GITHUB_KEYS_URL="https://github.com/$GITHUB_USERNAME.keys"
 GITHUB_KEYS=$(curl -s $GITHUB_KEYS_URL)
@@ -146,15 +157,16 @@ echo "Fai-setup starting"
 rm fai-mirror.log || true
 echo "Fai-mirror finished"
 rm ./dvd/$HOSTNAME-fai-cd.iso || true
+# -g: Use FILE as the grub.cfg file. The script will look for FILE in CFDIR. If FILE is located in another directory then a full path must be specified. If not specified, use /etc/fai/grub.cfg.
+# -m: Use DIRECTORY as partial FAI mirror. This option is mandatory, unless you use -M or -B.
 stat ./dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso || \
-    time ( (docker exec -i fai fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m /tmp/$HOSTNAME /dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso))
-
+    time ( (docker exec -i fai fai-cd -g /srv/fai/config/grub.cfg.install-only -m $MIRROR_DIR /dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso))
 mv ./dvd/$HOSTNAME-$FAI_CD_BASE-fai-cd.iso ./dvd/$HOSTNAME-fai-cd.iso
 echo "====" >> fai-cd.log
 
 rm /var/www/html/squash.img || true
 rm /var/www/html/squash-$FAI_CD_BASE.img || true
-time ( (docker exec -i fai fai-cd -C /etc/fai-bookworm -m /tmp/$HOSTNAME -f -S /var/www/html/squash-$FAI_CD_BASE.img))
+time ( (docker exec -i fai fai-cd -m $MIRROR_DIR -f -S /var/www/html/squash-$FAI_CD_BASE.img))
 cp /var/www/html/squash-$FAI_CD_BASE.img /var/www/html/squash.img
 # Start validate
 docker exec -i fai bash -c "stat -c '%s' /srv/fai/nfsroot/etc/resolv.conf-installserver"
