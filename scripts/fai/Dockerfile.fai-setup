@@ -1,21 +1,21 @@
 FROM fai-setup-base
 
-RUN mkdir -p /srv/fai/nfsroot-bookworm/etc/apt/sources.list.d/
-RUN mkdir -p /srv/fai/nfsroot-bookworm/usr/share/keyrings/
+RUN mkdir -p /srv/fai/nfsroot/etc/apt/sources.list.d/
+RUN mkdir -p /srv/fai/nfsroot/usr/share/keyrings/
 RUN mkdir -p /etc/apt/keyrings
 RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /srv/fai/nfsroot-bookworm/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-RUN curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/nfsroot-bookworm/usr/share/keyrings/cloudflare-main.gpg
-RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /srv/fai/nfsroot-bookworm/etc/apt/sources.list.d/cloudflared.list
-RUN echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bookworm contrib' | tee /srv/fai/nfsroot-bookworm/etc/apt/sources.list.d/virtualbox.list
-RUN mkdir -p /srv/fai/nfsroot-bookworm/etc/systemd/sleep.conf.d/
-RUN mkdir -p /srv/fai/nfsroot-bookworm/root/.ssh/
+RUN curl https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /srv/fai/nfsroot/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+RUN curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/nfsroot/usr/share/keyrings/cloudflare-main.gpg
+RUN echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/cloudflared.list
+RUN echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bookworm contrib' | tee /srv/fai/nfsroot/etc/apt/sources.list.d/virtualbox.list
+RUN mkdir -p /srv/fai/nfsroot/etc/systemd/sleep.conf.d/
+RUN mkdir -p /srv/fai/nfsroot/root/.ssh/
 #RUN mkdir -p /srv/fai/config/
 WORKDIR /srv/fai/config/
 COPY fai/fai-bookworm/ /etc/fai-bookworm/
-COPY fai/files/etc/resolv.conf /srv/fai/nfsroot-bookworm/etc/resolv.conf
+COPY fai/files/etc/resolv.conf /srv/fai/nfsroot/etc/resolv.conf
 RUN cp /etc/apt/sources.list /etc/fai-bookworm/apt/sources.list
 RUN cp /etc/fai/nfsroot.conf /etc/fai-bookworm/nfsroot.conf
-RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot-bookworm%' /etc/fai-bookworm/nfsroot.conf
+RUN sed -i 's%^\(NFSROOT\)=.*%\1=/srv/fai/nfsroot%' /etc/fai-bookworm/nfsroot.conf
 RUN chmod +x /usr/sbin/policy-rc.d

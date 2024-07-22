@@ -64,7 +64,7 @@ FAI_SETUP_BASE="docker.io/$GITHUB_USERNAME/picloud:fai-setup-base-$FAI_CONFIG_IM
 docker logs fai-config -f &
 #docker exec fai-config bash -c "apt update && timeout 30 apt-get install -y --no-install-recommends --download-only task-xfce-desktop && rm -rf /var/cache/apt/archives/* && rm -rf /var/cache/apt/*.bin && rm -rf /var/lib/apt/lists/* && apt-get clean" || \
 #    (echo "fai-config failed to start. Check the logs above." && exit 1)
-docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
+# docker image inspect $FAI_SETUP_BASE > /dev/null 2>&1 || \
  time docker exec fai-config bash -c "export RUNLEVEL=1 && fai-setup -vf" | tee fai-setup.log
 docker cp fai-config:/var/log/apt-cacher-ng/apt-cacher.log ./apt-cacher.log
 echo "Fai-setup finished"
@@ -126,7 +126,7 @@ FAI_CD_BASE="fai-cd-base-"$(echo $FAI_CD_BASE_FULL | md5sum | cut -c1-20)
 # -c: Use only this list of classes for building the mirror. Can’t be used in conjunction with -x.
 # -C: Use CFDIR as the configuration directory. Default is /etc/fai. You can also set the environment variable FAI_ETC_DIR.
 MIRROR_DIR="/tmp/$HOSTNAME"
-docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
+# docker image inspect $FAI_CD_BASE > /dev/null 2>&1 || \
     time ( (docker exec -i fai fai-mirror -v -m1 -c$cl $MIRROR_DIR) | tee fai-mirror.log)
 # 8907 lines
 echo "Fai-mirror finished"

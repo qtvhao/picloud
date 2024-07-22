@@ -1,10 +1,8 @@
 # These lines should work for many sites
 
-deb http://127.0.0.1:9999/debian bookworm main contrib non-free non-free-firmware
-deb http://127.0.0.1:9999/debian-security bookworm-security main contrib non-free non-free-firmware
-#deb http://127.0.0.1:9999/debian bookworm-backports main contrib non-free
+deb http://mirror.netcologne.de/debian bookworm main contrib non-free non-free-firmware
+deb http://mirror.netcologne.de/debian-security bookworm-security main contrib non-free non-free-firmware
+#deb http://mirror.netcologne.de/debian bookworm-backports main contrib non-free
 
 # repository that may contain newer fai packages for bookworm
 deb http://fai-project.org/download bookworm koeln
-deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] http://127.0.0.1:9999/mirrors.cloud.tencent.com/docker-ce/linux/debian bookworm stable
-deb [arch=amd64 signed-by=/etc/apt/keyrings/nodesource.gpg] http://127.0.0.1:9999/mirrors.cloud.tencent.com/debian bookworm stable

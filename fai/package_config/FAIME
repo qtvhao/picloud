@@ -1,32 +1,4 @@
 PACKAGES install-norec
-docker-ce
-docker-ce-cli
-containerd.io
-docker-buildx-plugin
-task-xfce-desktop
-curl
-wget
-git
-jq
-netcat-traditional
-ca-certificates
-resolvconf
-open-iscsi
-nfs-common
-vnstat
-wakeonlan
-syslinux
-pv
-bc
-tesseract-ocr
-libtesseract-dev
-parted
-linux-headers-6.1.0-23-common
 
 PACKAGES install
-task-english 
-linux-headers-amd64
-linux-headers-6.1.0-23-amd64
-npm
-nodejs
-
+task-english
