@@ -28,7 +28,7 @@ if [ $IP_ADDRESS_TO_TURN_OFF == $hostnameI ]; then
     exit 1
 fi
 echo "Provisioning on metal machine"
-SQUASH_IMG_FILESIZE_HUMAN=$( docker exec fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}' )
+SQUASH_IMG_FILESIZE_HUMAN=$( du -h /var/www/html/squash.img | awk '{print $1}' )
 if [ -f "./fai/pxelinux.cfg/01-$MAC_ADDRESS_SED_LOWER" ]; then
     mkdir -p ./fai/pxelinux.cfg/ || true
     URL="https://raw.githubusercontent.com/qtvhao/picloud/main/fai/pxelinux.cfg/default"

@@ -26,7 +26,6 @@ FILE_SIZE_IN_MB=$(du -m $ISO_FILE | cut -f1)
 echo "File size in MB: $FILE_SIZE_IN_MB""Mb"
 echo "Deleting All Partitions From $USB_DEVICE"
 
-echo "Creating Partition scheme MBR"
 echo "Target system: BIOS"
 echo "Persistent partition size: 0"
 echo "File system type: fat32"
@@ -45,18 +44,10 @@ parted -s $USB_DEVICE set 1 boot on
 # parted -s $USB_DEVICE set 1 lba on
 echo
 parted -s $USB_DEVICE print
-# set MBR
 
-# Create file system FAT32 with label "FAI" and icon "FAI" on $USB_DEVICE partition 1
-# isohybrid $HOSTNAME-fai-cd.iso --entry 4 --type 0x1c
-# exit 0
-# Create file system ext4 with label "FAI" on $USB_DEVICE partition 2
-# copy $HOSTNAME-fai-cd.iso to $USB_DEVICE partition 1
-time (dd if=$ISO_FILE of=$USB_DEVICE bs=4M status=progress && sync)
+time (dd if=$ISO_FILE of=$USB_DEVICE bs=1M status=progress && sync)
+sleep 1
 eject $USB_DEVICE
-# mkdir -p /mnt/fai-usb
-# mount $USB_DEVICE /mnt/fai-usb
-# ls -l /mnt/fai-usb
 echo "At this point, you can boot from the USB stick and wait for the installation to finish (until the machine shuts down)."
 echo "After the installation is finished, you can remove the USB stick and boot the machine from the hard disk."
 echo "In order to connect to machines, you need to add your public ssh key to github."

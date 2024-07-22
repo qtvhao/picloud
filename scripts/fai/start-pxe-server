@@ -3,8 +3,8 @@
 set -xeo pipefail
 hostnameI=$(./pic hostname)
 TFTP_FOLDER="/srv/tftp/fai/"
-VMLINUZ_FILE=`docker exec fai bash -c "ls $TFTP_FOLDER | grep vmlinuz"`
-INITRD_FILE=`docker exec fai bash -c "ls $TFTP_FOLDER | grep initrd"`
+VMLINUZ_FILE=`docker exec fai-cd bash -c "ls $TFTP_FOLDER | grep vmlinuz"`
+INITRD_FILE=`docker exec fai-cd bash -c "ls $TFTP_FOLDER | grep initrd"`
 
 echo "default fai-generated" > ./fai/pxelinux.cfg/default
 
@@ -15,8 +15,8 @@ echo "append initrd=$INITRD_FILE ip=dhcp root=live:http://$hostnameI:8085/squash
 sed -i "s/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+,proxy/$hostnameI,proxy/g" ./dnsmasq.conf
 sed -i "s/pxeserver,[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/pxeserver,$hostnameI/g" ./dnsmasq.conf
 
-docker restart fai
-docker exec -it fai bash -c "ln -s /srv/fai/config /var/www/html/" || true
+docker restart fai-cd
+docker exec -it fai-cd bash -c "ln -s /srv/fai/config /var/www/html/" || true
 docker rm -f fai-nginx || true
 (lsof -i:80 && echo "Port 80 is in use" && exit 1) || true
 docker run --name fai-nginx -p 8085:80 -v /var/www/html/:/usr/share/nginx/html:ro -d nginx
@@ -33,5 +33,6 @@ else
     echo "Squash.img is not ready. Waiting for it to be ready: $SQUASH_IMG_URL"
     exit 1
 fi
-docker exec fai bash -c "rm /tmp/dnsmasq.log || true"
-docker exec fai bash -c "dnsmasq"
+chown root ./tmp-dnsmasq.log
+docker exec fai-cd bash -c "echo > /tmp/dnsmasq.log || true"
+docker exec fai-cd bash -c "dnsmasq"

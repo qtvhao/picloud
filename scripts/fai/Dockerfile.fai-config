@@ -1,16 +1,5 @@
-FROM debian:bookworm AS fai-mk-configspace
-RUN apt-get update && apt-get install -y wget
-RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
-RUN cp fai-project.gpg /etc/apt/trusted.gpg.d/
-RUN echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list
-RUN echo "" >> /etc/apt/sources.list
-RUN apt update && apt-get install -y fai-quickstart apt-cacher-ng
-RUN fai-mk-configspace
-# Thanks to https://raw.githubusercontent.com/ricardobranco777/docker-fai/master/Dockerfile
-
 FROM ghcr.io/qtvhao/fai-project-debian:main
 # 
-COPY fai/basefiles /srv/fai/config/basefiles
 COPY fai/class /srv/fai/config/class
 RUN echo "KEYMAP=us" > /srv/fai/config/class/FAIME.var
 RUN echo "TIMEZONE=UTC" >> /srv/fai/config/class/FAIME.var
@@ -31,6 +20,8 @@ COPY fai/class/ /srv/fai/config/class/
 COPY fai/debconf/ /srv/fai/config/debconf/
 COPY fai/disk_config/ /srv/fai/config/disk_config/
 COPY fai/fai-bookworm/ /srv/fai/config/fai-bookworm/
+COPY fai/fai-bookworm/fai.conf /etc/fai/fai.conf
+COPY fai/fai-bookworm/fai.conf /srv/fai/nfsroot/etc/fai/fai.conf
 COPY fai/files/ /srv/fai/config/files/
 COPY fai/grub.cfg.install-only /srv/fai/config/grub.cfg.install-only
 COPY fai/grub.cfg.live /srv/fai/config/grub.cfg.live

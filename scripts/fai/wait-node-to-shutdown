@@ -16,7 +16,7 @@ while true; do
     echo
     echo "Wake on lan sent. Make sure your client machine is turned off before running this script or you can boot it from Network Boot manually."
     sleep 3
-    DNSMASQ_LOG=$(docker exec fai bash -c "tail -n100 /tmp/dnsmasq.log")
+    DNSMASQ_LOG=$(docker exec fai-cd bash -c "tail -n100 /tmp/dnsmasq.log")
     echo "DNSMASQ_LOG: $DNSMASQ_LOG"
     MAC_ADDRESS_LOWER=$(echo $MAC_ADDRESS | tr '[:upper:]' '[:lower:]')
     MATCH_LINE=$(echo "$DNSMASQ_LOG" | grep "PXE(" | grep "$MAC_ADDRESS_LOWER pxelinux.0") || true
@@ -33,14 +33,14 @@ while true; do
 done
 echo "IP_ADDRESS: $IP_ADDRESS"
 
-SQUASH_IMG_FILESIZE_HUMAN=$(docker exec fai bash -c "du -h /var/www/html/squash.img" | awk '{print $1}')
+SQUASH_IMG_FILESIZE_HUMAN=$(du -h /var/www/html/squash.img | awk '{print $1}')
 while true; do
     echo "Downloading squash.img ($SQUASH_IMG_FILESIZE_HUMAN, this may take a while)"
     sleep 16
     nc -z -w 1 "$IP_ADDRESS" 22 > /dev/null 2>&1 && break || continue;
 done
 echo "SSH is ready"
-docker restart fai
+docker restart fai-cd
 
 chmod 600 $IDENTITY_FILE
 while true; do

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./pic create-vm $1 "no-start-pxe"
