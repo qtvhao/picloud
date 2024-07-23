@@ -26,80 +26,87 @@ if [ -z "$HOSTNAME" ]; then
 fi
 echo "HOSTNAME: $HOSTNAME"
 #
-# exit 0
-rm ./dvd/$HOSTNAME-fai-cd.iso || true
-
-docker rm -f fai-config || true
-docker rm -f fai || true
-docker rm -f apt-cacher-ng || true
-# warp-cli && warp-cli connect || true
-cp scripts/fai/Dockerfile.fai-config ./Dockerfile.fai-config || curl https://raw.githubusercontent.com/qtvhao/picloud/main/scripts/fai/Dockerfile.fai-config -o ./Dockerfile.fai-config
-
-(docker buildx ls | grep docker.sock) || docker buildx create --use
-echo "Dockerfile.fai-config built"
-rm Dockerfile.fai-config
-
-# 
-docker run --name fai-config \
-    -e "DEBIAN_FRONTEND=noninteractive" \
-    -v ./fai/fai-bookworm/:/etc/fai-bookworm \
-    -v ./fai/fai-bookworm/fai.conf:/etc/fai/fai.conf -v ./fai/fai-bookworm/fai.conf:/srv/fai/nfsroot/etc/fai/fai.conf -v ./fai/fai-bookworm/fai.conf:/etc/fai-bookworm/fai.conf \
-    --privileged --entrypoint /bin/bash -d \
-    ghcr.io/qtvhao/fai-project-debian:main -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
-
-docker exec fai-config bash -c "apt install -y fai-client"
-
-docker logs fai-config -f &
-
-SNAPSHOT_NAME="fai-setup-snapshot"
-docker image inspect $SNAPSHOT_NAME || \
-    ( time docker exec fai-config bash -c "export RUNLEVEL=1 && echo N | fai-setup -vf" | tee fai-setup.log && \
-    docker stop fai-config && \
-    docker commit fai-config $SNAPSHOT_NAME)
-
-docker stop fai-config || true
-docker rm -f fai-config || true
-docker stop fai-mirror || true
-docker rm -f fai-mirror || true
-
-docker run --name fai-mirror \
-    -v ./fai/fai-bookworm/:/etc/fai-bookworm \
-    -v ./fai/:/srv/fai/config/ \
-    -v ./fai/fai-bookworm/fai.conf:/etc/fai/fai.conf -v ./fai/fai-bookworm/fai.conf:/srv/fai/nfsroot/etc/fai/fai.conf -v ./fai/fai-bookworm/fai.conf:/etc/fai-bookworm/fai.conf \
-    --privileged --entrypoint /bin/bash -d \
-    $SNAPSHOT_NAME -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
-
-# nice xz -q $NFSROOT/var/tmp/base.tar &  (wd: /srv/fai/nfsroot)
-# END GLOBAL SETUP
-# START CUSTOM SETUP
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,FAIME,GRUB_PC,GRUB_EFI,AMD64"
-# fai-mirror  -C /etc/fai-bookworm -m1 -c$cl /tmp/mirror
-SNAPSHOT_NAME="fai-mirror-snapshot"
-docker image inspect $SNAPSHOT_NAME || \
-    ( time docker exec fai-mirror bash -c "fai-mirror -C /etc/fai-bookworm -m1 -c$cl /tmp/mirror || exit 1" | tee fai-mirror.log && \
-    docker stop fai-mirror && \
-    docker commit fai-mirror $SNAPSHOT_NAME)
+docker build -t install-fai-packages -f ./fai/Dockerfile.install-fai-packages .
+# Create the nfsroot
+docker rm -f fai-setup || true
+docker run \
+    --privileged \
+    -v ./var-log-fai/:/var/log/fai/ \
+    -v ./srv-fai/:/srv/fai/ \
+    --network host \
+    --name fai-setup \
+    install-fai-packages \
+    bash -c "fai-setup -vf"
+# /var/log/fai/remote-logs/.ssh/id_rsa.pub is the public key of the machine
+# fai-setup has created the LOGUSER, the nfsroot and has added additional lines to /etc/exports. The subdirectories added to /etc/exports are exported via NFS v3, so all install clients in the same subnet can mount them via NFS.
+docker commit fai-setup fai-setup
+docker rm -f fai-setup || true
+docker run \
+    --privileged \
+    -v ./var-log-fai/:/var/log/fai/ \
+    -v ./srv-fai/:/srv/fai/ \
+    --network host \
+    --name fai-mk-configspace \
+    fai-setup \
+    bash -c "fai-mk-configspace"
 
-docker stop fai-mirror || true
-docker rm -f fai-mirror || true
-docker stop fai-cd || true
-docker rm -f fai-cd || true
+docker commit fai-mk-configspace fai-mk-configspace
+docker rm -f fai-mk-configspace || true
 
-touch tmp-dnsmasq.log
-docker run --name fai-cd \
-    -v ./fai/fai-bookworm/:/etc/fai-bookworm \
-    -v ./fai/:/srv/fai/config/ \
-    -v ./dvd/:/dvd/ \
-    -v ./fai/pxelinux.cfg/:/srv/tftp/fai/pxelinux.cfg/ \
-    -v ./dnsmasq.conf:/etc/dnsmasq.conf \
-    -v ./fai/fai-bookworm/fai.conf:/etc/fai/fai.conf -v ./fai/fai-bookworm/fai.conf:/srv/fai/nfsroot/etc/fai/fai.conf -v ./fai/fai-bookworm/fai.conf:/etc/fai-bookworm/fai.conf \
-    --net=host \
-    --cap-add=NET_ADMIN \
-    --privileged --entrypoint /bin/bash -d \
-    $SNAPSHOT_NAME -c "/etc/init.d/apt-cacher-ng start && sleep 86400"
-# fai-cd -C /etc/fai-bookworm -g grub.cfg.install-only -m/tmp/mirror faime-LODYXLRE.iso
-docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -SJ -m/tmp/mirror -n/srv/fai/nfsroot /dvd/squash.img || exit 1" | tee fai-cd.log
-mv ./dvd/squash.img /var/www/html/squash.img
+# ========== Configure the network daemons
+# For booting the install client via PXE, the install server needs a DHCP and a TFTP daemon running. The package fai-quickstart has already installed the software packages for those daemons. Additionally the package of the NFS server for exporting the nfsroot and the config space was installed.
+# - Configuration of the DHCP daemon
+# An example for dhcpd.conf(5) is provided with the fai-doc package. Start using this example and look at all options used therein.
+# The only FAI specific information inside this configuration file is to set filename (DHCP option 67) to fai/pxelinux.0 and to set next-server (DHCP option 66, also called TFTP server name) and server-name to the name of your install server. All other information is only network related data, which is used in almost all DHCP configurations. Adjust these network parameters to your local needs.
+docker rm -f configure-network-daemons || true
+docker run \
+    --privileged \
+    -v ./var-log-fai/:/var/log/fai/ \
+    -v ./srv-fai/:/srv/fai/ \
+    --network host \
+    --name configure-network-daemons \
+    fai-setup \
+    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name $HOSTNAME/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server $HOSTNAME/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
+
+docker commit configure-network-daemons configure-network-daemons
+docker rm -f configure-network-daemons || true
+
+# - Adding a host entry to DHCP
+docker rm -f add-host-entry-to-dhcp || true
+docker run \
+    --privileged \
+    -v ./var-log-fai/:/var/log/fai/ \
+    -v ./srv-fai/:/srv/fai/ \
+    --network host \
+    --name add-host-entry-to-dhcp \
+    fai-setup \
+    bash -c "export RUNLEVEL=1; echo '192.168.1.101 demohost' >> /etc/hosts; dhcp-edit demohost 18:60:24:db:a0:72"
+
+# Update /etc/hosts whether demohost not exists
+cat /etc/hosts | grep "demohost" || echo '192.168.1.101 demohost' >> /etc/hosts
+# The MAC address is given by the hardware of the network card. For each install client you collect its MAC address and to map it to an IP address and to a host name. First, we add the IP address and the hostname to /etc/hosts
+# The mapping from the MAC address to the IP address is done in the dhcpd.conf file. Here, we add a host entry using the command dhcp-edit(8). Here you have to replace 01:02:03:AB:CD:EF ith the MAC you have found.
+docker commit add-host-entry-to-dhcp add-host-entry-to-dhcp
+docker rm -f add-host-entry-to-dhcp || true
+
+# ======== Creating the PXELINUX configuration
+# The last step before booting your client for the first time is to specify what configuration the client should boot when doing PXE boot. We use the command fai-chboot(8) to create a pxelinux configuration for each install client. This includes information about the kernel, the initrd, the config space and some boot parameters. You should read the manual page, which gives you some good examples. Here’s the command for starting the installation for the host demohost.
+# fai-chboot -IFv -u nfs://faiserver/srv/fai/config demohost
+docker rm -f create-pxelinux-configuration || true
+docker run \
+    --privileged \
+    -v ./var-log-fai/:/var/log/fai/ \
+    -v ./srv-fai/:/srv/fai/ \
+    --network host \
+    --name create-pxelinux-configuration \
+    fai-setup \
+    bash -c "fai-chboot -IFv -u nfs://$HOSTNAME/srv/fai/config demohost"
+
+# At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
+# In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
+
+exit 0
 # docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log
 
 echo "Fai-cd started"

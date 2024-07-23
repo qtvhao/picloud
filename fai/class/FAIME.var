@@ -9,3 +9,4 @@ secsuite=bookworm-security
 bpo=
 postinst=
 rclocal=1
+repo="deb [trusted=yes] https://download.docker.com/linux/debian bookworm stable"
