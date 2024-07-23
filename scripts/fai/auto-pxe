@@ -1,7 +1,8 @@
 #!/bin/bash
-set -eo pipefail
+set -xeo pipefail
 args=("$@")
 IDENTITY_FILE=${args[0]}
+MACHINES=${args[1]}
 if [ -z "$IDENTITY_FILE" ]; then
     echo "IDENTITY_FILE is empty. Specify a identify file for the new machine."
     echo "Usage: ./pic print-available-node IDENTIFY_FILE"
@@ -13,23 +14,28 @@ if [ ! -f "$IDENTITY_FILE" ]; then
     exit 1
 fi
 hostnameI=$(./pic hostname)
-LIST_NODENAME=$(./pic list-nodename $IDENTITY_FILE | grep -v virtualbox | grep -v $hostnameI | awk '{print $1}')
-echo;
-for NODE in $LIST_NODENAME; do
-    echo "NODE: $NODE"
-    if [ -z "$NODE" ]; then
-        continue;
-    fi
-    IP_ADDRESS=$(echo $NODE | awk '{print $1}')
-    PRODUCT_NAME=$(echo $NODE | awk '{print $3}')
-    if [ "$IP_ADDRESS" == "$hostnameI" ]; then
-        continue;
-    fi
-    NETWORK_INTERFACES=$(ssh -i $IDENTITY_FILE $IP_ADDRESS "ip address | grep -E '^[0-9]+: ' | awk '{print \$2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun")
-    MAC_ADDRESS=$(./pic get-mac-address "$IP_ADDRESS" "$IDENTITY_FILE")
-    echo "MAC_ADDRESS: $MAC_ADDRESS"
-    ./pic pxe "$MAC_ADDRESS" "$IDENTITY_FILE" "$IP_ADDRESS"
+if [ -z "$MACHINES" ]; then
+    echo "MACHINES is empty. Specify a list of machines to provision."
+    echo "Usage: ./pic auto-pxe IDENTIFY_FILE \"MACHINE1 MACHINE2 ...\""
+    exit 1
+fi
+echo "Provisioning on metal machine"
+MACHINES=$(echo $MACHINES | tr " " "\n")
+echo "Machine list:"
+echo "$MACHINES"
+
+for MACHINE in $MACHINES; do
+    MACHINE=`echo "$MACHINE" | tr "," " "`
+    MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
+    IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
+    HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
+    #echo "Provisioning $MAC_ADDRESS $IP_ADDRESS $HOSTNAME"
+    # 
+    docker exec -i create-pxelinux-configuration bash -c "echo '"$IP_ADDRESS" "$HOSTNAME"' >> /etc/hosts; dhcp-edit $HOSTNAME $MAC_ADDRESS"
+    cat /etc/hosts | grep "$HOSTNAME" || echo $IP_ADDRESS' '$HOSTNAME >> /etc/hosts
+    docker exec -it create-pxelinux-configuration bash -c "fai-chboot -IFv -u nfs://`hostname -I | tr ' ' '\n' | head -n1`/srv/fai/config $HOSTNAME"
 done
+exit 0
 echo;echo;
 ./pic list-nodename $IDENTITY_FILE
 echo "Done"
