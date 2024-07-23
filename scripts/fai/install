@@ -63,6 +63,7 @@ docker run \
 APTPROXY=http://192.168.1.3:3142
 # echo 'Acquire::http { Proxy "http://192.168.1.3:3142"; };' > /etc/apt/apt.conf.d/01proxy
 echo "APTPROXY=$APTPROXY" >> /srv/fai/config/class/DEBIAN.var
+curl http://192.168.1.3:3142
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/nfsroot/etc/fai/fai.conf
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/config/files/etc/fai/fai.conf/FAISERVER
 # Set FAI_LOGPROTO=none
@@ -130,6 +131,7 @@ docker rm -f create-pxelinux-configuration || true ; docker run -d \
 modprobe {nfs,nfsd}
 apt install -y nfs-kernel-server
 # 
+chmod 0777 /var/cache/apt-cacher-ng/
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/subnet 192.168.*.* netmask/subnet 192.168.1.0 netmask/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option routers 192.168.*.*;/option routers 192.168.1.1;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/TFTP_ADDRESS=\".*\"/TFTP_ADDRESS=\"0.0.0.0:69\"/g' /etc/default/tftpd-hpa ; cat /etc/default/tftpd-hpa"
