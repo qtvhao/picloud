@@ -32,6 +32,7 @@ for MACHINE in $MACHINES; do
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
     #echo "Provisioning $MAC_ADDRESS $IP_ADDRESS $HOSTNAME"
     # 
+    wakeonlan $MAC_ADDRESS
     docker exec -i create-pxelinux-configuration bash -c "echo '"$IP_ADDRESS" "$HOSTNAME"' >> /etc/hosts; dhcp-edit $HOSTNAME $MAC_ADDRESS"
     cat /etc/hosts | grep "$HOSTNAME" || echo $IP_ADDRESS' '$HOSTNAME >> /etc/hosts
     docker exec -it create-pxelinux-configuration bash -c "fai-chboot -IFv -u nfs://`hostname -I | tr ' ' '\n' | head -n1`/srv/fai/config $HOSTNAME"
@@ -39,9 +40,17 @@ done
 #
 for MACHINE in $MACHINES; do
     MACHINE=`echo "$MACHINE" | tr "," " "`
+    MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
     IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
-    sshpass -p fai ssh 192.168.1.104 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no \
+    # Wait for the machine to be pingable
+    while true; do
+        ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break;
+        wakeonlan $MAC_ADDRESS
+        echo "Waiting for $HOSTNAME to be pingable"
+        sleep 2
+    done
+    sshpass -p fai ssh $IP_ADDRESS -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no \
         "tail -f /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'"
 done
 exit 0

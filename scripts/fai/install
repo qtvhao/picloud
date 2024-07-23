@@ -60,10 +60,11 @@ docker run \
     --name fai-mk-configspace \
     fai-setup \
     bash -c "fai-mk-configspace"
+wget https://github.com/$GITHUB_USERNAME.keys -O /srv/fai/config/files/root-ssh-key/$GITHUB_USERNAME.keys
+
 APTPROXY=http://192.168.1.3:3142
-# echo 'Acquire::http { Proxy "http://192.168.1.3:3142"; };' > /etc/apt/apt.conf.d/01proxy
 echo "APTPROXY=$APTPROXY" >> /srv/fai/config/class/DEBIAN.var
-curl http://192.168.1.3:3142
+curl http://192.168.1.3:3142 > /dev/null
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/nfsroot/etc/fai/fai.conf
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/config/files/etc/fai/fai.conf/FAISERVER
 # Set FAI_LOGPROTO=none
@@ -144,7 +145,6 @@ docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; servic
 # At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
 # In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
 
-wget https://github.com/$GITHUB_USERNAME.keys -O /srv/fai/config/files/root-ssh-key/$GITHUB_USERNAME.keys
 cat <<EOF > /etc/exports
 /srv/fai/config 192.168.1.3/24(async,ro,no_subtree_check)
 /srv/fai/nfsroot 192.168.1.3/24(async,ro,no_subtree_check,no_root_squash)
