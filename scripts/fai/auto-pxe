@@ -50,7 +50,7 @@ for MACHINE in $MACHINES; do
         echo "Waiting for $HOSTNAME to be pingable"
         sleep 2
     done
-    sshpass -p fai ssh $IP_ADDRESS -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no \
+    sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
         "tail -f /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'"
 done
 exit 0

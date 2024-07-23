@@ -45,6 +45,7 @@ docker run \
     --name fai-setup \
     install-fai-packages \
     bash -c "fai-setup -vf"
+wget https://github.com/$GITHUB_USERNAME.keys -O /srv/fai/config/files/root-ssh-key/DEBIAN
 # /var/log/fai/remote-logs/.ssh/id_rsa.pub is the public key of the machine
 # fai-setup has created the LOGUSER, the nfsroot and has added additional lines to /etc/exports. The subdirectories added to /etc/exports are exported via NFS v3, so all install clients in the same subnet can mount them via NFS.
 docker commit fai-setup fai-setup
@@ -60,7 +61,6 @@ docker run \
     --name fai-mk-configspace \
     fai-setup \
     bash -c "fai-mk-configspace"
-wget https://github.com/$GITHUB_USERNAME.keys -O /srv/fai/config/files/root-ssh-key/$GITHUB_USERNAME.keys
 
 APTPROXY=http://192.168.1.3:3142
 echo "APTPROXY=$APTPROXY" >> /srv/fai/config/class/DEBIAN.var
