@@ -104,13 +104,17 @@ docker rm -f create-pxelinux-configuration || true ; docker run -d \
     add-host-entry-to-dhcp \
     bash -c "fai-chboot -IFv -u nfs://`hostname`/srv/fai/config $CLIENT_HOST ; sleep 86400"
 # Replace "subnet 192.168.*.*" with "subnet 192.168.1.0" with * is any number
+modprobe {nfs,nfsd}
+apt install -y nfs-kernel-server
+# 
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/subnet 192.168.*.* netmask/subnet 192.168.1.0 netmask/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
-# export RUNLEVEL=1;  invoke-rc.d isc-dhcp-server restart
-
-# /etc/default/isc-dhcp-server
-# replace INTERFACESv4="" by INTERFACESv4="eno1"
+docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option routers 192.168.*.*;/option routers 192.168.1.1;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
+docker exec -it create-pxelinux-configuration bash -c "sed -i 's/TFTP_ADDRESS=\".*\"/TFTP_ADDRESS=\"0.0.0.0:69\"/g' /etc/default/tftpd-hpa ; cat /etc/default/tftpd-hpa"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"eno1\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; invoke-rc.d isc-dhcp-server restart"
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; /etc/init.d/tftpd-hpa restart"
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service rpcbind restart"
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
 # At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
 # In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
 
