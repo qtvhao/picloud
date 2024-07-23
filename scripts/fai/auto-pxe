@@ -30,15 +30,13 @@ for MACHINE in $MACHINES; do
     MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
     IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
-    #echo "Provisioning $MAC_ADDRESS $IP_ADDRESS $HOSTNAME"
+    timeout 30 ssh -i $IDENTITY_FILE -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$IP_ADDRESS poweroff || true
     # 
-    wakeonlan $MAC_ADDRESS
     docker exec -i create-pxelinux-configuration bash -c "echo '"$IP_ADDRESS" "$HOSTNAME"' >> /etc/hosts; dhcp-edit $HOSTNAME $MAC_ADDRESS"
     cat /etc/hosts | grep "$HOSTNAME" || echo $IP_ADDRESS' '$HOSTNAME >> /etc/hosts
     docker exec -it create-pxelinux-configuration bash -c "fai-chboot -IFv -u nfs://`hostname -I | tr ' ' '\n' | head -n1`/srv/fai/config $HOSTNAME"
+    wakeonlan $MAC_ADDRESS
 done
-echo '#! /bin/bash ' > /srv/fai/config/class/10-base-classes
-echo 'echo "AMD64"' >> /srv/fai/config/class/10-base-classes
 # echo 'echo "AMD64 DHCPC FAIBASE DEBIAN DEMO GRUB_PC" ;;' > /srv/fai/config/class/50-host-classes
 for MACHINE in $MACHINES; do
     MACHINE=`echo "$MACHINE" | tr "," " "`

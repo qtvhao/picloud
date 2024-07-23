@@ -153,6 +153,13 @@ docker cp /etc/exports create-pxelinux-configuration:/etc/exports
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
 service nfs-kernel-server restart
 cat ./var-log-fai/remote-logs/.ssh/authorized_keys > ~/.ssh/authorized_keys
+# 
+echo '#! /bin/bash ' > /srv/fai/config/class/10-base-classes
+echo 'echo "AMD64"' >> /srv/fai/config/class/10-base-classes
+cat <<EOF > /srv/fai/config/package_config/FAIME
+PACKAGES install-norec
+git
+EOF
 exit 0
 # docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log
 
