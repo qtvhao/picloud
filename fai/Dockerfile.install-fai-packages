@@ -1,0 +1,33 @@
+FROM debian
+# ======= Install the FAI packages
+# Install the key of the FAI project package repository:
+
+#    Add the URL of the package repository of the FAI project.
+    
+#    Install the package fai-quickstart on your install server.
+    
+    # wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg
+    # cp fai-project.gpg /etc/apt/trusted.gpg.d/
+    # echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list
+    # apt-get update
+    # aptitude install fai-quickstart
+#    This will also install the packages for DHCP, TFTP and NFS server daemons.
+
+RUN apt-get update && apt-get install -y wget
+RUN wget -O fai-project.gpg https://fai-project.org/download/2BF8D9FE074BCDE4.gpg \
+    && cp fai-project.gpg /etc/apt/trusted.gpg.d/ \
+    && echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list \
+    && apt-get update \
+    && apt-get install -y fai-quickstart
+
+# ======== Create the nfsroot
+
+# Also enable the package repository of the FAI project in a different sources.list file which is used when building the nfsroot. Then, enable the log user for FAI.
+
+# sed -i -e 's/^#deb/deb/' /etc/fai/apt/sources.list
+# sed -i -e 's/#LOGUSER/LOGUSER/' /etc/fai/fai.conf
+RUN sed -i -e 's/^#deb/deb/' /etc/fai/apt/sources.list \
+    && sed -i -e 's/#LOGUSER/LOGUSER/' /etc/fai/fai.conf
+
+
+# By default, FAI uses http://deb.debian.org as package mirror, which should attempt to find a fast package repository for you. [6] Now, we can run fai-setup(8) [7] and check if everything went well. The log file is written to /var/log/fai/fai-setup.log.

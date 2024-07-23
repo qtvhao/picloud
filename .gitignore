@@ -16,3 +16,6 @@ NODES
 awscliv2.zip
 install-docker.sh
 .env.creds
+srv-fai/
+var-log-fai/
+

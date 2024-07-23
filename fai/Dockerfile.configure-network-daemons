@@ -1,0 +1,6 @@
+FROM fai-mk-configspace
+
+
+RUN 
+# The only FAI specific information inside this configuration file is to set filename (DHCP option 67) to fai/pxelinux.0 and to set next-server (DHCP option 66, also called TFTP server name) and server-name to the name of your install server. All other information is only network related data, which is used in almost all DHCP configurations. Adjust these network parameters to your local needs.
+# /srv/tftp/fai/pxelinux.0

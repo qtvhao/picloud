@@ -10,7 +10,8 @@ echo "default fai-generated" > ./fai/pxelinux.cfg/default
 
 echo "label fai-generated" >> ./fai/pxelinux.cfg/default
 echo "kernel $VMLINUZ_FILE" >> ./fai/pxelinux.cfg/default
-echo "append initrd=$INITRD_FILE ip=dhcp root=live:http://$hostnameI:8085/squash.img rootovl FAI_FLAGS=sshd FAI_CONFIG_SRC=file:///var/lib/fai/config FAI_ACTION=install" >> ./fai/pxelinux.cfg/default
+echo "append initrd=$INITRD_FILE ip=dhcp root=live:http://$hostnameI:8085/squash.img rootovl FAI_FLAGS=sshd FAI_CONFIG_SRC=file:///var/lib/fai/config FAI_ACTION=install"
+echo "append initrd=$INITRD_FILE ip=dhcp root=/srv/fai/nfsroot:vers=3 rootovl FAI_FLAGS=verbose,sshd,createvt FAI_CONFIG_SRC=nfs://faiserver/srv/fai/config FAI_ACTION=install" >> ./fai/pxelinux.cfg/default
 
 sed -i "s/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+,proxy/$hostnameI,proxy/g" ./dnsmasq.conf
 sed -i "s/pxeserver,[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/pxeserver,$hostnameI/g" ./dnsmasq.conf
