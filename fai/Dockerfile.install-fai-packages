@@ -1,4 +1,5 @@
 FROM debian
+ENV RUNLEVEL 1
 # ======= Install the FAI packages
 # Install the key of the FAI project package repository:
 
@@ -31,3 +32,5 @@ RUN sed -i -e 's/^#deb/deb/' /etc/fai/apt/sources.list \
 
 
 # By default, FAI uses http://deb.debian.org as package mirror, which should attempt to find a fast package repository for you. [6] Now, we can run fai-setup(8) [7] and check if everything went well. The log file is written to /var/log/fai/fai-setup.log.
+RUN printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
+RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d

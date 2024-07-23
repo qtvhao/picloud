@@ -66,25 +66,26 @@ docker run \
     -v ./srv-fai/:/srv/fai/ \
     --network host \
     --name configure-network-daemons \
-    fai-setup \
-    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name $HOSTNAME/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server $HOSTNAME/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
+    fai-mk-configspace \
+    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name `hostname`/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server `hostname`/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
 
 docker commit configure-network-daemons configure-network-daemons
 docker rm -f configure-network-daemons || true
 
 # - Adding a host entry to DHCP
 docker rm -f add-host-entry-to-dhcp || true
+CLIENT_HOST=demohost2
 docker run \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
     -v ./srv-fai/:/srv/fai/ \
     --network host \
     --name add-host-entry-to-dhcp \
-    fai-setup \
-    bash -c "export RUNLEVEL=1; echo '192.168.1.101 demohost' >> /etc/hosts; dhcp-edit demohost 18:60:24:db:a0:72"
+    configure-network-daemons \
+    bash -c "export RUNLEVEL=1; echo '192.168.1.101 "$CLIENT_HOST"' >> /etc/hosts; dhcp-edit $CLIENT_HOST 18:60:24:db:a0:72"
 
 # Update /etc/hosts whether demohost not exists
-cat /etc/hosts | grep "demohost" || echo '192.168.1.101 demohost' >> /etc/hosts
+cat /etc/hosts | grep "$CLIENT_HOST" || echo '192.168.1.101 '$CLIENT_HOST'' >> /etc/hosts
 # The MAC address is given by the hardware of the network card. For each install client you collect its MAC address and to map it to an IP address and to a host name. First, we add the IP address and the hostname to /etc/hosts
 # The mapping from the MAC address to the IP address is done in the dhcpd.conf file. Here, we add a host entry using the command dhcp-edit(8). Here you have to replace 01:02:03:AB:CD:EF ith the MAC you have found.
 docker commit add-host-entry-to-dhcp add-host-entry-to-dhcp
@@ -93,16 +94,23 @@ docker rm -f add-host-entry-to-dhcp || true
 # ======== Creating the PXELINUX configuration
 # The last step before booting your client for the first time is to specify what configuration the client should boot when doing PXE boot. We use the command fai-chboot(8) to create a pxelinux configuration for each install client. This includes information about the kernel, the initrd, the config space and some boot parameters. You should read the manual page, which gives you some good examples. Here’s the command for starting the installation for the host demohost.
 # fai-chboot -IFv -u nfs://faiserver/srv/fai/config demohost
-docker rm -f create-pxelinux-configuration || true
-docker run \
+docker rm -f create-pxelinux-configuration || true ; docker run -d \
+    --cap-add SYS_ADMIN \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
     -v ./srv-fai/:/srv/fai/ \
     --network host \
     --name create-pxelinux-configuration \
-    fai-setup \
-    bash -c "fai-chboot -IFv -u nfs://$HOSTNAME/srv/fai/config demohost"
+    add-host-entry-to-dhcp \
+    bash -c "fai-chboot -IFv -u nfs://`hostname`/srv/fai/config $CLIENT_HOST ; sleep 86400"
+# Replace "subnet 192.168.*.*" with "subnet 192.168.1.0" with * is any number
+docker exec -it create-pxelinux-configuration bash -c "sed -i 's/subnet 192.168.*.* netmask/subnet 192.168.1.0 netmask/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
+# export RUNLEVEL=1;  invoke-rc.d isc-dhcp-server restart
 
+# /etc/default/isc-dhcp-server
+# replace INTERFACESv4="" by INTERFACESv4="eno1"
+docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"eno1\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; invoke-rc.d isc-dhcp-server restart"
 # At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
 # In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
 
