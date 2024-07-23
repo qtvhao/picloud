@@ -61,6 +61,7 @@ docker run \
     fai-setup \
     bash -c "fai-mk-configspace"
 APTPROXY=http://192.168.1.3:3142
+# echo 'Acquire::http { Proxy "http://192.168.1.3:3142"; };' > /etc/apt/apt.conf.d/01proxy
 echo "APTPROXY=$APTPROXY" >> /srv/fai/config/class/DEBIAN.var
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/nfsroot/etc/fai/fai.conf
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/config/files/etc/fai/fai.conf/FAISERVER
@@ -117,6 +118,7 @@ docker rm -f add-host-entry-to-dhcp || true
 docker rm -f create-pxelinux-configuration || true ; docker run -d \
     --cap-add SYS_ADMIN \
     --privileged \
+    -v /var/cache/apt-cacher-ng:/var/cache/apt-cacher-ng \
     -v ./var-log-fai/:/var/log/fai/ \
     -v /srv/fai/config:/srv/fai/config/ \
     -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
