@@ -49,6 +49,8 @@ docker run \
 # fai-setup has created the LOGUSER, the nfsroot and has added additional lines to /etc/exports. The subdirectories added to /etc/exports are exported via NFS v3, so all install clients in the same subnet can mount them via NFS.
 docker commit fai-setup fai-setup
 docker rm -f fai-setup || true
+
+docker rm -f fai-mk-configspace || true
 docker run \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
@@ -58,10 +60,17 @@ docker run \
     --name fai-mk-configspace \
     fai-setup \
     bash -c "fai-mk-configspace"
+APTPROXY=http://192.168.1.3:3142
+echo "APTPROXY=$APTPROXY" >> /srv/fai/config/class/DEBIAN.var
+sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/nfsroot/etc/fai/fai.conf
+sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/config/files/etc/fai/fai.conf/FAISERVER
+# Set FAI_LOGPROTO=none
+echo "FAI_LOGPROTO=none" >> /srv/fai/nfsroot/etc/fai/fai.conf
+echo "FAI_LOGPROTO=none" >> /srv/fai/config/files/etc/fai/fai.conf/FAISERVER
+
 
 docker commit fai-mk-configspace fai-mk-configspace
 docker rm -f fai-mk-configspace || true
-# ls /srv/fai/nfsroot/var/lib/fai/config/class
 
 # ========== Configure the network daemons
 # For booting the install client via PXE, the install server needs a DHCP and a TFTP daemon running. The package fai-quickstart has already installed the software packages for those daemons. Additionally the package of the NFS server for exporting the nfsroot and the config space was installed.
@@ -127,6 +136,7 @@ docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; invoke
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; /etc/init.d/tftpd-hpa restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service rpcbind restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service apt-cacher-ng start"
 # At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
 # In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
 

@@ -2,7 +2,7 @@
 
 deb http://mirror.netcologne.de/debian bookworm main contrib non-free non-free-firmware
 deb http://mirror.netcologne.de/debian-security bookworm-security main contrib non-free non-free-firmware
-#deb http://mirror.netcologne.de/debian bookworm-backports main contrib non-free
+deb http://mirror.netcologne.de/debian bookworm main contrib non-free non-free-firmware
 
 # repository that may contain newer fai packages for bookworm
 deb http://fai-project.org/download bookworm koeln
