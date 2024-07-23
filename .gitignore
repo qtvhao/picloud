@@ -19,3 +19,4 @@ install-docker.sh
 srv-fai/
 var-log-fai/
 
+srv-fai-config/

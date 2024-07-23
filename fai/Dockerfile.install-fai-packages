@@ -1,5 +1,5 @@
 FROM debian
-ENV RUNLEVEL 1
+ENV RUNLEVEL=1
 # ======= Install the FAI packages
 # Install the key of the FAI project package repository:
 

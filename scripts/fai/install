@@ -28,12 +28,19 @@ echo "HOSTNAME: $HOSTNAME"
 #
 export cl="DEBIAN,DHCPC,DEMO,FAIBASE,BOOKWORM,ONE,FAIME,GRUB_PC,GRUB_EFI,AMD64"
 docker build -t install-fai-packages -f ./fai/Dockerfile.install-fai-packages .
+if [ -d "/srv/fai/nfsroot/" ]; then
+    rm -rf /srv/fai/nfsroot/*
+fi
+if [ -d "/srv/fai/config/" ]; then
+    rm -rf /srv/fai/config/*
+fi
 # Create the nfsroot
 docker rm -f fai-setup || true
 docker run \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
-    -v ./srv-fai/:/srv/fai/ \
+    -v /srv/fai/config:/srv/fai/config/ \
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
     --network host \
     --name fai-setup \
     install-fai-packages \
@@ -45,7 +52,8 @@ docker rm -f fai-setup || true
 docker run \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
-    -v ./srv-fai/:/srv/fai/ \
+    -v /srv/fai/config:/srv/fai/config/ \
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
     --network host \
     --name fai-mk-configspace \
     fai-setup \
@@ -53,6 +61,7 @@ docker run \
 
 docker commit fai-mk-configspace fai-mk-configspace
 docker rm -f fai-mk-configspace || true
+# ls /srv/fai/nfsroot/var/lib/fai/config/class
 
 # ========== Configure the network daemons
 # For booting the install client via PXE, the install server needs a DHCP and a TFTP daemon running. The package fai-quickstart has already installed the software packages for those daemons. Additionally the package of the NFS server for exporting the nfsroot and the config space was installed.
@@ -63,12 +72,13 @@ docker rm -f configure-network-daemons || true
 docker run \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
-    -v ./srv-fai/:/srv/fai/ \
+    -v /srv/fai/config:/srv/fai/config/ \
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
     --network host \
     --name configure-network-daemons \
     fai-mk-configspace \
-    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name `hostname`/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server `hostname`/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
-
+    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name `hostname`/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server 192.168.1.3/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
+# sed -i 's/next-server .*;/next-server 192.168.1.3;/g' /etc/dhcp/dhcpd.conf
 docker commit configure-network-daemons configure-network-daemons
 docker rm -f configure-network-daemons || true
 
@@ -78,7 +88,8 @@ CLIENT_HOST=demohost2
 docker run \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
-    -v ./srv-fai/:/srv/fai/ \
+    -v /srv/fai/config:/srv/fai/config/ \
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
     --network host \
     --name add-host-entry-to-dhcp \
     configure-network-daemons \
@@ -98,11 +109,12 @@ docker rm -f create-pxelinux-configuration || true ; docker run -d \
     --cap-add SYS_ADMIN \
     --privileged \
     -v ./var-log-fai/:/var/log/fai/ \
-    -v ./srv-fai/:/srv/fai/ \
+    -v /srv/fai/config:/srv/fai/config/ \
+    -v /srv/fai/nfsroot/:/srv/fai/nfsroot/ \
     --network host \
     --name create-pxelinux-configuration \
     add-host-entry-to-dhcp \
-    bash -c "fai-chboot -IFv -u nfs://`hostname`/srv/fai/config $CLIENT_HOST ; sleep 86400"
+    bash -c "fai-chboot -IFv -u nfs://`hostname -I | tr ' ' '\n' | head -n1`/srv/fai/config $CLIENT_HOST ; sleep 86400"
 # Replace "subnet 192.168.*.*" with "subnet 192.168.1.0" with * is any number
 modprobe {nfs,nfsd}
 apt install -y nfs-kernel-server
@@ -118,6 +130,15 @@ docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; servic
 # At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
 # In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
 
+# docker cp create-pxelinux-configuration:/etc/exports /etc/exports
+cat <<EOF > /etc/exports
+/srv/fai/config 192.168.1.3/24(async,ro,no_subtree_check)
+/srv/fai/nfsroot 192.168.1.3/24(async,ro,no_subtree_check,no_root_squash)
+EOF
+docker cp /etc/exports create-pxelinux-configuration:/etc/exports
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
+service nfs-kernel-server restart
+cat ./var-log-fai/remote-logs/.ssh/authorized_keys > ~/.ssh/authorized_keys
 exit 0
 # docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log
 
