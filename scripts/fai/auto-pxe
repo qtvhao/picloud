@@ -37,7 +37,9 @@ for MACHINE in $MACHINES; do
     cat /etc/hosts | grep "$HOSTNAME" || echo $IP_ADDRESS' '$HOSTNAME >> /etc/hosts
     docker exec -it create-pxelinux-configuration bash -c "fai-chboot -IFv -u nfs://`hostname -I | tr ' ' '\n' | head -n1`/srv/fai/config $HOSTNAME"
 done
-#
+echo '#! /bin/bash ' > /srv/fai/config/class/10-base-classes
+echo 'echo "AMD64"' >> /srv/fai/config/class/10-base-classes
+# echo 'echo "AMD64 DHCPC FAIBASE DEBIAN DEMO GRUB_PC" ;;' > /srv/fai/config/class/50-host-classes
 for MACHINE in $MACHINES; do
     MACHINE=`echo "$MACHINE" | tr "," " "`
     MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
