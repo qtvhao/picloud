@@ -134,6 +134,7 @@ apt install -y nfs-kernel-server
 chmod 0777 /var/cache/apt-cacher-ng/
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/subnet 192.168.*.* netmask/subnet 192.168.1.0 netmask/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option routers 192.168.*.*;/option routers 192.168.1.1;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
+docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option domain-name-servers 192.168.*.*;/option domain-name-servers 8.8.8.8;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/TFTP_ADDRESS=\".*\"/TFTP_ADDRESS=\"0.0.0.0:69\"/g' /etc/default/tftpd-hpa ; cat /etc/default/tftpd-hpa"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"eno1\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; invoke-rc.d isc-dhcp-server restart"
@@ -168,7 +169,21 @@ chmod 755 /srv/fai/config/class/95-faime
 # ========= Software package configuration
 cat <<EOF > /srv/fai/config/package_config/FAIME
 PACKAGES install-norec
+ntp
+curl
+wget
 git
+jq
+netcat-traditional
+ca-certificates
+open-iscsi
+nfs-common
+vnstat
+wakeonlan
+syslinux
+pv
+bc
+parted
 EOF
 exit 0
 # docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log

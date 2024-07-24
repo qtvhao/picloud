@@ -71,6 +71,7 @@ for MACHINE in $MACHINES; do
         "cat /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'" && break || sleep 2
 done
 docker restart create-pxelinux-configuration
+docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service apt-cacher-ng start"
 
 # Reboot all machines
 for MACHINE in $MACHINES; do
