@@ -154,8 +154,17 @@ docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; servic
 service nfs-kernel-server restart
 cat ./var-log-fai/remote-logs/.ssh/authorized_keys > ~/.ssh/authorized_keys
 # 
-echo '#! /bin/bash ' > /srv/fai/config/class/10-base-classes
-echo 'echo "AMD64"' >> /srv/fai/config/class/10-base-classes
+
+cat <<EOF > /srv/fai/config/class/10-base-classes
+#! /bin/bash
+echo "AMD64"
+EOF
+cat <<EOF > /srv/fai/config/class/95-faime
+#! /bin/bash
+echo "FAIME"
+EOF
+
+# ========= Software package configuration
 cat <<EOF > /srv/fai/config/package_config/FAIME
 PACKAGES install-norec
 git
