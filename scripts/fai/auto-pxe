@@ -31,6 +31,7 @@ for MACHINE in $MACHINES; do
     IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
     timeout 30 ssh -i $IDENTITY_FILE -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$IP_ADDRESS poweroff || true
+    timeout 30 sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS poweroff || true
     # 
     docker exec -i create-pxelinux-configuration bash -c "echo '"$IP_ADDRESS" "$HOSTNAME"' >> /etc/hosts; dhcp-edit $HOSTNAME $MAC_ADDRESS"
     cat /etc/hosts | grep "$HOSTNAME" || echo $IP_ADDRESS' '$HOSTNAME >> /etc/hosts
@@ -38,20 +39,45 @@ for MACHINE in $MACHINES; do
     wakeonlan $MAC_ADDRESS
 done
 # echo 'echo "AMD64 DHCPC FAIBASE DEBIAN DEMO GRUB_PC" ;;' > /srv/fai/config/class/50-host-classes
+sleep 6
 for MACHINE in $MACHINES; do
+    sleep 1
     MACHINE=`echo "$MACHINE" | tr "," " "`
     MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
     IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
-    # Wait for the machine to be pingable
+
     while true; do
         ping -c1 "$IP_ADDRESS" > /dev/null 2>&1 && break;
         wakeonlan $MAC_ADDRESS
         echo "Waiting for $HOSTNAME to be pingable"
         sleep 2
     done
+    while true; do
+       nc -z "$IP_ADDRESS" 22 && break;
+    done
+    while true; do
+        sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
+            "cat /tmp/fai/status.log; grep 'savelog.LAST.sh' /tmp/fai/status.log || exit 1; grep -q 'OK' /tmp/fai/status.log || exit 1" && break || sleep 2
+    done
+done
+
+# All machine are provisioned
+for MACHINE in $MACHINES; do
+    MACHINE=`echo "$MACHINE" | tr "," " "`
+    IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
+    HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
     sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
-        "tail -f /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'"
+        "cat /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'" && break || sleep 2
+done
+docker restart create-pxelinux-configuration
+
+# Reboot all machines
+for MACHINE in $MACHINES; do
+    MACHINE=`echo "$MACHINE" | tr "," " "`
+    IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
+    HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
+    sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS reboot
 done
 exit 0
 echo;echo;
