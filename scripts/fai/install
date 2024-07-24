@@ -176,6 +176,10 @@ chmod 755 /srv/fai/config/class/95-faime
 cat <<EOF > /srv/fai/config/package_config/FAIME
 PACKAGES install-norec
 ntp
+docker-ce
+docker-ce-cli
+containerd.io
+docker-buildx-plugin
 curl
 wget
 git
