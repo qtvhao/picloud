@@ -163,6 +163,7 @@ cat <<EOF > /srv/fai/config/class/95-faime
 #! /bin/bash
 echo "FAIME"
 EOF
+chmod 755 /srv/fai/config/class/95-faime
 
 # ========= Software package configuration
 cat <<EOF > /srv/fai/config/package_config/FAIME
