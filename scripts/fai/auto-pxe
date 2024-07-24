@@ -59,7 +59,7 @@ for MACHINE in $MACHINES; do
     done
     while true; do
         timeout 20 sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
-            "cat /tmp/fai/status.log; grep 'savelog.LAST.sh' /tmp/fai/status.log || exit 1; grep -q 'OK' /tmp/fai/status.log || exit 1" && break || sleep 2
+            "cat /tmp/fai/status.log; grep 'savelog.LAST.sh' /tmp/fai/status.log || exit 1; grep -q 'OK' /tmp/fai/status.log || exit 1" && break || sleep 8
     done
 done
 
@@ -69,7 +69,7 @@ for MACHINE in $MACHINES; do
     IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
     sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
-        "cat /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'" && break || sleep 2
+        "cat /tmp/fai/status.log | sed 's/^/$HOSTNAME: /'" && break || sleep 8
 done
 docker restart create-pxelinux-configuration
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service apt-cacher-ng start"
