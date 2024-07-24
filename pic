@@ -94,6 +94,8 @@ if [ "$arg1" == "self-update" ]; then
     REPO="qtvhao/picloud"
     REPO_EVENTS=$(curl "https://api.github.com/repos/$REPO/events")
     EVENTS_URL="https://api.github.com/repos/$REPO/events"
+    which curl
+    which jq
     echo "EVENTS_URL: $EVENTS_URL"
     EVENTS_TYPE_PUSH_EVENT=$(echo $REPO_EVENTS | jq -r '[.[] | select(.type == "PushEvent")]') || true
     if [ -z "$EVENTS_TYPE_PUSH_EVENT" ]; then
