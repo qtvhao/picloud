@@ -68,7 +68,8 @@ docker run \
     fai-setup \
     bash -c "fai-mk-configspace"
 
-APTPROXY=http://192.168.1.3:3142
+hostnameI=`hostname -I | tr ' ' '\n' | head -n1`
+APTPROXY="http://$hostnameI:3142"
 echo "APTPROXY=$APTPROXY" >> /srv/fai/config/class/DEBIAN.var
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/nfsroot/etc/fai/fai.conf
 sed -i 's/LOGUSER=/#LOGUSER=/g' /srv/fai/config/files/etc/fai/fai.conf/FAISERVER
@@ -94,7 +95,7 @@ docker run \
     --network host \
     --name configure-network-daemons \
     fai-mk-configspace \
-    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name `hostname`/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server 192.168.1.3/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
+    bash -c "cp /usr/share/doc/fai-doc/examples/etc/dhcpd.conf /etc/dhcp/;sed -i 's/server-name faiserver/server-name `hostname`/g' /etc/dhcp/dhcpd.conf; sed -i 's/next-server faiserver/next-server '$hostnameI'/g' /etc/dhcp/dhcpd.conf; cat /etc/dhcp/dhcpd.conf"
 
 docker commit configure-network-daemons configure-network-daemons
 docker rm -f configure-network-daemons || true
@@ -148,13 +149,13 @@ docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; /etc/i
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service rpcbind restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service apt-cacher-ng start"
-curl http://192.168.1.3:3142 > /dev/null
+curl http://$hostnameI:3142 > /dev/null
 # At this point, you should have a working faiserver setup and your clients should boot into FAI and be able to install one of the examples.
 # In the following section, you can read about planning your installation, tailoring your configuration space to your particular needs and extending FAI using hooks.
 
 cat <<EOF > /etc/exports
-/srv/fai/config 192.168.1.3/24(async,ro,no_subtree_check)
-/srv/fai/nfsroot 192.168.1.3/24(async,ro,no_subtree_check,no_root_squash)
+/srv/fai/config $hostnameI/24(async,ro,no_subtree_check)
+/srv/fai/nfsroot $hostnameI/24(async,ro,no_subtree_check,no_root_squash)
 EOF
 docker cp /etc/exports create-pxelinux-configuration:/etc/exports
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
