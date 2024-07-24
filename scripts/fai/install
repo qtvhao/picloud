@@ -160,7 +160,7 @@ EOF
 docker cp /etc/exports create-pxelinux-configuration:/etc/exports
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
 service nfs-kernel-server restart
-cat ./var-log-fai/remote-logs/.ssh/authorized_keys > ~/.ssh/authorized_keys
+# cat ./var-log-fai/remote-logs/.ssh/authorized_keys > ~/.ssh/authorized_keys
 # 
 
 cat <<EOF > /srv/fai/config/class/10-base-classes
