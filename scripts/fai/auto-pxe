@@ -54,10 +54,10 @@ for MACHINE in $MACHINES; do
         sleep 2
     done
     while true; do
-       nc -z "$IP_ADDRESS" 22 && break;
+       nc -z "$IP_ADDRESS" 22 && break || sleep 2
     done
     while true; do
-        sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
+        timeout 20 sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
             "cat /tmp/fai/status.log; grep 'savelog.LAST.sh' /tmp/fai/status.log || exit 1; grep -q 'OK' /tmp/fai/status.log || exit 1" && break || sleep 2
     done
 done
