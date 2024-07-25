@@ -9,7 +9,7 @@ if [ ! -z "$DOMAIN_ALT" ]; then
 fi
 set -xe -o pipefail
 export TUNNEL_FORCE_PROVISIONING_DNS=true
-cloudflared -v
+docker pull cloudflare/cloudflared
 args=("$@")
 TUNNEL_PROTOCOL=${args[0]}
 if [ -z "$TUNNEL_PROTOCOL" ]; then
@@ -88,10 +88,15 @@ echo "Moving $EXPOSE_ITEMS_JSON.tmp to $EXPOSE_ITEMS_JSON"
 mv "$EXPOSE_ITEMS_JSON".tmp "$EXPOSE_ITEMS_JSON"
 CERT_FILE="$HOME/.cloudflared/cert-$DOMAIN.pem"
 stat $CERT_FILE > /dev/null 2>&1 || \
-    (cloudflared tunnel login && mv $HOME/.cloudflared/cert.pem $CERT_FILE)
+    (docker run \
+        --user root \
+        -v $HOME/.cloudflared/:$HOME/.cloudflared/ \
+        cloudflare/cloudflared:latest tunnel --no-autoupdate login && mv $HOME/.cloudflared/cert.pem $CERT_FILE)
 
 stat $CERT_FILE > /dev/null 2>&1 || exit 1
-cloudflared tunnel --origincert $CERT_FILE create $TUNNEL_NAME || true
+docker run --user root \
+        -v $HOME/.cloudflared/:$HOME/.cloudflared/ \
+        cloudflare/cloudflared:latest tunnel --no-autoupdate --origincert $CERT_FILE create $TUNNEL_NAME || true
 stat "$HOME/.picloud/" > /dev/null 2>&1 || mkdir -p "$HOME/.picloud/"
 CONFIG_YAML_FILE="$HOME/.picloud/cloudflared-$TUNNEL_NAMESPACE.yml"
 echo "" >$CONFIG_YAML_FILE
@@ -141,7 +146,9 @@ echo "Created cloudflared config"
 echo "Starting cloudflared"
 CONTAINER_TUNNEL_NAME="cloudflared-$TUNNEL_NAMESPACE"
 while true; do
-    TUNNEL_ID=$(cloudflared --origincert $CERT_FILE tunnel info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1) && break || true
+    TUNNEL_ID=$(docker run --user root \
+        -v $HOME/.cloudflared/:$HOME/.cloudflared/ \
+        cloudflare/cloudflared:latest --origincert $CERT_FILE tunnel --no-autoupdate info $TUNNEL_NAME | grep -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" | head -n 1) && break || true
     echo "Tunnel ID: $TUNNEL_ID"
     sleep 12
 done
@@ -150,7 +157,9 @@ if [ ! -f "$TUNNEL_FILE" ]; then
     # remove old tunnel
     echo "Deleting old tunnel $TUNNEL_NAME"
     kubectl delete deploy -n $TUNNEL_NAMESPACE $CONTAINER_TUNNEL_NAME || true
-    cloudflared --origincert $CERT_FILE tunnel delete $TUNNEL_NAME
+    docker run --user root \
+        -v $HOME/.cloudflared/:$HOME/.cloudflared/ \
+        cloudflare/cloudflared:latest --origincert $CERT_FILE tunnel --no-autoupdate delete $TUNNEL_NAME
     echo "Tunnel $TUNNEL_NAME deleted because it was not found in $TUNNEL_FILE"
     DOMAIN_ALT=$DOMAIN_ALT ./pic expose $TUNNEL_PROTOCOL $TUNNEL_HOSTNAME $TUNNEL_PORT
     exit 0
@@ -257,7 +266,9 @@ TUNNEL_NICE_HOSTNAME=$(echo $TUNNEL_HOSTNAME | sed 's/\./-/g')
 CNAME_RECORD="$TUNNEL_PROTOCOL-$TUNNEL_NICE_HOSTNAME-$TUNNEL_PORT"
 FQDN_RECORD="$CNAME_RECORD.$DOMAIN"
 while true; do
-    cloudflared tunnel --origincert $CERT_FILE route dns --overwrite-dns $TUNNEL_NAME $FQDN_RECORD && break || sleep 5
+    docker run --user root \
+        -v $HOME/.cloudflared/:$HOME/.cloudflared/ \
+        cloudflare/cloudflared:latest --origincert $CERT_FILE tunnel --no-autoupdate route dns --overwrite-dns $TUNNEL_NAME $FQDN_RECORD && break || sleep 5
 done
 while true; do
     if [ "tcp" == "$TUNNEL_PROTOCOL" ]; then
