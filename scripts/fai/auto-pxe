@@ -59,8 +59,10 @@ for MACHINE in $MACHINES; do
     done
     while true; do
         timeout 20 sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
-            "cat /tmp/fai/status.log; grep 'savelog.LAST.sh' /tmp/fai/status.log || exit 1; grep -q 'OK' /tmp/fai/status.log || exit 1" && break || sleep 8
+            "cat /tmp/fai/status.log; tail -f /tmp/fai/status.log | sed '/^savelog.LAST.sh/ q'; grep 'savelog.LAST.sh' /tmp/fai/status.log || exit 1; grep -v 'OK' /tmp/fai/status.log && exit 1 || exit 0" && break || sleep 8
     done
+    timeout 20 sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS \
+            "grep -v 'OK' /tmp/fai/status.log && exit 1 || exit 0"
 done
 
 # All machine are provisioned
@@ -79,7 +81,15 @@ for MACHINE in $MACHINES; do
     MACHINE=`echo "$MACHINE" | tr "," " "`
     IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
-    sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS reboot
+    sshpass -p fai ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $IP_ADDRESS poweroff
+done
+sleep 15
+for MACHINE in $MACHINES; do
+    MACHINE=`echo "$MACHINE" | tr "," " "`
+    MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
+    IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
+    HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
+    wakeonlan $MAC_ADDRESS
 done
 exit 0
 echo;echo;

@@ -47,9 +47,9 @@ docker run \
     install-fai-packages \
     bash -c "fai-setup -vf"
 # 
-mkdir -p /srv/fai/config/files/etc/apt/sources.list.d/cloudflare.list/
-curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/config/package_config/CLOUDFLARE.gpg
-echo "deb [signed-by=/etc/apt/trusted.gpg.d/CLOUDFLARE.gpg] https://pkg.cloudflare.com/cloudflared bookworm main" > /srv/fai/config/files/etc/apt/sources.list.d/cloudflare.list/FAIME
+#mkdir -p /srv/fai/config/files/etc/apt/sources.list.d/cloudflare.list/
+#curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /srv/fai/config/package_config/CLOUDFLARE.gpg
+#echo "deb [signed-by=/etc/apt/trusted.gpg.d/CLOUDFLARE.gpg] https://pkg.cloudflare.com/cloudflared bookworm main" > /srv/fai/config/files/etc/apt/sources.list.d/cloudflare.list/FAIME
 #
 mkdir -p /srv/fai/config/files/etc/apt/sources.list.d/docker.list/
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /tmp/DOCKER.asc
@@ -174,7 +174,7 @@ echo "AMD64"
 EOF
 cat <<EOF > /srv/fai/config/class/95-faime
 #! /bin/bash
-echo "FAIME DOCKER CLOUDFLARE"
+echo "FAIME DOCKER"
 EOF
 chmod 755 /srv/fai/config/class/95-faime
 
@@ -190,7 +190,6 @@ curl
 wget
 git
 jq
-cloudflared
 netcat-traditional
 ca-certificates
 open-iscsi
