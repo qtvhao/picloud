@@ -35,7 +35,7 @@ done <<< "$NODES_NAME_WITH_IP"
 wait 
 kubectl apply -k https://github.com/kubernetes-sigs/node-feature-discovery/deployment/overlays/default?ref=v0.16.0
 echo
-time (./pic redis | tee $LOGS_DIR/redis.log)
+# time (./pic redis | tee $LOGS_DIR/redis.log)
 # wait $(jobs -p)
 
 TUNNEL_NAMESPACE=default ./pic expose http console.minio-operator 9090 200
