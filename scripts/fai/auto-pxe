@@ -39,8 +39,16 @@ for MACHINE in $MACHINES; do
     wakeonlan $MAC_ADDRESS
 done
 # echo 'echo "AMD64 DHCPC FAIBASE DEBIAN DEMO GRUB_PC" ;;' > /srv/fai/config/class/50-host-classes
-# rdate -s time.nist.gov
 sleep 6
+for MACHINE in $MACHINES; do
+    MACHINE=`echo "$MACHINE" | tr "," " "`
+    MAC_ADDRESS=`echo "$MACHINE" | awk '{print $1}'`
+    IP_ADDRESS=`echo "$MACHINE" | awk '{print $2}'`
+    HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
+    wakeonlan $MAC_ADDRESS
+    sleep 20
+done
+
 for MACHINE in $MACHINES; do
     sleep 1
     MACHINE=`echo "$MACHINE" | tr "," " "`
@@ -91,6 +99,7 @@ for MACHINE in $MACHINES; do
     HOSTNAME=`echo "$MACHINE" | awk '{print $3}'`
     wakeonlan $MAC_ADDRESS
 done
+echo "Waiting for all machines to be pingable"
 exit 0
 echo;echo;
 ./pic list-nodename $IDENTITY_FILE
