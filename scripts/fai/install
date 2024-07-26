@@ -158,12 +158,14 @@ docker rm -f create-pxelinux-configuration || true ; docker run -d \
 modprobe {nfs,nfsd}
 apt install -y nfs-kernel-server
 # 
+NETWORK_INTERFACE=$(ip address | grep -E '^[0-9]+: ' | awk '{print $2}' | sed 's/://g' | grep -v veth | grep -v lo | grep -v docker | grep -v br- | grep -v vnet | grep -v flannel | grep -v cni | grep -v tun)
+
 chmod 0777 /var/cache/apt-cacher-ng/
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/subnet 192.168.*.* netmask/subnet 192.168.1.0 netmask/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option routers 192.168.*.*;/option routers 192.168.1.1;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option domain-name-servers 192.168.*.*;/option domain-name-servers 8.8.8.8;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/TFTP_ADDRESS=\".*\"/TFTP_ADDRESS=\"0.0.0.0:69\"/g' /etc/default/tftpd-hpa ; cat /etc/default/tftpd-hpa"
-docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"eno1\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
+docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"$NETWORK_INTERFACE\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; invoke-rc.d isc-dhcp-server restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; /etc/init.d/tftpd-hpa restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service rpcbind restart"
