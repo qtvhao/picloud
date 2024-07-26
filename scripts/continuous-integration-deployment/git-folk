@@ -181,4 +181,6 @@ if [ ! -z "$CLONE_DIR" ]; then
     
 fi
 ./pic create-remote-mirrors "$REPO_URL"
+
+echo "Finished git-folk"
 # 41s

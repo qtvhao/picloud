@@ -65,7 +65,7 @@ GITHUB_AUTH="git:$PAT"
 for REPO in  $full_names;
 do
     REPO_NAME=$(basename $REPO)
-    STARTED_AT=$(date)
+    STARTED_AT=$(date +%s)
     echo "Started at $STARTED_AT"
     if [ -d "../$REPO_NAME" ]; then
         echo "REPO_NAME: $REPO_NAME"
@@ -95,7 +95,7 @@ do
         sleep 60
     done
     echo "Finished at $(date)"
-    DATE_NOW=$(date)
+    DATE_NOW=$(date +%s)
     ELAPSED_TIME_IN_SECONDS=`echo $DATE_NOW - $STARTED_AT | bc`
     echo "Elapsed time: $ELAPSED_TIME_IN_SECONDS for $REPO_NAME"
 done
