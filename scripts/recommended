@@ -14,8 +14,8 @@ GITLAB_ROOT_GENERATED_PASSWORD=$(jq -r '.gitlab_root_generated_password' "$HOME/
 TUNNEL_NAMESPACE=default ./pic expose http grafana.loki 80
 TUNNEL_NAMESPACE=default ./pic expose http tenant-picloud-hl.tenant-ns 9000 400 "" "true"
 TUNNEL_NAMESPACE=gitlab-ns ./pic expose http gitlab-webservice-default.gitlab-ns    8181    404
-./pic wait pod          redis-replicas-1                    default Ready
-./pic wait pod          redis-replicas-2                    default Ready
+#./pic wait pod          redis-replicas-1                    default Ready
+#./pic wait pod          redis-replicas-2                    default Ready
 TUNNEL_NAMESPACE=default ./pic expose tcp redis-master.default 6379
 ./pic dump-images $IDENTIFY_FILE
 

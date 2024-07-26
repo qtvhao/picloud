@@ -58,6 +58,20 @@ chmod a+r /srv/fai/config/package_config/DOCKER.gpg
 echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/DOCKER.gpg] http://mirrors.cloud.tencent.com/docker-ce/linux/debian bookworm stable" > /srv/fai/config/files/etc/apt/sources.list.d/docker.list/FAIME
 
 wget https://github.com/$GITHUB_USERNAME.keys -O /srv/fai/config/files/root-ssh-key/DEBIAN
+# 
+cat <<EOF > /srv/fai/config/disk_config/FAIBASE
+# example of new config file for setup-storage
+#
+# <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
+
+# you may want to add "-O ^metadata_csum_seed" to createopts if the target
+# system is older than bullseye. See #866603, #1031415, #1031416 for more info.
+
+disk_config disk1 disklabel:msdos bootable:1 fstabkey:uuid
+
+primary /      2G-      ext4  rw,noatime,errors=remount-ro
+logical swap   200-4G  swap  sw
+EOF
 # /var/log/fai/remote-logs/.ssh/id_rsa.pub is the public key of the machine
 # fai-setup has created the LOGUSER, the nfsroot and has added additional lines to /etc/exports. The subdirectories added to /etc/exports are exported via NFS v3, so all install clients in the same subnet can mount them via NFS.
 docker commit fai-setup fai-setup
