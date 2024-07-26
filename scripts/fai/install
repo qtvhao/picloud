@@ -211,8 +211,12 @@ AllowHibernation=no
 AllowSuspendThenHibernate=no
 AllowHybridSleep=no
 EOF
-tar -C /tmp/nfsroot -cJf /srv/fai/nfsroot/var/tmp/base.tar.xz etc/systemd/sleep.conf.d/nosuspend.conf
-tar -tf /srv/fai/nfsroot/var/tmp/base.tar.xz | grep etc/systemd/sleep.conf.d/nosuspend.conf
+
+xz -d /srv/fai/nfsroot/var/tmp/base.tar.xz
+(cd /tmp/nfsroot/ && tar -rf /srv/fai/nfsroot/var/tmp/base.tar .)
+xz -z /srv/fai/nfsroot/var/tmp/base.tar
+tar -tf /srv/fai/nfsroot/var/tmp/base.tar.xz | grep lib64
+tar -tf /srv/fai/nfsroot/var/tmp/base.tar.xz | grep nosuspend.conf
 exit 0
 # docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log
 
