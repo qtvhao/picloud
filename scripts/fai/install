@@ -56,16 +56,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /tmp/DOCKER.asc
 gpg --dearmor -o /srv/fai/config/package_config/DOCKER.gpg /tmp/DOCKER.asc
 chmod a+r /srv/fai/config/package_config/DOCKER.gpg
 echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/DOCKER.gpg] http://mirrors.cloud.tencent.com/docker-ce/linux/debian bookworm stable" > /srv/fai/config/files/etc/apt/sources.list.d/docker.list/FAIME
-mkdir -p /srv/fai/etc/systemd/sleep.conf.d/
-cat <<EOF > /srv/fai/etc/systemd/sleep.conf.d/nosuspend.conf
-[Sleep]
-AllowSuspend=no
-AllowHibernation=no
-AllowSuspendThenHibernate=no
-AllowHybridSleep=no
-EOF
-rm -rf /srv/fai/config/basefiles/FAIME.tar || true
-tar -C /srv/fai/ -cvf /srv/fai/config/basefiles/FAIME.tar etc/systemd/sleep.conf.d/nosuspend.conf
+
 wget https://github.com/$GITHUB_USERNAME.keys -O /srv/fai/config/files/root-ssh-key/DEBIAN
 # /var/log/fai/remote-logs/.ssh/id_rsa.pub is the public key of the machine
 # fai-setup has created the LOGUSER, the nfsroot and has added additional lines to /etc/exports. The subdirectories added to /etc/exports are exported via NFS v3, so all install clients in the same subnet can mount them via NFS.
@@ -212,6 +203,16 @@ bc
 parted
 gnupg2
 EOF
+mkdir -p /tmp/nfsroot/etc/systemd/sleep.conf.d/
+cat <<EOF > /tmp/nfsroot/etc/systemd/sleep.conf.d/nosuspend.conf
+[Sleep]
+AllowSuspend=no
+AllowHibernation=no
+AllowSuspendThenHibernate=no
+AllowHybridSleep=no
+EOF
+tar -C /tmp/nfsroot -cJf /srv/fai/nfsroot/var/tmp/base.tar.xz etc/systemd/sleep.conf.d/nosuspend.conf
+tar -tf /srv/fai/nfsroot/var/tmp/base.tar.xz | grep etc/systemd/sleep.conf.d/nosuspend.conf
 exit 0
 # docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log
 
