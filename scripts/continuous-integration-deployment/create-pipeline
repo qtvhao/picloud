@@ -154,3 +154,6 @@ if [ "wait-for-success" == "$option2" ]; then
         sleep 16
     done
 fi
+
+ELAPSED_TIME=$((`date +%s` - $STARTED_AT))
+echo "Elapsed time to create pipeline: "$ELAPSED_TIME"s"
