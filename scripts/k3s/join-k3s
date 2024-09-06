@@ -20,7 +20,7 @@ if [ ! -f $IDENTIFY_FILE ]; then
     exit 1
 fi
 set -xeo pipefail
-./pic sync-across-nodes /var/lib/registry-proxy/
+# ./pic sync-across-nodes /var/lib/registry-proxy/
 
 cp /var/lib/rancher/k3s/server/tls/server-ca.crt /usr/local/share/ca-certificates/kubernetes.crt
 
