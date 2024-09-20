@@ -1,15 +1,21 @@
 # picloud
-- [x] Automated image creation with [FAI](https://fai-project.org/)
-- [x] Automated bare metal installation with PXE boot or USB boot
-- [x] Automated Kubernetes installation and management with [k3s](https://k3s.io/)
-- [x] Expose services to the Internet securely without static IP or port forwarding using [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
-- [x] GitLab installation and many utilities
-- [x] Distributed block storage system with [Longhorn](https://longhorn.io/)
-- [x] Kubernetes cluster logging with [Loki](https://grafana.com/oss/loki/)
-- [x] Registry as a pull through cache with [Docker Registry](https://docs.docker.com/registry/)
-- [x] Terraform HTTP backend and manage your environment on GitLab (see [Terraform HTTP backend](https://docs.gitlab.com/ee/user/infrastructure/iac/terraform_state.html))
-- [x] Harbor installation for private Docker registry
-- [x] Virtual machine management with [VirtualBox](https://www.virtualbox.org/)
+This project provides a collection of scripts for managing your Kubernetes home server environment. It offers a one-click solution for various tasks, including:
+- Logging & Monitoring: Monitor your Kubernetes deployments for performance and health.
+- Bare Metal Provisioning: Provision bare metal servers using PXE.
+- GitLab Management: Install and manage your own GitLab instance with a single click.
+- Terraform Integration: Deep integration with Terraform, including Terraform State Management support.
+- Embedded Registry: Utilize Spegel, a stateless distributed OCI registry mirror, for peer-to-peer container image sharing within your Kubernetes cluster.
+- Secure Harbor: Deploy a secure Harbor instance for private container image registry.
+- One-Click Kubernetes: Easily deploy and manage a Kubernetes cluster.
+- Remote Management: Manage your server remotely.
+- Service Exposure: Expose your Kubernetes services securely over Cloudflare Tunnel with a single click.
+- Secure by Default: Automatically leverage your public key from your GitHub profile for secure access.
+
+#### Features
+- Simple and Automated: Scripts automate various tasks, simplifying your home server management.
+- Integrated Workflow: Scripts work seamlessly together, ensuring a smooth user experience.
+- Secure by Design: Secure practices are built in, including leveraging your existing GitHub public key.
+- Flexibility: The project caters to various use cases, from basic deployments to complex setups.
 
 # Basic usage
 
