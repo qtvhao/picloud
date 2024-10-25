@@ -84,7 +84,7 @@ echo "fs.inotify.max_user_instances=$NEW_INOTIFY_MAX_USER_INSTANCES" >> $LOCAL_C
 echo "fs.inotify.max_queued_events=$NEW_INOTIFY_MAX_QUEUED_EVENTS" >> $LOCAL_CONF
 service procps force-reload
 
-time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init --embedded-registry && time systemctl restart k3s)
+time (curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true K3S_NODE_NAME=$K3S_NODE_NAME sh -s - server --cluster-init --embedded-registry --disable=traefik,metrics-server && time systemctl restart k3s)
 K3S_URL="https://$K8S_MASTER_NODE_IP:6443"
 while ! cat /var/lib/rancher/k3s/server/token >/dev/null 2>&1; do
     echo "Waiting for K3S token"
