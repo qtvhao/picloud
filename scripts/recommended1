@@ -37,7 +37,13 @@ while read -r NODE; do
     label_node_by_disks_id $NODE_NAME $NODE_IP &
 done <<< "$NODES_NAME_WITH_IP"
 wait 
+
+# Feature discovery can alternatively be configured as a one-shot job.
 # kubectl apply -k https://github.com/kubernetes-sigs/node-feature-discovery/deployment/overlays/default?ref=v0.16.0
+NUM_NODES=$(kubectl get no -o jsonpath='{.items[*].metadata.name}' | wc -w)
+kubectl kustomize https://github.com/kubernetes-sigs/node-feature-discovery/deployment/overlays/default-job?ref=v0.16.5 | \
+    sed s"/NUM_NODES/$NUM_NODES/" | \
+    kubectl apply -f -
 echo
 # time (./pic redis | tee $LOGS_DIR/redis.log)
 # wait $(jobs -p)
