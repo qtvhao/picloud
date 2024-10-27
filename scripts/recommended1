@@ -13,6 +13,10 @@ label_node_by_disks_id() {
         echo "Label node $NODE_NAME with disk $DISK_ID. One node can have multiple disks."
         kubectl label node $NODE_NAME "disk-id-$DISK_ID=True" --overwrite
     done
+    CPU_MODEL_FAMILY=`ssh -i /root/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        root@$NODE_IP "lscpu | grep '^CPU family' | awk '{print \$3}' | tr -d '\n'"`
+    echo "Node $NODE_NAME has CPU model family: $CPU_MODEL_FAMILY"
+    kubectl label node $NODE_NAME "cpu-model-family-$CPU_MODEL_FAMILY=True" --overwrite
 }
 args=("$@")
 IDENTIFY_FILE=${args[0]}
