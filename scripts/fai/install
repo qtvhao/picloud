@@ -166,7 +166,6 @@ docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option routers 
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option domain-name-servers 192.168.*.*;/option domain-name-servers 8.8.8.8;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/TFTP_ADDRESS=\".*\"/TFTP_ADDRESS=\"0.0.0.0:69\"/g' /etc/default/tftpd-hpa ; cat /etc/default/tftpd-hpa"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"$NETWORK_INTERFACE\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
-docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; invoke-rc.d isc-dhcp-server restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; /etc/init.d/tftpd-hpa restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service rpcbind restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
@@ -182,7 +181,6 @@ EOF
 docker cp /etc/exports create-pxelinux-configuration:/etc/exports
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"
 service nfs-kernel-server restart
-# cat ./var-log-fai/remote-logs/.ssh/authorized_keys > ~/.ssh/authorized_keys
 # 
 
 cat <<EOF > /srv/fai/config/class/10-base-classes
@@ -230,11 +228,8 @@ EOF
 
 xz -d /srv/fai/nfsroot/var/tmp/base.tar.xz
 (cd /tmp/nfsroot/ && tar -rf /srv/fai/nfsroot/var/tmp/base.tar .)
-xz -z /srv/fai/nfsroot/var/tmp/base.tar
-tar -tf /srv/fai/nfsroot/var/tmp/base.tar.xz | grep lib64
-tar -tf /srv/fai/nfsroot/var/tmp/base.tar.xz | grep nosuspend.conf
+xz -z -v -0 /srv/fai/nfsroot/var/tmp/base.tar
 exit 0
-# docker exec -it fai-cd bash -c "fai-cd -C /etc/fai-bookworm -g /srv/fai/config/grub.cfg.install-only -m/tmp/mirror -n/srv/fai/nfsroot /dvd/$HOSTNAME-fai-cd.iso || exit 1" | tee fai-cd.log
 
 echo "Fai-cd started"
 docker rm -f fai-nginx || true
