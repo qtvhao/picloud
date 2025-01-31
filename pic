@@ -91,7 +91,7 @@ if [ "$arg1" == "wait" ]; then
 fi
 if [ "$arg1" == "self-update" ]; then
     set -xeo pipefail
-    URL="https://raw.githubusercontent.com/qtvhao/picloud/HEAD/pic"
+    URL="https://raw.githubusercontent.com/qtvhao/picloud/HEAD/pic?$(date +%s)"
     curl "$URL" -o pic && chmod +x pic
     exit 0
 fi
@@ -104,18 +104,14 @@ fi
 if [ "$arg1" == "exec-local-or-remote" ]; then
     set -e
     scriptFile="$HOME/.pic/scripts/$3"
-    if [ ! -f "$PIC_DIR/pic-version" ]; then
-        ./pic self-update
-    fi
-    PIC_VERSION=$(cat "$PIC_DIR/pic-version")
-    remoteUrl="https://raw.githubusercontent.com/qtvhao/picloud/$PIC_VERSION/$2/$3?$(date +%s)"
+    remoteUrl="https://raw.githubusercontent.com/qtvhao/picloud/HEAD/$2/$3?$(date +%s)"
 
     scriptFileExists=$(test -f "$2/$3" && echo "true" || echo "false")
     if [ "$scriptFileExists" == "true" ]; then
         # cp "$2/$3" "$scriptFile" || true
         "$2/$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}"
     else
-        LOCAL_SCRIPTS_DIR="$HOME/.pic/scripts/$PIC_VERSION/$2-$3"
+        LOCAL_SCRIPTS_DIR="$HOME/.pic/scripts/HEAD/$2-$3"
         if [ ! -d "$LOCAL_SCRIPTS_DIR" ]; then
             mkdir -p "$LOCAL_SCRIPTS_DIR"
         fi
