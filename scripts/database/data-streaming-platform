@@ -1,22 +1,27 @@
 #!/bin/bash
-set -x
-kubectl rollout restart deploy coredns -n kube-system
-
 helm repo add jetstack https://charts.jetstack.io
+helm repo add redpanda https://charts.redpanda.com
 helm repo update
+
+kubectl get ns redpanda || kubectl create ns redpanda
+helm uninstall cert-manager --namespace cert-manager
+helm uninstall redpanda --namespace redpanda
+
+set -xe
+kubectl rollout restart deploy coredns -n kube-system
+kubectl rollout status deployment/coredns -n kube-system --watch
+
 helm install cert-manager jetstack/cert-manager \
   --set crds.enabled=true \
   --namespace cert-manager  \
   --create-namespace
 
-kubectl get ns redpanda || kubectl create ns redpanda
-
-helm repo add redpanda https://charts.redpanda.com
-helm repo update
-helm uninstall redpanda --namespace redpanda
 helm install redpanda redpanda/redpanda \
   --version 5.9.19 \
   --namespace redpanda
-
-
 kubectl -n redpanda rollout status statefulset redpanda --watch
+
+kubectl get secrets -n cert-manager cert-manager-webhook-ca  -o jsonpath="{.data.ca\.crt}" | base64 -d > kafka.pem
+kcat -b localhost:31092 -L  -X security.protocol=SSL -X ssl.ca.location=/root/Provision/kafka.pem -X enable.ssl.certificate.verification=false
+
+./pic declare-project-variables root%2FProvision TF_VAR_CERT_MANAGER_WEBHOOK_CA "`kubectl get secrets -n cert-manager cert-manager-webhook-ca  -o jsonpath="{.data.ca\.crt}" | base64 -d`"  "production" "false"
