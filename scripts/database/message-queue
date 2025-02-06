@@ -2,15 +2,15 @@
 set -xe
 
 PIC_DIR="$HOME/.pic"
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
 stat $PIC_DIR/rabbitmq.json || \
     jq -n \
     --arg RABBITMQ_AUTH_PASSWORD "`openssl rand -hex 16`" \
     --arg RABBITMQ_AUTH_USERNAME "root" \
         '{"rabbitmq_auth_password":$RABBITMQ_AUTH_PASSWORD,"rabbitmq_auth_username":$RABBITMQ_AUTH_USERNAME}' > $PIC_DIR/rabbitmq.json
-
 PASSWORD=$(jq -r '.rabbitmq_auth_password' "$PIC_DIR"/rabbitmq.json)
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 
 helm upgrade --install rabbitmq bitnami/rabbitmq \
   --namespace rabbitmq \
