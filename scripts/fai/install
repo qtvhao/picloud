@@ -165,7 +165,7 @@ docker exec -it create-pxelinux-configuration bash -c "sed -i 's/subnet 192.168.
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option routers 192.168.*.*;/option routers 192.168.1.1;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/option domain-name-servers 192.168.*.*;/option domain-name-servers 8.8.8.8;/g' /etc/dhcp/dhcpd.conf ; cat /etc/dhcp/dhcpd.conf"
 docker exec -it create-pxelinux-configuration bash -c "sed -i 's/TFTP_ADDRESS=\".*\"/TFTP_ADDRESS=\"0.0.0.0:69\"/g' /etc/default/tftpd-hpa ; cat /etc/default/tftpd-hpa"
-docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"$NETWORK_INTERFACE\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
+# docker exec -it create-pxelinux-configuration bash -c "sed -i 's/INTERFACESv4=\"\"/INTERFACESv4=\"$NETWORK_INTERFACE\"/g' /etc/default/isc-dhcp-server ; cat /etc/default/isc-dhcp-server"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; /etc/init.d/tftpd-hpa restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service rpcbind restart"
 docker exec -it create-pxelinux-configuration bash -c "export RUNLEVEL=1; service nfs-kernel-server restart"

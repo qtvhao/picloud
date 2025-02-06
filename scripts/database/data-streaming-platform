@@ -23,4 +23,5 @@ kubectl -n redpanda rollout status statefulset redpanda --watch
 ./pic declare-project-variables root%2FProvision TF_VAR_CERT_MANAGER_WEBHOOK_CA "`kubectl get secrets -n cert-manager cert-manager-webhook-ca  -o jsonpath="{.data.ca\.crt}" | base64 -d`"  "production" "false"
 
 kubectl delete pod kcat -n redpanda
+kubectl exec -it redpanda-0 -n redpanda -- rpk topic create my-topic --partitions 3 --replicas 3
 kubectl run -n redpanda kcat --rm -ti --restart=Never --image=confluentinc/cp-kafkacat -- bash -c "echo 1 | kafkacat -b redpanda.redpanda:9093 -t msgs -P -c 1; echo DONE"
