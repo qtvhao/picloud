@@ -16,12 +16,15 @@ kubectl rollout status deployment/coredns -n kube-system --watch
 helm install redpanda redpanda/redpanda \
   --set tls.enabled=false \
   --set external.enabled=false \
-  --version 5.9.19 \
+  --set config.cluster.kafka_request_max_bytes=104857600 \
+  --set config.cluster.kafka_batch_max_bytes=10485760 \
+  --set config.node.kafka_rpc_server_stream_recv_buf=104857600 \
+  --version 5.9.20 \
   --namespace redpanda
 kubectl -n redpanda rollout status statefulset redpanda --watch
 
 ./pic declare-project-variables root%2FProvision TF_VAR_CERT_MANAGER_WEBHOOK_CA "`kubectl get secrets -n cert-manager cert-manager-webhook-ca  -o jsonpath="{.data.ca\.crt}" | base64 -d`"  "production" "false"
 
-kubectl delete pod kcat -n redpanda
+# kubectl delete pod kcat -n redpanda
 kubectl exec -it redpanda-0 -n redpanda -- rpk topic create my-topic --partitions 3 --replicas 3
 kubectl run -n redpanda kcat --rm -ti --restart=Never --image=confluentinc/cp-kafkacat -- bash -c "echo 1 | kafkacat -b redpanda.redpanda:9093 -t msgs -P -c 1; echo DONE"
