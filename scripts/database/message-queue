@@ -15,5 +15,4 @@ helm repo update
 helm upgrade --install rabbitmq bitnami/rabbitmq \
   --namespace rabbitmq \
   --create-namespace \
-  --set auth.username=root,auth.password=$PASSWORD,persistence.enabled=true,persistence.size=10Gi
-
+  --set auth.username=root,auth.password=$PASSWORD,persistence.enabled=true,persistence.size=10Gi,communityPlugins="https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.6.4/elixir-1.16.3.ez https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.6.4/rabbitmq_message_deduplication-0.6.4.ez",extraPlugins="rabbitmq_auth_backend_ldap rabbitmq_message_deduplication elixir"
