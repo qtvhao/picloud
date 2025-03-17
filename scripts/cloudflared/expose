@@ -213,7 +213,7 @@ echo "        pic-rn: tunnel-pod"                           >>cloudflared-deploy
 echo "    spec:"                                            >>cloudflared-deployment.yaml
 echo "      containers:"                                    >>cloudflared-deployment.yaml
 echo "        - name: cloudflared"                          >>cloudflared-deployment.yaml
-echo "          image: cloudflare/cloudflared:2024.10.0"    >>cloudflared-deployment.yaml
+echo "          image: cloudflare/cloudflared:2025.2.1"     >>cloudflared-deployment.yaml
 echo "          args:"                                      >>cloudflared-deployment.yaml
 echo "            - tunnel"                                 >>cloudflared-deployment.yaml
 echo "            - --no-autoupdate"                        >>cloudflared-deployment.yaml
